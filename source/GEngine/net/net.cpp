@@ -61,6 +61,7 @@ SocketTCPMaster NET::mg_socketListenTcp;
 SocketUDP NET::mg_socketUdpV6;
 SocketTCPMaster NET::mg_socketListenTcpV6;
 
+NetWait NET::mg_wait;
 Event::Manager NET::mg_eventManager;
 NetServer NET::mg_server(mg_socketUdp, mg_socketUdpV6);
 CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_socketUdp,
@@ -250,8 +251,14 @@ bool NET::isLanAddress(const Address &addr) {
 /**************************************************************/
 
 /* returns true if has event, false otherwise */
-bool NET::sleep(uint32_t ms, NetWaitSet &set) {
-    return mg_wait.wait(ms, set);
+bool NET::sleep(uint32_t ms) {
+    NetWaitSet set;
+
+    createSets(set);
+    bool res = mg_wait.wait(ms, set);
+    if (!res)
+        return false;
+    return handleEvents(set);
 }
 
 void NET::createSets(NetWaitSet &set) {
@@ -262,9 +269,9 @@ void NET::createSets(NetWaitSet &set) {
     mg_client.createSets(set);
     mg_eventManager.createSets(set);
 
-    set.isSignaled(mg_socketUdp);
+    set.setAlert(mg_socketUdp);
     if (CVar::net_ipv6.getIntValue())
-        set.isSignaled(mg_socketUdpV6);
+        set.setAlert(mg_socketUdpV6);
 }
 
 bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr) {

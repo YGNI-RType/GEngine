@@ -73,7 +73,7 @@ void CLNetClient::createSets(NetWaitSet &set) {
     if (!m_enabled || !m_netChannel.canCommunicate())
         return;
 
-    set.isSignaled(m_netChannel.getTcpSocket());
+    set.setAlert(m_netChannel.getTcpSocket());
 }
 
 void CLNetClient::init(void) {

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "events/socket_event.hpp"
+#include "net_wait.hpp"
 
 #include <any>
 #include <functional>

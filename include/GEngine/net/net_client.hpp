@@ -10,6 +10,7 @@
 #include "events/socket_event.hpp"
 #include "net_channel.hpp"
 #include "net_queue.hpp"
+#include "net_wait.hpp"
 
 #include <memory>
 #include <string>

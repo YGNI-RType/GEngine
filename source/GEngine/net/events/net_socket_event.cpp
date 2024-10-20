@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/net/events/socket_event.hpp"
+#include "GEngine/net/net_wait.hpp"
 
 #include <stdexcept>
 
@@ -92,7 +93,7 @@ SocketEvent::SocketEvent() {
     if (m_sock == -1)
         throw std::runtime_error("Failed to create eventfd");
 #endif
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketEvent::~SocketEvent() {
