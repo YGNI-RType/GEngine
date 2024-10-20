@@ -38,10 +38,6 @@ public:
     static WSADATA winsockdata;
 #endif
 
-    static SOCKET getHighestSocket(void) {
-        return m_highFd;
-    }
-
     SOCKET getSocket(void) const {
         return m_sock;
     }
@@ -56,27 +52,10 @@ public:
 
 protected:
     ASocket() = default;
-
-    static void addSocketPool(SOCKET socket);
-
     virtual ~ASocket();
-
-private:
-    static fd_set m_fdSet;
-    static SOCKET m_highFd;
 
 public:
     int socketClose(void);
-
-    bool isFdSet(fd_set &set) const {
-        return FD_ISSET(m_sock, &set);
-    }
-    void setFdSet(fd_set &set) const {
-        FD_SET(m_sock, &set);
-    }
-    void removeFdSet(fd_set &set) const {
-        FD_CLR(m_sock, &set);
-    }
 
 protected:
     SOCKET m_sock = -1;

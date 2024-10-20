@@ -28,9 +28,9 @@ public:
     uint16_t start(size_t maxClients, uint16_t currentUnusedPort);
     void stop(void);
 
-    void createSets(fd_set &readSet);
+    void createSets(NetWaitSet &readSet);
 
-    bool handleTCPEvent(fd_set &readSet);
+    bool handleTCPEvent(const NetWaitSet &readSet);
     bool handleUDPEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     const SocketTCPMaster &getSocketV4(void) const {

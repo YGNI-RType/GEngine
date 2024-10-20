@@ -8,6 +8,7 @@
 #include "GEngine/net/net_socket.hpp"
 #include "GEngine/cvar/net.hpp"
 #include "GEngine/net/net_socket_error.hpp"
+#include "GEngine/net/net_wait.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -33,9 +34,6 @@ namespace Network {
 #ifdef _WIN32
 WSADATA ASocket::winsockdata;
 #endif
-
-SOCKET ASocket::m_highFd = -1;
-fd_set ASocket::m_fdSet;
 
 ASocket::~ASocket() {
     socketClose();
@@ -65,7 +63,6 @@ void ASocket::initLibs(void) {
         return;
 #endif
     initialized = true;
-    FD_ZERO(&m_fdSet);
 }
 
 int ASocket::socketClose(void) {
@@ -84,17 +81,7 @@ int ASocket::socketClose(void) {
         status = close(m_sock);
 #endif
 
-    if (m_sock == m_highFd)
-        while (!FD_ISSET(m_highFd, &m_fdSet))
-            (m_highFd)--;
-
     return status;
-}
-
-void ASocket::addSocketPool(SOCKET socket) {
-    FD_SET(socket, &m_fdSet);
-    if (socket > m_highFd)
-        m_highFd = socket;
 }
 
 //////////////////////////////////////
@@ -176,7 +163,7 @@ SocketTCPMaster::SocketTCPMaster(const IP &ip, uint16_t port) {
     if (listen(m_sock, MAX_LISTEN) < 0)
         throw SocketException("(TCP) Failed to listen on socket");
 
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketTCPMaster::SocketTCPMaster(uint16_t port, bool ipv6) {
@@ -198,7 +185,7 @@ SocketTCPMaster::SocketTCPMaster(uint16_t port, bool ipv6) {
     if (listen(m_sock, MAX_LISTEN) < 0)
         throw SocketException("(TCP) Failed to listen on socket");
 
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketTCPMaster::SocketTCPMaster(SocketTCPMaster &&other)
@@ -225,7 +212,7 @@ SocketTCP::SocketTCP(const SocketTCPMaster &socketMaster, UnknownAddress &unkwAd
     unkwAddr.updateType();
     m_port = socketMaster.getPort();
     m_notReady = false;
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketTCP::SocketTCP(const AddressV4 &addr, uint16_t tcpPort, bool block) {
@@ -245,7 +232,7 @@ SocketTCP::SocketTCP(const AddressV4 &addr, uint16_t tcpPort, bool block) {
     if (connect(m_sock, (sockaddr *)&address, sizeof(address)) < 0) {
         int e = socketError;
         if (e == WSAEINPROGRESS || e == WSAEWOULDBLOCK) {
-            addSocketPool(m_sock);
+            NetWait::addSocketPool(m_sock);
             return;
         }
         socketClose();
@@ -253,7 +240,7 @@ SocketTCP::SocketTCP(const AddressV4 &addr, uint16_t tcpPort, bool block) {
     }
 
     m_notReady = false;
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketTCP::SocketTCP(const AddressV6 &addr, uint16_t tcpPort, bool block) {
@@ -273,7 +260,7 @@ SocketTCP::SocketTCP(const AddressV6 &addr, uint16_t tcpPort, bool block) {
     if (connect(m_sock, (sockaddr *)&address, sizeof(address)) < 0) {
         int e = socketError;
         if (e == WSAEINPROGRESS || e == WSAEWOULDBLOCK) {
-            addSocketPool(m_sock);
+            NetWait::addSocketPool(m_sock);
             return;
         }
         socketClose();
@@ -281,7 +268,7 @@ SocketTCP::SocketTCP(const AddressV6 &addr, uint16_t tcpPort, bool block) {
     }
 
     m_notReady = false;
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketTCP::SocketTCP(SocketTCP &&other)
@@ -389,7 +376,7 @@ SocketUDP::SocketUDP(const IP &ip, uint16_t port, bool block) {
     if (bind(m_sock, (sockaddr *)&address, ip.type == AT_IPV6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in)) < 0)
         throw SocketException("(UDP) Failed to bind socket");
 
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketUDP::SocketUDP(uint16_t port, bool ipv6, bool block) {
@@ -401,7 +388,7 @@ SocketUDP::SocketUDP(uint16_t port, bool ipv6, bool block) {
     if (bind(m_sock, (sockaddr *)&address, ipv6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in)) < 0)
         throw SocketException("(UDP) can't bind udp (only port)");
 
-    addSocketPool(m_sock);
+    NetWait::addSocketPool(m_sock);
 }
 
 SocketUDP::SocketUDP(SocketUDP &&other)

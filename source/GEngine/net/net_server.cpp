@@ -36,7 +36,7 @@ void NetServer::stop(void) {
     m_isRunning = false;
 }
 
-void NetServer::createSets(fd_set &readSet) {
+void NetServer::createSets(NetWaitSet &set) {
     if (!isRunning())
         return;
 
@@ -45,12 +45,12 @@ void NetServer::createSets(fd_set &readSet) {
         auto eventType = socket.getEventType();
 
         if (eventType == SocketTCP::EventType::READ)
-            socket.setFdSet(readSet);
+            set.setAlert(socket);
     }
 
-    m_socketv4.setFdSet(readSet);
+    set.setAlert(m_socketv4);
     if (CVar::net_ipv6.getIntValue())
-        m_socketv6.setFdSet(readSet);
+        set.setAlert(m_socketv6);
 }
 
 void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, const Address &addr) {
@@ -126,22 +126,22 @@ bool NetServer::handleUdpMessageClients(SocketUDP &socket, UDPMessage &msg, cons
     return false;
 }
 
-bool NetServer::handleTCPEvent(fd_set &readSet) {
+bool NetServer::handleTCPEvent(const NetWaitSet &set) {
     if (!isRunning())
         return false;
 
-    if (m_socketv4.isFdSet(readSet)) {
+    if (set.isSignaled(m_socketv4)) {
         handleNewClient(m_socketv4);
         return true;
     }
 
-    if (CVar::net_ipv6.getIntValue() && m_socketv6.isFdSet(readSet)) {
+    if (CVar::net_ipv6.getIntValue() && set.isSignaled(m_socketv6)) {
         handleNewClient(m_socketv6);
         return true;
     }
 
     for (const auto &client : m_clients)
-        if (client->handleTCPEvents(readSet)) {
+        if (client->handleTCPEvents(set)) {
             if (client->isDisconnected()) {
                 NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, client.get());
                 m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),

@@ -21,6 +21,7 @@
 #include "GEngine/cvar/net.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net_socket_error.hpp"
+#include "GEngine/net/net_wait.hpp"
 
 #include "GEngine/cvar/net.hpp"
 
@@ -249,35 +250,21 @@ bool NET::isLanAddress(const Address &addr) {
 /**************************************************************/
 
 /* returns true if has event, false otherwise */
-bool NET::sleep(uint32_t ms) {
-    struct timeval timeout = {.tv_sec = static_cast<long>(ms / 1000u), .tv_usec = static_cast<int>((ms % 1000) * 1000)};
-    SOCKET highest = ASocket::getHighestSocket();
-
-    fd_set readSet;
-    createSets(readSet);
-
-    /* The usage of select : both on windows and unix systems */
-    int res = select(highest + 1, &readSet, nullptr, nullptr, &timeout);
-    if (res == -1)
-        throw SocketException(socketError);
-
-    else if (res == 0)
-        return false;
-
-    handleEvents(readSet);
-    return true;
+bool NET::sleep(uint32_t ms, NetWaitSet &set) {
+    return mg_wait.wait(ms, set);
 }
 
-void NET::createSets(fd_set &readSet) {
-    FD_ZERO(&readSet);
+void NET::createSets(NetWaitSet &set) {
+    // FD_ZERO(&readSet);
+    set.reset();
 
-    mg_server.createSets(readSet);
-    mg_client.createSets(readSet);
-    mg_eventManager.createSets(readSet);
+    mg_server.createSets(set);
+    mg_client.createSets(set);
+    mg_eventManager.createSets(set);
 
-    mg_socketUdp.setFdSet(readSet);
+    set.isSignaled(mg_socketUdp);
     if (CVar::net_ipv6.getIntValue())
-        mg_socketUdpV6.setFdSet(readSet);
+        set.isSignaled(mg_socketUdpV6);
 }
 
 bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr) {
@@ -287,11 +274,11 @@ bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr
     return mg_client.handleUDPEvents(socket, msg, addr);
 }
 
-bool NET::handleEvents(fd_set &readSet) {
-    if (mg_eventManager.handleEvent(readSet))
+bool NET::handleEvents(const NetWaitSet &set) {
+    if (mg_eventManager.handleEvent(set))
         return true;
 
-    if (mg_socketUdp.isFdSet(readSet)) {
+    if (set.isSignaled(mg_socketUdp)) {
         UDPMessage msg(0, 0);
         while (true) {
             AddressV4 addr(AT_IPV6, 0);
@@ -301,7 +288,7 @@ bool NET::handleEvents(fd_set &readSet) {
             handleUdpEvent(mg_socketUdp, msg, addr);
         }
     }
-    if (CVar::net_ipv6.getIntValue() && mg_socketUdpV6.isFdSet(readSet)) {
+    if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6)) {
         UDPMessage msg(0, 0);
         while (true) {
             AddressV6 addr(AT_IPV6, 0);
@@ -312,10 +299,10 @@ bool NET::handleEvents(fd_set &readSet) {
         }
     }
 
-    if (mg_server.handleTCPEvent(readSet))
+    if (mg_server.handleTCPEvent(set))
         return true;
 
-    return mg_client.handleTCPEvents(readSet);
+    return mg_client.handleTCPEvents(set);
 }
 
 /**************************************************************/

@@ -81,9 +81,9 @@ bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
     return false;
 }
 
-bool NetClient::handleTCPEvents(fd_set &readSet) {
+bool NetClient::handleTCPEvents(const NetWaitSet &set) {
     auto &socket = m_channel.getTcpSocket();
-    if (!socket.isFdSet(readSet))
+    if (!set.isSignaled(socket))
         return false;
 
     return handleClientStream();

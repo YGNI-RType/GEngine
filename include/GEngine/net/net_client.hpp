@@ -69,7 +69,7 @@ public:
         return m_channel.isDisconnected();
     }
 
-    bool handleTCPEvents(fd_set &readSet);
+    bool handleTCPEvents(const NetWaitSet &set);
     bool handleClientStream(void);
     bool handleClientDatagram(SocketUDP &socket, UDPMessage &msg);
 

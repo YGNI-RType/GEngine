@@ -10,12 +10,12 @@
 #include "GEngine/net/net.hpp"
 
 namespace Network::Event {
-void Manager::createSets(fd_set &readSet) {
-    m_socketEvent.setFdSet(readSet);
+void Manager::createSets(NetWaitSet &set) {
+    set.setAlert(m_socketEvent);
 }
 
-bool Manager::handleEvent(fd_set &readSet) {
-    if (!m_socketEvent.isFdSet(readSet))
+bool Manager::handleEvent(const NetWaitSet &set) {
+    if (!set.isSignaled(m_socketEvent))
         return false;
 
     size_t size;
