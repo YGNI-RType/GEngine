@@ -132,7 +132,7 @@ public:
     }
 
     uint64_t getLastACKPacketId(void) const {
-        return m_udpACKClientLastACK;
+        return m_udpACKFullInSequence;
     }
 
     const SocketTCP &getTcpSocket(void) const {
@@ -153,16 +153,17 @@ public:
     }
 
     void createUdpAddress(uint16_t udpport);
-    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset);
-    /* steam if proper to socket, taht's why msg in not const */
-    bool readStream(TCPMessage &msg);
 
 public:
-    bool sendDatagram(SocketUDP &socket, UDPMessage &msg);
+    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK);
+    bool readStream(TCPMessage &msg);
+
+    /* gameThreadACK => since the game thread is in another thread, the message isn't really ack inside the network part */
+    bool sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK);
     bool sendStream(const TCPMessage &msg);
 
 private:
-    bool sendDatagrams(SocketUDP &socket, uint32_t sequence,
+    bool sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t gameThreadACK,
                        const std::vector<const Network::PacketPoolUdp::chunk_t *> &vec);
 
 public:
