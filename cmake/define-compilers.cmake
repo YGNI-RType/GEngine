@@ -38,8 +38,6 @@ elseif (ARCHITECTURE STREQUAL "arm32")
     set(VCPKG_TARGET_ARCHITECTURE "arm")
 endif()
 
-message(STATUS "VCPKG_TARGET_ARCHITECTURE: ${VCPKG_TARGET_ARCHITECTURE} ARCHITECTURE: ${ARCHITECTURE}")
-
 # https://stackoverflow.com/questions/9160335/os-specific-instructions-in-cmake-how-to
 if(LINUX)
     if(ARCHITECTURE STREQUAL "x64")
@@ -86,3 +84,7 @@ elseif(APPLE)
 else()
     message(FATAL_ERROR "Unsupported OS: ${CMAKE_SYSTEM_NAME}")
 endif()
+
+set(VCPKG_TARGET_TRIPLET "${VCPKG_TRIPLET}")
+
+message(STATUS "VCPKG_TARGET_ARCHITECTURE: ${VCPKG_TARGET_ARCHITECTURE} ARCHITECTURE: ${ARCHITECTURE} Triplet : ${VCPKG_TRIPLET}")

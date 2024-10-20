@@ -15,5 +15,5 @@ set(CMAKE_GENERATOR_PLATFORM "Win32" CACHE STRING "CMake generator platform" FOR
 
 # Set the CMake find root path mode to only search in the specified directories
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

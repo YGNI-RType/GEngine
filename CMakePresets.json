@@ -55,6 +55,28 @@
       }
     },
     {
+      "name": "release_armv7",
+      "inherits": "release",
+      "architecture": {
+        "value": "armv7",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm32"
+      }
+    },
+    {
+      "name": "debug_armv7",
+      "inherits": "debug",
+      "architecture": {
+        "value": "armv7",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm32"
+      }
+    },
+    {
       "name": "debug_x86",
       "inherits": "default",
       "architecture": {
@@ -91,6 +113,16 @@
       "name": "debug_armv8",
       "inherits": "default",
       "configurePreset": "debug_armv8"
+    },
+    {
+      "name": "release_armv7",
+      "inherits": "default",
+      "configurePreset": "release_armv7"
+    },
+    {
+      "name": "debug_armv7",
+      "inherits": "default",
+      "configurePreset": "debug_armv7"
     },
     {
       "name": "debug_x86",
