@@ -7,15 +7,16 @@
 
 #pragma once
 
+#include "GEngine/libdev/Events.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
-#include "GEngine/libdev/Events.hpp"
 
 #include "events/Movement.hpp"
 #include "events/Shoot.hpp"
 
 namespace rtype::system {
-class InputsToGameEvents : public gengine::System<InputsToGameEvents, gengine::system::driver::output::KeyboardCatcher> {
+class InputsToGameEvents
+    : public gengine::System<InputsToGameEvents, gengine::system::driver::output::KeyboardCatcher> {
 public:
     void init(void) override;
     void sendEvents(geg::event::GameLoop &e);

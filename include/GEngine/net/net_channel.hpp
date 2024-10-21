@@ -158,7 +158,8 @@ public:
     bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK);
     bool readStream(TCPMessage &msg);
 
-    /* gameThreadACK => since the game thread is in another thread, the message isn't really ack inside the network part */
+    /* gameThreadACK => since the game thread is in another thread, the message isn't really ack inside the network part
+     */
     bool sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK);
     bool sendStream(const TCPMessage &msg);
 

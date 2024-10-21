@@ -44,7 +44,6 @@ void MouseCatcher::processMouseInput(int button, InputState state) {
 }
 } // namespace gengine::system::driver::input
 
-
 MouseButton &operator++(MouseButton &key) {
     key = key < MOUSE_BUTTON_MIDDLE ? static_cast<MouseButton>(static_cast<int>(key) + 1) : MOUSE_BUTTON_LEFT;
     return key;

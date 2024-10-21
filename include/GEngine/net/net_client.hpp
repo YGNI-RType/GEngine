@@ -103,7 +103,7 @@ private:
 
     /* todo : change based on average size */
     NetQueue<1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
-    NetQueue<32, 1400> m_packOutData;     /* voiceip etc.. */
+    NetQueue<32, 1400> m_packOutData;    /* voiceip etc.. */
     NetQueue<1, 17000> m_packOutDataAck; /* snapshot */
 
     // NetClientSnapshot m_snapshots[PACKET_BACKUP];

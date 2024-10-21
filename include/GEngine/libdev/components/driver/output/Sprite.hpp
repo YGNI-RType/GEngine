@@ -20,11 +20,10 @@
 #include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
 #include "GEngine/net/net_string.hpp"
 
-
 namespace gengine::component::driver::output {
 struct Sprite : public Component<Sprite> {
     Network::NetString<32> txtPath; // The texture of the sprite
-    Rect src;         // The portion of the texture to render (for sprite sheets/atlases)
+    Rect src;                       // The portion of the texture to render (for sprite sheets/atlases)
     Clr tint;
 
     Sprite(const std::string &txtPathstr, const Rect &src, const Clr &tint = RAYWHITE)

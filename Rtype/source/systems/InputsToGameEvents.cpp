@@ -7,7 +7,6 @@
 
 #include "systems/InputsToGameEvents.hpp"
 
-
 namespace rtype::system {
 void InputsToGameEvents::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);

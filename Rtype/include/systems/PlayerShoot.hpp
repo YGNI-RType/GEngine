@@ -9,9 +9,9 @@
 
 #include "GEngine/interface/components/RemoteDriver.hpp"
 
+#include "GEngine/libdev/Events.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
-#include "GEngine/libdev/Events.hpp"
 
 #include "GEngine/interface/events/RemoteDriver.hpp"
 #include "GEngine/interface/events/RemoteEvent.hpp"

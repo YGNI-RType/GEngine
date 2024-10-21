@@ -39,6 +39,7 @@ public:
     void setResultIndex(uint64_t res) {
         m_resIndex = res;
     }
+
 private:
     static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;
 
@@ -51,6 +52,7 @@ public:
     fd_set &getFdSet(void) {
         return m_readSet;
     }
+
 private:
     fd_set m_readSet;
 #endif
@@ -74,10 +76,11 @@ public:
     static SOCKET getHighestSocket(void) {
         return m_highFd;
     }
+
 private:
     static fd_set m_fdSet;
     static SOCKET m_highFd;
 #endif
 };
 
-} // namsepsace Network
+} // namespace Network
