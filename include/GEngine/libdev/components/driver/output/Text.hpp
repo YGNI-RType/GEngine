@@ -18,11 +18,12 @@
 
 #include "GEngine/libdev/Component.hpp"
 #include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
+#include "GEngine/net/net_string.hpp"
 
 namespace gengine::component::driver::output {
 struct Text : public Component<Text> {
-    std::array<char, 64> fontPath;
-    std::array<char, 64> str;
+    Network::NetString<64> fontPath;
+    Network::NetString<64> str;
     float fontSize;
     float spacing;
     Clr tint;
@@ -31,17 +32,12 @@ struct Text : public Component<Text> {
         : fontSize(10)
         , spacing(spacing)
         , tint(tint) {
-
-        size_t sz = std::min(this->fontPath.size() - 1, fontPath.size());
-        std::strncpy(this->fontPath.data(), fontPath.c_str(), sz);
-        this->fontPath[sz] = '\0';
-        std::strncpy(this->str.data(), str.c_str(), std::min(this->str.size() - 1, str.size()));
-        this->str[sz] = '\0';
+        this->fontPath = fontPath;
+        this->str = str;
     }
 
     bool operator==(const Text &other) const {
-        return std::strcmp(this->fontPath.data(), other.fontPath.data()) == 0 &&
-               std::strcmp(this->str.data(), other.str.data()) == 0 && this->fontSize == other.fontSize &&
+        return this->fontPath == other.fontPath && this->str == other.str && this->fontSize == other.fontSize &&
                this->spacing == other.spacing && this->tint == other.tint;
     }
 };

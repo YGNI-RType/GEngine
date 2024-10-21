@@ -19,6 +19,12 @@ include_directories(include)
 #     add_compile_options(-Wall -Wextra)
 # endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (MSVC)
+        add_compile_options(/D_ITERATOR_DEBUG_LEVEL=0)
+    endif()
+endif()
+
 add_library(GEngine SHARED ${SOURCES} ${HEADERS})
 add_library(GEngine_static STATIC ${SOURCES} ${HEADERS})
 
@@ -45,7 +51,7 @@ set_target_properties(GEngine_static PROPERTIES
 )
 
 find_package(raylib CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED) #TODO a suppr
+find_package(glfw3 CONFIG REQUIRED) #TODO a supp
 
 target_link_libraries(GEngine raylib glfw) #TODO suppr glfw
 target_link_libraries(GEngine_static raylib glfw) #TODO suppr glfw

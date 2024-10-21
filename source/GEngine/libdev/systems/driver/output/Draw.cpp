@@ -61,7 +61,7 @@ void DrawSprite::onDraw(gengine::system::event::Draw &e) {
         auto &[path, src, tint] = sprites.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
         Rectangle r = {pos.x, pos.y, src.width * scale.x, src.height * scale.y};
-        DrawTexturePro(txtMan.get(path), src, r, {0, 0}, rotation, tint); // TODO origin
+        DrawTexturePro(txtMan.get(path.c_str()), src, r, {0, 0}, rotation, tint); // TODO origin
     }
 }
 
@@ -77,8 +77,7 @@ void DrawText::onDraw(gengine::system::event::Draw &e) {
     if (texts.contains(e.entity) && transforms.contains(e.entity)) {
         auto &[path, str, fontSize, spacing, tint] = texts.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
-        std::string p(path.data());
-        DrawTextPro(fontMan.get(p), str.data(), Vector2{pos.x, pos.y}, {0, 0}, rotation, fontSize * scale.y,
+        DrawTextPro(fontMan.get(path.c_str()), str.c_str(), Vector2{pos.x, pos.y}, {0, 0}, rotation, fontSize * scale.y,
                     spacing, tint); // TODO origin
     }
 }

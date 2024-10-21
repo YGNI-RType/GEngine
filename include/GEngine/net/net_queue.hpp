@@ -41,34 +41,16 @@ public:
     bool push(const UDPMessage &msg, size_t readcount) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        if (msg.getSize() > MAX_PACKET_SIZE)
-            return false;
-
-        auto it = m_msgs.find(msg.getType());
-        if (it == m_msgs.end())
-            m_msgs[msg.getType()] = std::queue<Segment>();
-
-        auto &q = m_msgs[msg.getType()];
-        auto idSegment = getFreeSegment();
-        if (idSegment == -1)
-            return false;
-
-        Segment segment = {idSegment, msg.getFlags(), msg.getSize(), readcount};
-        deconstructMessage(msg, segment);
-        q.push(segment);
-        m_nbUsed++;
-
-        m_socketEvent.signal();
-        return true;
+        return pushUnsafe(msg, readcount);
     }
 
     /* This is called when we know it's full, removes the front, same segment */
-    bool fullpush(UDPMessage &msg, size_t readcount) {
+    bool fullpush(const UDPMessage &msg, size_t readcount) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         auto it = m_msgs.find(msg.getType());
-        if (it == m_msgs.end())
-            return false;
+        if (it == m_msgs.end() || !full())
+            return pushUnsafe(msg, readcount);
 
         auto &[_, queueSegment] = *it;
 
@@ -78,7 +60,8 @@ public:
         segment.msgSize = msg.getSize();
 
         queueSegment.pop();
-        constructMessage(segment.id);
+        m_popped++;
+        deconstructMessage(msg, segment);
         queueSegment.push(segment);
 
         m_socketEvent.signal();
@@ -102,6 +85,7 @@ public:
         constructMessage(msg, segment, readCount);
         m_isUsed[segment.id] = false;
         m_nbUsed--;
+        m_popped++;
 
         return true;
     }
@@ -119,6 +103,7 @@ public:
             msg.setType(type);
             m_isUsed[segment.id] = false;
             m_nbUsed--;
+            m_popped++;
 
             return true;
         }
@@ -138,13 +123,49 @@ public:
         return m_nbUsed;
     }
 
+    size_t getNbPopped(void) const {
+        return m_popped;
+    }
+
     size_t size(uint8_t type) const {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         return m_msgs.find(type) == m_msgs.end() ? 0 : m_msgs.at(type).size();
     }
 
+    void clear(void) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        m_msgs.clear();
+        m_nbUsed = 0;
+        m_popped = 0;
+        m_isUsed = {0};
+    }
+
 private:
+    bool pushUnsafe(const UDPMessage &msg, size_t readcount) {
+        if (msg.getSize() > MAX_PACKET_SIZE)
+            return false;
+
+        auto it = m_msgs.find(msg.getType());
+        if (it == m_msgs.end())
+            m_msgs[msg.getType()] = std::queue<Segment>();
+
+        auto &q = m_msgs[msg.getType()];
+        auto idSegment = getFreeSegment();
+        if (idSegment == -1)
+            return false;
+
+        Segment segment = {idSegment, msg.getFlags(), msg.getSize(), readcount};
+        deconstructMessage(msg, segment);
+        q.push(segment);
+        m_nbUsed++;
+
+        m_socketEvent.signal();
+        return true;
+    }
+
+
     void constructMessage(UDPMessage &msg, const Segment &segment, size_t &readCount) const {
         auto data = static_cast<const void *>(m_data.data() + segment.id * MAX_PACKET_SIZE);
 
@@ -179,6 +200,7 @@ private:
     std::array<bool, NB_PACKETS> m_isUsed = {0};
     std::atomic_size_t m_nbUsed = 0;
     std::unordered_map<uint8_t, std::queue<Segment>> m_msgs;
+    std::atomic_size_t m_popped = 0;
 
     mutable std::mutex m_mutex;
     Event::SocketEvent &m_socketEvent;

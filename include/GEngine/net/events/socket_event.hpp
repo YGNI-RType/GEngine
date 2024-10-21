@@ -37,9 +37,10 @@ public:
 
 #ifdef HAS_NOT_EVENTFD
 private:
+#ifdef NET_USE_HANDLE
+    HANDLE m_writeHandle = INVALID_HANDLE_VALUE;
+#else
     SOCKET m_sockConnect = -1;
-#ifdef _WIN32
-    std::atomic_bool m_hasRead = true;
 #endif
 #endif
 };

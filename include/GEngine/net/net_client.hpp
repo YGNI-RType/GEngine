@@ -10,6 +10,7 @@
 #include "events/socket_event.hpp"
 #include "net_channel.hpp"
 #include "net_queue.hpp"
+#include "net_wait.hpp"
 
 #include <memory>
 #include <string>
@@ -69,7 +70,7 @@ public:
         return m_channel.isDisconnected();
     }
 
-    bool handleTCPEvents(fd_set &readSet);
+    bool handleTCPEvents(const NetWaitSet &set);
     bool handleClientStream(void);
     bool handleClientDatagram(SocketUDP &socket, UDPMessage &msg);
 
@@ -101,9 +102,9 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<16, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
+    NetQueue<1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
     NetQueue<32, 1400> m_packOutData;     /* voiceip etc.. */
-    NetQueue<24, 10000> m_packOutDataAck; /* snapshot */
+    NetQueue<1, 17000> m_packOutDataAck; /* snapshot */
 
     // NetClientSnapshot m_snapshots[PACKET_BACKUP];
 

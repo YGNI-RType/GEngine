@@ -61,7 +61,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
 
     for (auto &[remote, client] : clientsSys.getClients()) {
-        if (client.shouldDelete())
+        if (client.shouldDelete() || !client.isReady())
             continue;
         auto it = m_clientSnapshots.find(remote);
         if (it == m_clientSnapshots.end())

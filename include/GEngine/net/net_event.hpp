@@ -8,6 +8,7 @@
 #pragma once
 
 #include "events/socket_event.hpp"
+#include "net_wait.hpp"
 
 #include <any>
 #include <functional>
@@ -54,8 +55,8 @@ public:
         m_socketEvent.signal();
     }
 
-    void createSets(fd_set &readSet);
-    bool handleEvent(fd_set &readSet);
+    void createSets(NetWaitSet &set);
+    bool handleEvent(const NetWaitSet &set);
 
     void storeEvent(std::unique_ptr<InfoHeader> info);
     void sendPackets(void);

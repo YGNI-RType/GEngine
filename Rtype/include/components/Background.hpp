@@ -9,7 +9,7 @@
 
 #include "GEngine/libdev/Component.hpp"
 
-#define DEFAULT_BACKGROUND_SPEED -100 // Speed multiplicator (default = -100)
+#define DEFAULT_BACKGROUND_SPEED 3
 
 namespace rtype::component {
 struct Background : public gengine::Component<Background> {
