@@ -52,8 +52,10 @@ ASocket &ASocket::operator=(ASocket &&other) {
     if (this != &other) {
         m_sock = other.m_sock;
         other.m_sock = -1;
+#ifdef NET_USE_HANDLE
         m_handle = other.m_handle;
         other.m_handle = INVALID_HANDLE_VALUE;
+#endif
     }
     return *this;
 }

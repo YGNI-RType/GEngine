@@ -110,9 +110,11 @@ void NetWait::addSocketPool(ASocket &socket) {
 #ifdef NET_USE_HANDLE
     socket.createHandle();
 #else
-    FD_SET(socket, &m_fdSet);
-    if (socket > m_highFd)
-        m_highFd = socket;
+    auto sock = socket.getSocket();
+
+    FD_SET(sock, &m_fdSet);
+    if (sock > m_highFd)
+        m_highFd = sock;
 #endif
 }
 
@@ -120,9 +122,10 @@ void NetWait::removeSocketPool(const ASocket &socket) {
 #ifdef NET_USE_HANDLE
     CloseHandle(socket.getHandle());
 #else
-    if (socket != m_highFd)
+    auto sock = socket.getSocket();
+    if (sock != m_highFd)
         return;
-    
+
     while (!FD_ISSET(m_highFd, &m_fdSet))
         (m_highFd)--;
 #endif
