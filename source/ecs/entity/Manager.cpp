@@ -9,20 +9,10 @@
 
 using namespace ecs;
 
-entity::Manager::Manager()
-    : m_size(0) {
+entity::Manager::Manager(uint64_t firstEntity)
+    : m_size(firstEntity) {
 }
 
-entity::Entity entity::Manager::createEntity() {
-    entity::Entity entity;
-    if (!m_available.empty()) {
-        entity = m_available.front();
-        m_available.pop();
-    } else
-        entity = m_size++;
-    return entity;
-}
-
-void entity::Manager::destroyEntity(entity::Entity dead) {
-    m_available.push(dead);
+entity::Entity entity::Manager::createEntity(void) {
+    return ++m_size;
 }

@@ -15,7 +15,6 @@ ECS::ECS()
 
 void ECS::killEntity(entity::Entity entity) {
     unsetComponents(entity);
-    destroyEntity(entity);
 }
 
 template <typename T>

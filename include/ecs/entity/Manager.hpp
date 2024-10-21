@@ -7,50 +7,40 @@
 
 #pragma once
 
+#include <cstdint>
 #include <queue>
 
 #include "ecs/entity/Entity.hpp"
 
 namespace ecs::entity {
 /**
- * @brief Manages the creation and destruction of entities in the ECS system.
+ * @brief Manages the creation of entities in the ECS system.
  *
- * The Manager class handles the lifecycle of entities, allowing for the creation of new entities
- * and the recycling of destroyed entities for efficient memory management.
+ * The Manager class handles the lifecycle of entities, allowing for the creation of new entities.
  */
 class Manager {
 public:
     /**
      * @brief Constructs an Entity Manager.
      *
-     * Initializes the manager for handling entity creation and destruction.
+     * Initializes the manager for handling entity creation.
+     *
+     * @param Entity The entity at which the counter will start. Useful if the same ECS is used in two diferent
+     * instances to avoid entity conflicts (ex: network).
      */
-    Manager();
+    Manager(Entity firstEntity = 0);
 
     /**
      * @brief Creates a new entity.
      *
-     * If there are any previously destroyed entities, they are reused; otherwise, a new entity
-     * identifier is generated.
+     * Increment a counter, unstable if the counter overflow (which would take millions of years).
      *
      * @return The newly created entity.
      */
-    Entity createEntity();
-
-    /**
-     * @brief Destroys an entity.
-     *
-     * Marks an entity as destroyed, making its identifier available for reuse.
-     *
-     * @param dead The entity to be destroyed.
-     */
-    void destroyEntity(Entity dead);
+    Entity createEntity(void);
 
 private:
     /// The current size of the entity pool, used to generate new entity IDs.
-    std::size_t m_size;
-
-    /// A queue of available (recycled) entity IDs.
-    std::queue<Entity> m_available;
+    Entity m_size;
 };
 } // namespace ecs::entity

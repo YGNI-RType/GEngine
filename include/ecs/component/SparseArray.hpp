@@ -9,6 +9,7 @@
 
 #include <any>
 #include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 #include "ecs/entity/Entity.hpp"
@@ -48,13 +49,6 @@ public:
      * @brief Default destructor.
      */
     ~SparseArray() = default;
-
-    /**
-     * @brief Reserves space for components associated with entities up to a given capacity.
-     *
-     * @param capacity The number of entities for which to reserve space.
-     */
-    void reserve(entity::Entity capacity);
 
     /**
      * @brief Inserts a component for a given entity.
@@ -120,13 +114,6 @@ public:
     std::size_t size() const;
 
     /**
-     * @brief Returns the current reserved capacity of the sparse array.
-     *
-     * @return The reserved capacity for storing components.
-     */
-    std::size_t reserved() const;
-
-    /**
      * @brief Type definition for an iterator over the dense array of entity-component pairs.
      */
     using dense_iterator = typename std::vector<std::pair<entity::Entity, Component>>::iterator;
@@ -166,18 +153,11 @@ public:
 
 private:
     /**
-     * @brief A constant representing an invalid index.
-     *
-     * Used to indicate that an entity does not have an associated component.
-     */
-    static constexpr std::size_t invalid_index = std::size_t(-1);
-
-    /**
      * @brief Sparse array for fast lookups by entity.
      *
      * Maps entity IDs to indices in the dense array.
      */
-    std::vector<entity::Entity> m_sparse;
+    std::unordered_map<entity::Entity, uint64_t> m_sparse;
 
     /**
      * @brief Dense array for storing entity-component pairs.
