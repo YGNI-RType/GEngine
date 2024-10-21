@@ -27,7 +27,7 @@ void UpdateScoreText::onGameLoop(gengine::system::event::GameLoop &e) {
     auto &texts = getComponents<gengine::component::driver::output::Text>();
 
     for (auto [entity, scoreText, text] : gengine::Zip(scoreTexts, texts))
-        std::strncpy(text.str.data(), (std::string("Score: ") + std::to_string(totalScore).c_str()).c_str(), 64);
+        text.str = std::string("Score: ") + std::to_string(totalScore).c_str();
     // text.str = "Score: " + std::to_string(totalScore);
 }
 } // namespace rtype::system

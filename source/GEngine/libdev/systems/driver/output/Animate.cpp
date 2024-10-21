@@ -22,7 +22,7 @@ void Animate::onGameLoop(gengine::system::event::GameLoop &e) {
         if (anim.currentTime < anim.frameDuration)
             continue;
         anim.currentTime -= anim.frameDuration; // while ?
-        auto &track = animMan.getAnimationTrack(anim.trackName);
+        auto &track = animMan.getAnimationTrack(anim.trackName.c_str());
         int currentframe = track.frames[anim.currentFrameIndex];
         switch (anim.getPlaybackMode()) {
         case ATrack::PlaybackMode::Forward:

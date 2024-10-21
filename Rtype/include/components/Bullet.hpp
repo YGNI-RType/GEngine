@@ -7,19 +7,19 @@
 
 #pragma once
 
-#include "GEngine/libdev/Component.hpp"
-
 #include <cstring>
+
+#include "GEngine/libdev/Component.hpp"
+#include "GEngine/net/net_string.hpp"
 
 namespace rtype::component {
 struct Bullet : public gengine::Component<Bullet> {
     Bullet(std::string fromString, bool isBeam = false)
-        : isBeam(isBeam) {
-        std::strncpy(from, fromString.c_str(), 36);
-        from[36] = '\0';
+        : from(fromString)
+        , isBeam(isBeam) {
     }
 
-    char from[37];
+    Network::NetString<37> from;
     bool isBeam = false;
 };
 } // namespace rtype::component

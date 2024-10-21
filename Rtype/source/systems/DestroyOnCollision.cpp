@@ -46,7 +46,7 @@ void DestroyOnCollision::destroyMonster(gengine::system::event::Collsion &e) {
                                 gengine::component::driver::output::Animation("r-typesheet44.json/small", 0.06f),
                                 gengine::component::SpanLife(0.42));
 
-                claimScore(entity_monster, reinterpret_cast<const char *>(bullet.from));
+                claimScore(entity_monster, bullet.from.c_str());
                 killEntity(entity_monster);
                 if (!bullet.isBeam)
                     killEntity(entity_bullet);
