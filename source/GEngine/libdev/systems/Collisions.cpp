@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/libdev/systems/Collisions.hpp"
+#include "GEngine/libdev/systems/events/Collision.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -71,22 +72,22 @@ void Collision2D::onGameLoop(event::GameLoop &e [[maybe_unused]]) {
                 const auto &square1 = hitboxSquares.get(entity1);
                 const auto &square2 = hitboxSquares.get(entity2);
                 if (checkSquareCollision(square1, tr, square2, tr2.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasCircle && entity2HasCircle) {
                 const auto &circle1 = hitboxCircles.get(entity1);
                 const auto &circle2 = hitboxCircles.get(entity2);
                 if (checkCircleCollision(circle1, tr, circle2, tr2.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasSquare && entity2HasCircle) {
                 const auto &square = hitboxSquares.get(entity1);
                 const auto &circle = hitboxCircles.get(entity2);
                 if (checkSquareCircleCollision(square, tr, circle, tr2))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasCircle && entity2HasSquare) {
                 const auto &circle = hitboxCircles.get(entity1);
                 const auto &square = hitboxSquares.get(entity2);
                 if (checkSquareCircleCollision(square, tr2, circle, tr))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             }
         }
     }
@@ -153,22 +154,22 @@ void Collision3D::onGameLoop(event::GameLoop &e [[maybe_unused]]) {
                 const auto &cube1 = hitboxCubes.get(entity1);
                 const auto &cube2 = hitboxCubes.get(entity2);
                 if (checkCubeCollision(cube1, tr1.pos, cube2, tr2.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasSphere && entity2HasSphere) {
                 const auto &sphere1 = hitboxSpheres.get(entity1);
                 const auto &sphere2 = hitboxSpheres.get(entity2);
                 if (checkSphereCollision(sphere1, tr1.pos, sphere2, tr2.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasCube && entity2HasSphere) {
                 const auto &cube = hitboxCubes.get(entity1);
                 const auto &sphere = hitboxSpheres.get(entity2);
                 if (checkCubeSphereCollision(cube, tr1.pos, sphere, tr2.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasSphere && entity2HasCube) {
                 const auto &sphere = hitboxSpheres.get(entity1);
                 const auto &cube = hitboxCubes.get(entity2);
                 if (checkCubeSphereCollision(cube, tr2.pos, sphere, tr1.pos))
-                    publishEvent(gengine::system::event::Collsion(entity1, entity2));
+                    publishEvent(gengine::system::event::Collision(entity1, entity2));
             }
         }
     }

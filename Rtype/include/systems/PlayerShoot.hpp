@@ -8,16 +8,14 @@
 #pragma once
 
 #include "GEngine/interface/components/RemoteDriver.hpp"
-#include "GEngine/libdev/components/HitBoxs.hpp"
-#include "GEngine/libdev/components/Transforms.hpp"
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/driver/output/SoundManager.hpp"
-#include "GEngine/libdev/systems/events/GameLoop.hpp"
+#include "GEngine/libdev/Systems.hpp"
+#include "GEngine/libdev/Events.hpp"
 
 #include "GEngine/interface/events/RemoteDriver.hpp"
 #include "GEngine/interface/events/RemoteEvent.hpp"
-#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
+
 #include "events/Shoot.hpp"
 
 namespace rtype::system {
@@ -29,7 +27,7 @@ public:
     void newShooter(gengine::interface::event::NewRemoteDriver &e);
     void deleteShooter(gengine::interface::event::DeleteRemoteDriver &e);
     void shoot(gengine::interface::network::event::RemoteEvent<event::Shoot> &);
-    void bulletSound(gengine::system::driver::input::KeySpaceEvent &e);
+    void bulletSound(geg::event::io::KeySpaceEvent &e);
 
 private:
     void shootBullet(const gengine::interface::component::RemoteDriver &from);

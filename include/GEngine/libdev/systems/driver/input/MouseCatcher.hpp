@@ -31,10 +31,7 @@ private:
     void processMouseInput(int key, InputState state);
 };
 
-MouseButton &operator++(MouseButton &key) {
-    key = key < MOUSE_BUTTON_MIDDLE ? static_cast<MouseButton>(static_cast<int>(key) + 1) : MOUSE_BUTTON_LEFT;
-    return key;
-}
+MouseButton &operator++(MouseButton &key);
 
 using MouseLeftEvent = gengine::system::event::driver::input::Mouse_Left;
 using MouseRightEvent = gengine::system::event::driver::input::Mouse_Right;

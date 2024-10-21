@@ -56,6 +56,9 @@ find_package(glfw3 CONFIG REQUIRED) #TODO a supp
 target_link_libraries(GEngine raylib glfw) #TODO suppr glfw
 target_link_libraries(GEngine_static raylib glfw) #TODO suppr glfw
 
+target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)
+target_compile_definitions(GEngine_static PRIVATE GENGINE_BUILD)
+
 install(TARGETS GEngine GEngine_static
         EXPORT GEngine_targets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"

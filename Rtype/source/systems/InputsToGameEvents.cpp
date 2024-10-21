@@ -7,14 +7,15 @@
 
 #include "systems/InputsToGameEvents.hpp"
 
+
 namespace rtype::system {
 void InputsToGameEvents::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);
-    subscribeToEvent<gengine::system::driver::input::KeyUpEvent>(&InputsToGameEvents::moveUp);
-    subscribeToEvent<gengine::system::driver::input::KeyLeftEvent>(&InputsToGameEvents::moveLeft);
-    subscribeToEvent<gengine::system::driver::input::KeyDownEvent>(&InputsToGameEvents::moveDown);
-    subscribeToEvent<gengine::system::driver::input::KeyRightEvent>(&InputsToGameEvents::moveRight);
-    subscribeToEvent<gengine::system::driver::input::KeySpaceEvent>(&InputsToGameEvents::shoot);
+    subscribeToEvent<geg::event::io::KeyUpEvent>(&InputsToGameEvents::moveUp);
+    subscribeToEvent<geg::event::io::KeyLeftEvent>(&InputsToGameEvents::moveLeft);
+    subscribeToEvent<geg::event::io::KeyDownEvent>(&InputsToGameEvents::moveDown);
+    subscribeToEvent<geg::event::io::KeyRightEvent>(&InputsToGameEvents::moveRight);
+    subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::shoot);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
@@ -22,48 +23,48 @@ void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
     publishEvent<event::Shoot>(m_shootState);
 }
 
-void InputsToGameEvents::moveUp(gengine::system::driver::input::KeyUpEvent &e) {
+void InputsToGameEvents::moveUp(geg::event::io::KeyUpEvent &e) {
     switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
+    case geg::event::io::InputState::PRESSED:
         updateDirectionBitmask(event::Movement::UP, true);
         break;
-    case gengine::system::driver::input::InputState::RELEASE:
+    case geg::event::io::InputState::RELEASE:
         updateDirectionBitmask(event::Movement::UP, false);
         break;
     default:
         break;
     }
 }
-void InputsToGameEvents::moveLeft(gengine::system::driver::input::KeyLeftEvent &e) {
+void InputsToGameEvents::moveLeft(geg::event::io::KeyLeftEvent &e) {
     switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
+    case geg::event::io::InputState::PRESSED:
         updateDirectionBitmask(event::Movement::LEFT, true);
         break;
-    case gengine::system::driver::input::InputState::RELEASE:
+    case geg::event::io::InputState::RELEASE:
         updateDirectionBitmask(event::Movement::LEFT, false);
         break;
     default:
         break;
     }
 }
-void InputsToGameEvents::moveDown(gengine::system::driver::input::KeyDownEvent &e) {
+void InputsToGameEvents::moveDown(geg::event::io::KeyDownEvent &e) {
     switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
+    case geg::event::io::InputState::PRESSED:
         updateDirectionBitmask(event::Movement::DOWN, true);
         break;
-    case gengine::system::driver::input::InputState::RELEASE:
+    case geg::event::io::InputState::RELEASE:
         updateDirectionBitmask(event::Movement::DOWN, false);
         break;
     default:
         break;
     }
 }
-void InputsToGameEvents::moveRight(gengine::system::driver::input::KeyRightEvent &e) {
+void InputsToGameEvents::moveRight(geg::event::io::KeyRightEvent &e) {
     switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
+    case geg::event::io::InputState::PRESSED:
         updateDirectionBitmask(event::Movement::RIGHT, true);
         break;
-    case gengine::system::driver::input::InputState::RELEASE:
+    case geg::event::io::InputState::RELEASE:
         updateDirectionBitmask(event::Movement::RIGHT, false);
         break;
     default:
@@ -71,12 +72,12 @@ void InputsToGameEvents::moveRight(gengine::system::driver::input::KeyRightEvent
     }
 }
 
-void InputsToGameEvents::shoot(gengine::system::driver::input::KeySpaceEvent &e) {
+void InputsToGameEvents::shoot(geg::event::io::KeySpaceEvent &e) {
     switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
+    case geg::event::io::InputState::PRESSED:
         m_shootState = event::Shoot::CHARGING;
         break;
-    case gengine::system::driver::input::InputState::RELEASE:
+    case geg::event::io::InputState::RELEASE:
         m_shootState = event::Shoot::REST;
         break;
     default:

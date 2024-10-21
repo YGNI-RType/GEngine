@@ -8,24 +8,24 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
-#include "GEngine/libdev/systems/events/GameLoop.hpp"
+#include "GEngine/libdev/Systems.hpp"
+#include "GEngine/libdev/Events.hpp"
 
 #include "events/Movement.hpp"
 #include "events/Shoot.hpp"
 
 namespace rtype::system {
-class InputsToGameEvents : public gengine::System<InputsToGameEvents, gengine::system::driver::input::KeyboardCatcher> {
+class InputsToGameEvents : public gengine::System<InputsToGameEvents, gengine::system::driver::output::KeyboardCatcher> {
 public:
     void init(void) override;
-    void sendEvents(gengine::system::event::GameLoop &e);
+    void sendEvents(geg::event::GameLoop &e);
 
-    void moveUp(gengine::system::driver::input::KeyUpEvent &e);
-    void moveLeft(gengine::system::driver::input::KeyLeftEvent &e);
-    void moveDown(gengine::system::driver::input::KeyDownEvent &e);
-    void moveRight(gengine::system::driver::input::KeyRightEvent &e);
+    void moveUp(geg::event::io::KeyUpEvent &e);
+    void moveLeft(geg::event::io::KeyLeftEvent &e);
+    void moveDown(geg::event::io::KeyDownEvent &e);
+    void moveRight(geg::event::io::KeyRightEvent &e);
 
-    void shoot(gengine::system::driver::input::KeySpaceEvent &e);
+    void shoot(geg::event::io::KeySpaceEvent &e);
 
 private:
     event::Shoot::State m_shootState;

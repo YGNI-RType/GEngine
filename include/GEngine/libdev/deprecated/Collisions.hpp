@@ -11,7 +11,7 @@
 #include "GEngine/libdev/components/HitBoxs.hpp"
 #include "GEngine/libdev/components/Positions.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
-#include "GEngine/libdev/systems/events/game/Collision.hpp"
+#include "GEngine/libdev/systems/events/Collision.hpp"
 
 namespace gengine::system {
 class Collision2D : public System<Collision2D, component::Position2D, component::HitBoxSquare2D,
