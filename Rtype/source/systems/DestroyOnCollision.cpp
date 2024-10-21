@@ -13,6 +13,12 @@
 #include "GEngine/libdev/components/driver/output/Animation.hpp"
 #include "GEngine/libdev/components/driver/output/Drawable.hpp"
 #include "GEngine/libdev/components/driver/output/Sprite.hpp"
+#include <cstring>
+
+#include "GEngine/libdev/components/SpanLife.hpp"
+#include "GEngine/libdev/components/driver/output/Animation.hpp"
+#include "GEngine/libdev/components/driver/output/Drawable.hpp"
+#include "GEngine/libdev/components/driver/output/Sprite.hpp"
 
 namespace rtype::system {
 void DestroyOnCollision::init(void) {

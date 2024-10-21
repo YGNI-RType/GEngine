@@ -9,15 +9,9 @@
 #include "Manager.hpp"
 
 namespace ecs::component {
-// template <class Component>
-// void SparseArray<Component>::reserve(entity::Entity capacity) {
-//     m_sparse.resize(capacity, invalid_index);
-// }
 
 template <class Component>
 void SparseArray<Component>::insert(entity::Entity entity, const Component &component) {
-    // if (entity >= m_sparse.size())
-    //     reserve(entity + 1);
     auto it = m_sparse.find(entity);
     if (it == m_sparse.end()) {
         m_sparse[entity] = m_dense.size();
@@ -47,7 +41,6 @@ void component::SparseArray<Component>::erase(entity::Entity entity) {
     }
     m_dense.pop_back();
     m_sparse.erase(entity);
-    // m_sparse[entity] = invalid_index;
 }
 
 template <class Component>

@@ -9,10 +9,13 @@
 
 using namespace ecs;
 
-entity::Manager::Manager(uint64_t firstEntity)
-    : m_size(firstEntity) {
+entity::Manager::Manager() {
 }
 
 entity::Entity entity::Manager::createEntity(void) {
     return ++m_size;
+}
+
+void entity::Manager::firstEntity(entity::Entity firstEntity) {
+    m_size = firstEntity;
 }

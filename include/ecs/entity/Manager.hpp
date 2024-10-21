@@ -25,10 +25,8 @@ public:
      *
      * Initializes the manager for handling entity creation.
      *
-     * @param Entity The entity at which the counter will start. Useful if the same ECS is used in two diferent
-     * instances to avoid entity conflicts (ex: network).
      */
-    Manager(Entity firstEntity = 0);
+    Manager();
 
     /**
      * @brief Creates a new entity.
@@ -39,8 +37,17 @@ public:
      */
     Entity createEntity(void);
 
+    /**
+     * @brief Set the counter to a custom start.
+     *
+     * Useful if the same ECS is used in two diferent instances to avoid entity conflicts (ex: network).
+     *
+     * @param Entity The entity at which the counter will start.
+     */
+    void firstEntity(Entity firstEntity);
+
 private:
     /// The current size of the entity pool, used to generate new entity IDs.
-    Entity m_size;
+    Entity m_size = 0;
 };
 } // namespace ecs::entity

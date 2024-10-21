@@ -13,6 +13,10 @@ ECS::ECS()
     : system::Manager(*this) {
 }
 
+void ECS::setFirstEntity(entity::Entity start) {
+    firstEntity(start);
+}
+
 void ECS::killEntity(entity::Entity entity) {
     unsetComponents(entity);
 }

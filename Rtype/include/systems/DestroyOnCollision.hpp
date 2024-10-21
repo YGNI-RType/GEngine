@@ -15,6 +15,7 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
 
+#include "GEngine/libdev/components/Transforms.hpp"
 #include "components/Bullet.hpp"
 #include "components/Life.hpp"
 #include "components/Monster.hpp"
