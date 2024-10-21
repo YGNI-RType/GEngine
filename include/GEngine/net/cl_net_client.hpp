@@ -101,9 +101,9 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<24, 160> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
-    NetQueue<32, 1400> m_packInData;    /* voiceip etc.. */
-    NetQueue<20, 17000> m_packInDataAck; /* snapshot */
+    NetQueue<UDPMessage, 24, 160> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
+    NetQueue<UDPMessage, 20, 17000> m_packInDataAck; /* snapshot */
 
     SocketUDP &m_socketUdp;
     AddressType m_addrType;

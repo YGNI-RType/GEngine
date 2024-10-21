@@ -17,7 +17,7 @@
 #include <unordered_map>
 
 namespace Network {
-template <size_t NB_PACKETS, size_t MAX_PACKET_SIZE>
+template <typename MSGTYPE, size_t NB_PACKETS, size_t MAX_PACKET_SIZE>
 class NetQueue {
 private:
     struct Segment {
@@ -38,14 +38,14 @@ public:
     NetQueue(NetQueue &&) = delete;
     NetQueue &operator=(NetQueue &&) = delete;
 
-    bool push(const UDPMessage &msg, size_t readcount) {
+    bool push(const MSGTYPE &msg, size_t readcount) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         return pushUnsafe(msg, readcount);
     }
 
     /* This is called when we know it's full, removes the front, same segment */
-    bool fullpush(const UDPMessage &msg, size_t readcount) {
+    bool fullpush(const MSGTYPE &msg, size_t readcount) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         auto it = m_msgs.find(msg.getType());
@@ -68,8 +68,8 @@ public:
         return true;
     }
 
-    /* UDPMessage(false, <type you chose here> )*/
-    bool pop(UDPMessage &msg, size_t &readCount, uint8_t type) {
+    /* MSGTYPE(false, <type you chose here> )*/
+    bool pop(MSGTYPE &msg, size_t &readCount, uint8_t type) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         auto it = m_msgs.find(type);
@@ -90,7 +90,7 @@ public:
         return true;
     }
 
-    bool pop(UDPMessage &msg, size_t &readCount) {
+    bool pop(MSGTYPE &msg, size_t &readCount) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         for (auto &[type, queueSegment] : m_msgs) {
@@ -143,7 +143,7 @@ public:
     }
 
 private:
-    bool pushUnsafe(const UDPMessage &msg, size_t readcount) {
+    bool pushUnsafe(const MSGTYPE &msg, size_t readcount) {
         if (msg.getSize() > MAX_PACKET_SIZE)
             return false;
 
@@ -166,7 +166,7 @@ private:
     }
 
 
-    void constructMessage(UDPMessage &msg, const Segment &segment, size_t &readCount) const {
+    void constructMessage(MSGTYPE &msg, const Segment &segment, size_t &readCount) const {
         auto data = static_cast<const void *>(m_data.data() + segment.id * MAX_PACKET_SIZE);
 
         msg.setFlag(segment.flag);
@@ -174,7 +174,7 @@ private:
         readCount = segment.readCount;
     }
 
-    void deconstructMessage(const UDPMessage &msg, Segment &segment) {
+    void deconstructMessage(const MSGTYPE &msg, Segment &segment) {
         auto data = m_data.data() + segment.id * MAX_PACKET_SIZE;
 
         segment.flag = msg.getFlags();

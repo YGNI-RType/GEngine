@@ -20,7 +20,9 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_socketUdp(socketudp)
     , m_packOutData(socketEvent)
     , m_packOutDataAck(socketEvent)
-    , m_packInData(socketEvent) {
+    , m_packInData(socketEvent)
+    , m_tcpIn(socketEvent)
+    , m_tcpOut(socketEvent) {
 }
 
 void NetClient::sendStream(const TCPMessage &msg) {
