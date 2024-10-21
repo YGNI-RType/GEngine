@@ -47,15 +47,10 @@ SocketEvent::SocketEvent() {
 #else
     SECURITY_ATTRIBUTES saAttr;
 
-    // Set the bInheritHandle flag so pipe handles are inherited
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
-    // if (!CreatePipe(&m_handle, &m_writeHandle, &saAttr, 0))
-    //     throw std::runtime_error("Failed to create pipe");
-
-    // m_sock = 666; //socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     m_handle = CreateEvent(NULL, FALSE, FALSE, "net_event_wake");
 #endif
 }
@@ -103,12 +98,10 @@ SocketEvent &SocketEvent::operator=(SocketEvent &&other) {
 
 void SocketEvent::signal() {
 #ifdef HAS_NOT_EVENTFD
-    char buf[1] = {0};
 #ifdef NET_USE_HANDLE
-    DWORD dwWrite;
-    // WriteFile(m_writeHandle, buf, sizeof(buf), &dwWrite, NULL);
     SetEvent(m_handle);
 #else
+    char buf[1] = {0};
     write(m_sockConnect, buf, sizeof(buf));
 #endif
 #else
@@ -118,12 +111,10 @@ void SocketEvent::signal() {
 
 void SocketEvent::wait() {
 #ifdef HAS_NOT_EVENTFD
-    char buf[1];
 #ifdef NET_USE_HANDLE
-    DWORD dwRead;
-    // ReadFile(m_handle, buf, sizeof(buf), &dwRead, NULL);
     ResetEvent(m_handle);
 #else
+    char buf[1];
     read(m_sock, buf, sizeof(buf));
 #endif
 #else

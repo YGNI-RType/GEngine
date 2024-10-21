@@ -265,9 +265,9 @@ void NET::createSets(NetWaitSet &set) {
     // FD_ZERO(&readSet);
     set.reset();
 
+    mg_eventManager.createSets(set);
     mg_server.createSets(set);
     mg_client.createSets(set);
-    mg_eventManager.createSets(set);
 
     set.setAlert(mg_socketUdp);
     if (CVar::net_ipv6.getIntValue())
@@ -294,7 +294,6 @@ bool NET::handleEvents(const NetWaitSet &set) {
                 break;
             handleUdpEvent(mg_socketUdp, msg, addr);
         }
-        // WSAResetEvent(mg_socketUdp.getHandle());
         return true;
     }
     if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6)) {

@@ -19,8 +19,8 @@ bool NetWaitSet::isSignaled(const ASocket &socket) const {
         throw SocketException("m_resIndex > MAX_SOCKETS");
 
     SOCKET sock = socket.getSocket();
-    if (sock == -1) /* something like a event pipe */
-        return m_sockets[m_resIndex] == sock;
+    if (sock == -1)
+        return m_resIndex == IS_QUEUE;
 
     WSANETWORKEVENTS networkEvents;
     if (WSAEnumNetworkEvents(sock, socket.getHandle(), &networkEvents) == SOCKET_ERROR)
@@ -43,8 +43,7 @@ void NetWaitSet::setAlert(const ASocket &socket) {
     if (m_count >= MAX_SOCKETS)
         return;
 
-    m_events[m_count] = socket.getHandle();
-    m_sockets[m_count++] = socket.getSocket();
+    m_events[m_count++] = socket.getHandle();
 #else
     FD_SET(socket.getSocket(), &m_readSet);
 #endif
@@ -78,11 +77,8 @@ NetWait::NetWait() {
 
 bool NetWait::wait(uint32_t ms, NetWaitSet &set) {
 #ifdef NET_USE_HANDLE
-    DWORD  max = 0;
-    /* TODO : WARNING: can make a thread that wakes multiple wait WaitForMultipleObjects, car on est niqué avec un max de 64 sockets (~30 joeurs max) */
+    /* TODO : WARNING: can make multiple threads that wake for each one a WaitForMultipleObjects, car on est niqué avec un max de 64 sockets (~30 joeurs max) */
     DWORD dwEvent = WSAWaitForMultipleEvents(set.getCount(), set.getHandles(), FALSE, ms, FALSE);
-    // auto handle = set.getHandles()[0];
-    // DWORD dwEvent = WSAWaitForMultipleEvents(1, &handle, FALSE, ms, FALSE);
 
     switch (dwEvent) {
     case WAIT_FAILED:

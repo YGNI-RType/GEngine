@@ -14,6 +14,9 @@ namespace Network {
 
 class NetWaitSet {
 public:
+    static constexpr size_t IS_QUEUE = 0;
+
+public:
     bool isSignaled(const ASocket &socket) const;
     void setAlert(const ASocket &socket);
 
@@ -33,14 +36,13 @@ public:
         return m_netEvents;
     }
 
-    void setResultIndex(size_t res) {
+    void setResultIndex(uint64_t res) {
         m_resIndex = res;
     }
 private:
     static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;
 
     std::array<HANDLE, MAX_SOCKETS> m_events;
-    std::array<SOCKET, MAX_SOCKETS> m_sockets;
     size_t m_resIndex = -1;
     size_t m_count = 0;
     WSANETWORKEVENTS m_netEvents;
