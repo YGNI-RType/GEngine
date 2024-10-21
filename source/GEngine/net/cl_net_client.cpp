@@ -146,7 +146,6 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         msg.readData<TCPSV_ClientInit>(recvData);
 
         m_netChannel.setChallenge(recvData.challenge);
-        // std::cout << "CL: Client challange: " << recvData.challenge << std::endl;
         m_connectionState = CON_AUTHORIZING;
 
         m_netChannel.createUdpAddress(recvData.udpPort);
@@ -166,7 +165,7 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         NET::getEventManager().invokeCallbacks(Event::CT_OnServerReady, 0);
         return true;
     default:
-        return false;
+        pushIncommingStream(msg, 0);
     }
     return true;
 }
@@ -210,6 +209,9 @@ bool CLNetClient::sendDatagram(UDPMessage &msg) {
 bool CLNetClient::pushData(const UDPMessage &msg) {
     return m_packOutData.push(msg, 0);
 }
+bool CLNetClient::pushStream(const TCPMessage &msg) {
+    return m_tcpOut.push(std::make_unique<TCPMessage>(msg), 0);
+}
 
 bool CLNetClient::popIncommingData(UDPMessage &msg, size_t &readCount, bool shouldAck) {
     if (shouldAck)
@@ -217,10 +219,15 @@ bool CLNetClient::popIncommingData(UDPMessage &msg, size_t &readCount, bool shou
     return m_packInData.pop(msg, readCount, msg.getType());
 }
 
-
+bool CLNetClient::popIncommingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpIn.pop(msg, readCount);
+}
 
 bool CLNetClient::retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount) {
     return m_packOutData.pop(msg, readCount);
+}
+bool CLNetClient::retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpOut.pop(msg, readCount);
 }
 
 bool CLNetClient::pushIncommingDataAck(const UDPMessage &msg, size_t readCount) {
@@ -231,6 +238,10 @@ bool CLNetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {
     return m_packInData.push(msg, readCount);
 }
 
+bool CLNetClient::pushIncommingStream(const TCPMessage &msg, size_t readCount) {
+    return m_tcpIn.push(std::make_unique<TCPMessage>(msg), readCount);
+}
+
 /***************/
 
 bool CLNetClient::sendPackets(void) {
@@ -238,7 +249,9 @@ bool CLNetClient::sendPackets(void) {
         return false;
 
     size_t byteSent = 0;
-    while (!m_packOutData.empty() || byteSent < m_maxRate) {
+    size_t outDataSz = m_packOutData.size();
+
+    for (size_t i = 0; i < outDataSz; i++) {
         UDPMessage msg(0, 0);
         size_t readOffset;
         if (!retrieveWantedOutgoingData(msg, readOffset))
@@ -248,6 +261,17 @@ bool CLNetClient::sendPackets(void) {
         if (!sendDatagram(msg))
             return false; /* how */
         byteSent += size;
+    }
+
+    size_t outStreamSz = m_tcpOut.size();
+    for (size_t i = 0; i < outStreamSz; i++) {
+        TCPMessage msg(0);
+        size_t readOffset;
+        if (!retrieveWantedOutgoingStream(msg, readOffset))
+            return false;
+
+        if (!m_netChannel.sendStream(msg))
+            return false;
     }
     return true;
 }

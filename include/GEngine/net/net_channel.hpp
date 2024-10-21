@@ -9,6 +9,7 @@
 
 #include "net_msg.hpp"
 #include "net_socket.hpp"
+#include "net_tcp.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -212,6 +213,7 @@ private:
 
     /* TCP */
 
+    // TCPManager m_tcpManager;
     SocketTCP m_tcpSocket;
     /* unsent data (mostly rather small data, downloads are another story)*/
     // PacketPoolTcp m_tcpPool;

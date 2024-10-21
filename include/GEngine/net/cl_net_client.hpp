@@ -31,7 +31,9 @@ public:
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
-        , m_packInDataAck(socketEvent) {};
+        , m_packInDataAck(socketEvent)
+        , m_tcpIn(socketEvent)
+        , m_tcpOut(socketEvent) {};
     ~CLNetClient() = default;
 
     void init(void);
@@ -77,7 +79,9 @@ public:
     /** Net Queue **/
 
     bool pushData(const UDPMessage &msg);
+    bool pushStream(const TCPMessage &msg);
     bool popIncommingData(UDPMessage &msg, size_t &readCount, bool shouldAck);
+    bool popIncommingStream(TCPMessage &msg, size_t &readCount);
     size_t getSizeIncommingData(bool ack) const {
         if (ack)
             return m_packInDataAck.size();
@@ -91,8 +95,10 @@ public:
 
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
+    bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
     bool pushIncommingData(const UDPMessage &msg, size_t readCount);
     bool pushIncommingDataAck(const UDPMessage &msg, size_t readCount);
+    bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
     int m_challenge = -1;
 
@@ -104,6 +110,9 @@ private:
     NetQueue<UDPMessage, 24, 160> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 20, 17000> m_packInDataAck; /* snapshot */
+
+    NetQueueHeap<TCPMessage, 5> m_tcpIn;
+    NetQueueHeap<TCPMessage, 5> m_tcpOut;
 
     SocketUDP &m_socketUdp;
     AddressType m_addrType;

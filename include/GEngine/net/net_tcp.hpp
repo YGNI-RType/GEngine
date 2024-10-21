@@ -46,19 +46,29 @@ public:
         return mg_nbManager;
     }
 
+    void getMessageIn(TCPMessage &message) const;
+    void resetMessageIn(void);
+
     bool setBalanceDownloadUpload(size_t balance);
 
 private:
-    static constexpr size_t MAX_SESSION_BYTES = 1024;
+    static constexpr size_t MAX_SESSION_BYTES = 0xFFF;
     static constexpr size_t MAX_RATE_BYTES = 0xFFFFF; /* EVERY SECOND, WE DECREASE */
     static constexpr size_t MAX_TCP_MSGS = 20;
-    static size_t mg_curRateBytes;
+    static constexpr size_t MAX_TRIES = 5;
+    static std::chrono::milliseconds m_lastTime;
+    static int64_t mg_curRateBytes;
     static size_t mg_nbManager;
+    static size_t mg_sendTotalBytes;
 
     SocketTCP m_socket;
-    std::chrono::milliseconds m_lastTime;
-    NetQueueHeap<TCPMessage, MAX_TCP_MSGS> m_tcpOut;
+
+    std::queue<std::unique_ptr<TCPMessage>> m_tcpOut;
+    size_t m_curMessageOutOffset = 0;
+
     size_t m_balanceDownloadUpload = 50; /* In %, tell which of the rate should be dedicated in upload and download */
-    TCPMessage m_curMessageIn;
+
+    TCPSerializedMessage m_curMessageIn;
+    size_t m_curMessageInOffset = 0;
 };;
 } // namespace Network

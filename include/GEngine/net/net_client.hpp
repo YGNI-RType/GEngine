@@ -84,7 +84,9 @@ public:
     /** Net Queue **/
 
     bool pushData(const UDPMessage &msg, bool shouldAck);
+    bool pushStream(const TCPMessage &msg);
     bool popIncommingData(UDPMessage &msg, size_t &readCount);
+    bool popIncommingStream(TCPMessage &msg, size_t &readCount);
     size_t getSizeIncommingData(void) const {
         return m_packInData.size();
     }
@@ -92,7 +94,9 @@ public:
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
     bool retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount);
+    bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
     bool pushIncommingData(const UDPMessage &msg, size_t readCount);
+    bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
 private:
     NetChannel m_channel;

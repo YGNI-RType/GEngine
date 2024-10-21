@@ -79,7 +79,7 @@ public:
             if (q.empty())
                 continue;
 
-            *msg = q.front();
+            msg = *q.front();
             q.pop();
             m_nbUsed--;
             m_popped++;
@@ -124,7 +124,7 @@ private:
         auto type = msg->getType();
         auto it = m_msgs.find(type);
         if (it == m_msgs.end())
-            m_msgs[type] = std::queue<MSGTYPE>();
+            m_msgs[type] = std::queue<std::unique_ptr<MSGTYPE>>();
 
         auto &q = m_msgs[type];
         q.push(std::move(msg));
