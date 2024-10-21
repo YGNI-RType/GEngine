@@ -27,8 +27,6 @@ typedef int SOCKET;
 
 namespace Network {
 
-#define UDP_SO_RCVBUF_SIZE 131072
-
 ////////////////////////////////////////
 
 class ASocket {
@@ -41,6 +39,14 @@ public:
     SOCKET getSocket(void) const {
         return m_sock;
     }
+
+#ifdef NET_USE_HANDLE
+    HANDLE getHandle(void) const {
+        return m_handle;
+    }
+
+    void createHandle(void);
+#endif
 
 public:
     static void initLibs(void);
@@ -59,6 +65,9 @@ public:
 
 protected:
     SOCKET m_sock = -1;
+#ifdef NET_USE_HANDLE
+    HANDLE m_handle = INVALID_HANDLE_VALUE;
+#endif
 };
 
 class ANetSocket : public ASocket {

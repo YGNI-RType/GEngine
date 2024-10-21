@@ -36,6 +36,7 @@ namespace Network {
 #else
 typedef unsigned short sa_family_t;
 #endif
+#define NET_USE_HANDLE
 #define socketError WSAGetLastError()
 #else /* unix */
 #define WSAEINVAL EINVAL

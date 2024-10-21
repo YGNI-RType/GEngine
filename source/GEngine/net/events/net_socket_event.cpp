@@ -22,6 +22,7 @@
 namespace Network::Event {
 
 SocketEvent::SocketEvent() {
+#ifndef NET_USE_HANDLE
 #ifdef HAS_NOT_EVENTFD
 #if defined(__APPLE__) || defined(__unix__)
     int pipefd[2];
@@ -36,78 +37,51 @@ SocketEvent::SocketEvent() {
 
     m_sock = pipefd[0];
     m_sockConnect = pipefd[1];
-#else
-    ASocket::initLibs();
-    m_sockConnect = socket(AF_INET, SOCK_STREAM, 0);
-    if (m_sockConnect == INVALID_SOCKET)
-        throw std::runtime_error("Failed to create socket");
-
-    auto listenSock = socket(AF_INET, SOCK_STREAM, 0);
-    if (listenSock == INVALID_SOCKET)
-        throw std::runtime_error("Failed to create socket");
-
-    unsigned int opt = 1;
-    setsockopt(listenSock, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char *)&opt, (socklen_t)sizeof(opt));
-
-    struct sockaddr_in addr;
-    std::memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    addr.sin_port = 0;
-
-    if (bind(listenSock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-        closesocket(listenSock);
-        throw std::runtime_error("Failed to bind socket");
-    }
-
-    int len = sizeof(addr);
-    if (getsockname(listenSock, (struct sockaddr *)&addr, &len) == -1) {
-        closesocket(listenSock);
-        throw std::runtime_error("Failed to bind socket");
-    }
-
-    if (listen(listenSock, 1) == -1) {
-        closesocket(listenSock);
-        throw std::runtime_error("Failed to bind socket");
-    }
-
-    if (connect(m_sockConnect, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-        closesocket(m_sockConnect);
-        throw std::runtime_error("Failed to connect to socket");
-    }
-
-    /** warning : todo https://github.com/python/cpython/pull/122134/files
-     * avec cette méthode, on peut se faire hijack cette connexion. même si osef ça peut faire chier
-     */
-
-    m_sock = accept(listenSock, nullptr, nullptr);
-    if (m_sock == -1) {
-        closesocket(m_sock);
-        throw std::runtime_error("Failed to connect to socket");
-    }
-
-    closesocket(listenSock);
 #endif
 #else
     m_sock = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (m_sock == -1)
         throw std::runtime_error("Failed to create eventfd");
 #endif
-    NetWait::addSocketPool(m_sock);
+    NetWait::addSocketPool(*this);
+#else
+    SECURITY_ATTRIBUTES saAttr;
+
+    // Set the bInheritHandle flag so pipe handles are inherited
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    // if (!CreatePipe(&m_handle, &m_writeHandle, &saAttr, 0))
+    //     throw std::runtime_error("Failed to create pipe");
+
+    // m_sock = 666; //socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    m_handle = CreateEvent(NULL, FALSE, FALSE, "net_event_wake");
+#endif
 }
 
 SocketEvent::~SocketEvent() {
 #ifdef HAS_NOT_EVENTFD
+#ifdef NET_USE_HANDLE
+    if (m_writeHandle != INVALID_HANDLE_VALUE)
+        CloseHandle(m_writeHandle);
+#else
     if (m_sockConnect != -1)
         closesocket(m_sockConnect);
+#endif
 #endif
 }
 
 SocketEvent::SocketEvent(SocketEvent &&other)
     : ASocket(std::move(other)) {
 #ifdef HAS_NOT_EVENTFD
+#ifdef NET_USE_HANDLE
+    m_writeHandle = other.m_writeHandle;
+    other.m_writeHandle = INVALID_HANDLE_VALUE;
+#else
     m_sockConnect = other.m_sockConnect;
     other.m_sockConnect = -1;
+#endif
 #endif
 }
 
@@ -115,8 +89,13 @@ SocketEvent &SocketEvent::operator=(SocketEvent &&other) {
     if (this != &other) {
         ASocket::operator=(std::move(other));
 #ifdef HAS_NOT_EVENTFD
+#ifdef NET_USE_HANDLE
+        m_writeHandle = other.m_writeHandle;
+        other.m_writeHandle = INVALID_HANDLE_VALUE;
+#else
         m_sockConnect = other.m_sockConnect;
         other.m_sockConnect = -1;
+#endif
 #endif
     }
     return *this;
@@ -125,11 +104,10 @@ SocketEvent &SocketEvent::operator=(SocketEvent &&other) {
 void SocketEvent::signal() {
 #ifdef HAS_NOT_EVENTFD
     char buf[1] = {0};
-#ifdef _WIN32
-    if (!m_hasRead)
-        return;
-    send(m_sockConnect, buf, sizeof(buf), 0);
-    m_hasRead = false;
+#ifdef NET_USE_HANDLE
+    DWORD dwWrite;
+    // WriteFile(m_writeHandle, buf, sizeof(buf), &dwWrite, NULL);
+    SetEvent(m_handle);
 #else
     write(m_sockConnect, buf, sizeof(buf));
 #endif
@@ -141,11 +119,10 @@ void SocketEvent::signal() {
 void SocketEvent::wait() {
 #ifdef HAS_NOT_EVENTFD
     char buf[1];
-#ifdef _WIN32
-    if (!m_hasRead)
-        return;
-    recv(m_sockConnect, buf, sizeof(buf), 0);
-    m_hasRead = true;
+#ifdef NET_USE_HANDLE
+    DWORD dwRead;
+    // ReadFile(m_handle, buf, sizeof(buf), &dwRead, NULL);
+    ResetEvent(m_handle);
 #else
     read(m_sock, buf, sizeof(buf));
 #endif

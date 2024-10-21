@@ -19,15 +19,39 @@ public:
 
     void reset(void);
 
+#ifdef NET_USE_HANDLE
+public:
+    size_t getCount(void) const {
+        return m_count;
+    }
+
+    const HANDLE *getHandles(void) const {
+        return m_events.data();
+    }
+
+    WSANETWORKEVENTS &getNetEvents(void) {
+        return m_netEvents;
+    }
+
+    void setResultIndex(size_t res) {
+        m_resIndex = res;
+    }
+private:
+    static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;
+
+    std::array<HANDLE, MAX_SOCKETS> m_events;
+    std::array<SOCKET, MAX_SOCKETS> m_sockets;
+    size_t m_resIndex = -1;
+    size_t m_count = 0;
+    WSANETWORKEVENTS m_netEvents;
+#else
 public:
     fd_set &getFdSet(void) {
         return m_readSet;
     }
-
-
 private:
-    // std::array<HANDLE *, 1024> m_events;
     fd_set m_readSet;
+#endif
 };
 
 class NetWait {
@@ -38,18 +62,20 @@ public:
     bool wait(uint32_t ms, NetWaitSet &set);
 
 public:
-    static void addSocketPool(SOCKET socket);
-    static void removeSocketPool(SOCKET socket);
+    static void addSocketPool(ASocket &socket);
+    static void removeSocketPool(const ASocket &socket);
 
+#ifdef NET_USE_HANDLE
 
+#else
 public:
     static SOCKET getHighestSocket(void) {
         return m_highFd;
     }
-
 private:
     static fd_set m_fdSet;
     static SOCKET m_highFd;
+#endif
 };
 
 } // namsepsace Network

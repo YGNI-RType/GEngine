@@ -24,6 +24,7 @@ bool Manager::handleEvent(const NetWaitSet &set) {
         size = m_events.size();
     }
     m_socketEvent.wait();
+    WSAResetEvent(m_socketEvent.getHandle());
     if (size == 0) {
         sendPackets();
         return true;

@@ -29,9 +29,9 @@
 #include <cstring>
 #include <thread>
 
-#ifdef _WIN32
-// TODO : remove unused
+#include <iostream>
 
+#ifdef _WIN32
 typedef int socklen_t;
 typedef u_long ioctlarg_t;
 
@@ -294,6 +294,8 @@ bool NET::handleEvents(const NetWaitSet &set) {
                 break;
             handleUdpEvent(mg_socketUdp, msg, addr);
         }
+        // WSAResetEvent(mg_socketUdp.getHandle());
+        return true;
     }
     if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6)) {
         UDPMessage msg(0, 0);
@@ -304,6 +306,7 @@ bool NET::handleEvents(const NetWaitSet &set) {
                 break;
             handleUdpEvent(mg_socketUdp, msg, addr);
         }
+        return true;
     }
 
     if (mg_server.handleTCPEvent(set))
