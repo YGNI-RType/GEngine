@@ -9,7 +9,9 @@
 #include <iostream>
 
 namespace gengine::system::driver::input {
-void MouseCatcher::init(void) { subscribeToEvent<gengine::system::event::MainLoop>(&MouseCatcher::onMainLoop); }
+void MouseCatcher::init(void) {
+    subscribeToEvent<gengine::system::event::MainLoop>(&MouseCatcher::onMainLoop);
+}
 
 void MouseCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
     MouseButton button = MOUSE_BUTTON_LEFT;
@@ -39,5 +41,10 @@ void MouseCatcher::processMouseInput(int button, InputState state) {
     default:
         break;
     }
+}
+
+MouseButton &operator++(MouseButton &key) {
+    key = key < MOUSE_BUTTON_MIDDLE ? static_cast<MouseButton>(static_cast<int>(key) + 1) : MOUSE_BUTTON_LEFT;
+    return key;
 }
 } // namespace gengine::system::driver::input
