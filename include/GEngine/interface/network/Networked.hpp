@@ -23,6 +23,8 @@
 #include <typeindex>
 #include <unordered_map>
 
+#define ENTITY_ID_START_CLIENT (uint64_t(-1) / 2)
+
 namespace gengine::interface::network {
 
 class Networked : public Base {
@@ -34,7 +36,7 @@ public:
         , m_ip(ip)
         , m_port(port)
         , m_block(block) {
-
+        m_driverEngine.setFirstEntity(ENTITY_ID_START_CLIENT);
         Network::NET::init();
         Network::Event::Manager &em = Network::NET::getEventManager();
         registerComponent<gengine::interface::component::RemoteDriver>();

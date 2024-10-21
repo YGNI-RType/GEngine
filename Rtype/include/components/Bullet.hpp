@@ -12,6 +12,8 @@
 #include "GEngine/libdev/Component.hpp"
 #include "GEngine/net/net_string.hpp"
 
+#include <cstring>
+
 namespace rtype::component {
 struct Bullet : public gengine::Component<Bullet> {
     Bullet(std::string fromString, bool isBeam = false)

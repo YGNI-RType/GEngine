@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <cstdlib>
+#include <cstdint>
 
 namespace ecs::entity {
 /**
@@ -18,5 +18,5 @@ namespace ecs::entity {
  *
  * @typedef Entity
  */
-typedef std::size_t Entity;
+typedef uint64_t Entity;
 } // namespace ecs::entity

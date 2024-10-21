@@ -17,4 +17,14 @@ template <typename T>
 inline void BaseEngine::registerComponent(void) {
     m_ecs.registerComponent<T>();
 }
+
+template <typename Type>
+void BaseEngine::subscribeCallback(std::function<void(Type &)> callback) {
+    m_ecs.subscribeCallback(callback);
+}
+
+template <typename T>
+void BaseEngine::publishEvent(T &e) {
+    m_ecs.publishEvent<T>(e);
+}
 } // namespace gengine
