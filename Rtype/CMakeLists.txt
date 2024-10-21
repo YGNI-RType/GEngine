@@ -9,7 +9,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 
 include(../cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
-vcpkg_install_packages(raylib stduuid)
+vcpkg_install_packages(raylib stduuid nlohmann-json)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 # The static permits to enter the functions, avoid settings the path to a .dll etc...
@@ -23,6 +23,7 @@ file(GLOB_RECURSE SOURCES source/*.cpp)
 file(GLOB_RECURSE HEADERS include/*.h)
 
 find_package(raylib REQUIRED)
+# find_package(nlohmann-json REQUIRED)
 
 include_directories(include)
 include_directories(../include)
