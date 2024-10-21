@@ -110,7 +110,7 @@ bool NetClient::retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount
 }
 
 bool NetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {
-    return m_packInData.push(msg, readCount);
+    return m_packInData.fullpush(msg, readCount);
 }
 
 /***************/

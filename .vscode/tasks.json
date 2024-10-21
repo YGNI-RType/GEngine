@@ -12,12 +12,16 @@
                 "4",
                 "--target",
                 "GEngine_static",
+                "--config",
+                "Debug",
                 "&&",
                 "cmake",
                 "--build",
                 "${workspaceFolder}/Rtype/build",
                 "--parallel",
                 "4",
+                "--config",
+                "Debug"
             ],
             "windows": {
                 "command": "cmd",
