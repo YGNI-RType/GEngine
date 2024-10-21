@@ -217,8 +217,6 @@ bool CLNetClient::popIncommingData(UDPMessage &msg, size_t &readCount, bool shou
     return m_packInData.pop(msg, readCount, msg.getType());
 }
 
-
-
 bool CLNetClient::retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount) {
     return m_packOutData.pop(msg, readCount);
 }

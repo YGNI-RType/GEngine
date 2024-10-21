@@ -10,13 +10,11 @@
 #include "ecs/entity/Entity.hpp"
 
 #include "GEngine/interface/components/RemoteDriver.hpp"
+#include "GEngine/libdev/Components.hpp"
+#include "GEngine/libdev/Events.hpp"
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/components/Transforms.hpp"
-#include "GEngine/libdev/components/driver/output/Drawable.hpp"
-#include "GEngine/libdev/components/driver/output/Text.hpp"
-#include "GEngine/libdev/systems/events/game/Collision.hpp"
+#include "GEngine/libdev/Systems.hpp"
 
-#include "GEngine/libdev/components/Transforms.hpp"
 #include "components/Bullet.hpp"
 #include "components/Life.hpp"
 #include "components/Monster.hpp"
@@ -33,8 +31,8 @@ class DestroyOnCollision
                              gengine::component::driver::output::Drawable, gengine::component::driver::output::Text> {
 public:
     void init(void) override;
-    void destroyMonster(gengine::system::event::Collsion &);
-    void destroyPlayer(gengine::system::event::Collsion &);
+    void destroyMonster(geg::event::Collision &);
+    void destroyPlayer(geg::event::Collision &);
 
 private:
     void claimScore(ecs::entity::Entity entity, const char *forPlayerUuid);

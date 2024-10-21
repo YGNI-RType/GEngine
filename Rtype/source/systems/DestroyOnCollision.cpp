@@ -16,8 +16,8 @@
 
 namespace rtype::system {
 void DestroyOnCollision::init(void) {
-    subscribeToEvent<gengine::system::event::Collsion>(&DestroyOnCollision::destroyMonster);
-    subscribeToEvent<gengine::system::event::Collsion>(&DestroyOnCollision::destroyPlayer);
+    subscribeToEvent<geg::event::Collision>(&DestroyOnCollision::destroyMonster);
+    subscribeToEvent<geg::event::Collision>(&DestroyOnCollision::destroyPlayer);
 }
 
 void DestroyOnCollision::claimScore(ecs::entity::Entity entity_monster, const char *forPlayerUuid) {
@@ -31,7 +31,7 @@ void DestroyOnCollision::claimScore(ecs::entity::Entity entity_monster, const ch
     }
 }
 
-void DestroyOnCollision::destroyMonster(gengine::system::event::Collsion &e) {
+void DestroyOnCollision::destroyMonster(geg::event::Collision &e) {
     auto &monsters = getComponents<component::Monster>();
     auto &bullets = getComponents<component::Bullet>();
     auto &transforms = getComponents<gengine::component::Transform2D>();
@@ -56,7 +56,7 @@ void DestroyOnCollision::destroyMonster(gengine::system::event::Collsion &e) {
     }
 }
 
-void DestroyOnCollision::destroyPlayer(gengine::system::event::Collsion &e) {
+void DestroyOnCollision::destroyPlayer(geg::event::Collision &e) {
     auto &players = getComponents<component::Player>();
     auto &monsters = getComponents<component::Monster>();
     auto &transforms = getComponents<gengine::component::Transform2D>();
