@@ -22,7 +22,8 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -arch ${CMAKE_OSX_AR
 
 # Set the find root path
 # set(CMAKE_FIND_ROOT_PATH /path/to/find/root)
+# set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 
 # Set the search paths for libraries and includes
 # set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
-# set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+# set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)

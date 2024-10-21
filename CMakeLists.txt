@@ -51,7 +51,7 @@ set_target_properties(GEngine_static PROPERTIES
 )
 
 find_package(raylib CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED) #TODO a suppr
+find_package(glfw3 CONFIG REQUIRED) #TODO a supp
 
 target_link_libraries(GEngine raylib glfw) #TODO suppr glfw
 target_link_libraries(GEngine_static raylib glfw) #TODO suppr glfw
