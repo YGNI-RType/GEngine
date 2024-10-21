@@ -18,7 +18,7 @@ void PlanesWave::onGameLoop(gengine::system::event::GameLoop &e) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::uniform_int_distribution<> change_spawn_vawe(0, 50);
+    std::uniform_int_distribution<> change_spawn_vawe(0, 250);
 
     if (change_spawn_vawe(gen) == 0)
         spawnWave();

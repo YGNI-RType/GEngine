@@ -43,6 +43,7 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onMai
     m_client.pushData(m_msg);
     m_msg.clear(true);
 
+    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
 }
