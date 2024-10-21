@@ -165,7 +165,6 @@ private:
         return true;
     }
 
-
     void constructMessage(MSGTYPE &msg, const Segment &segment, size_t &readCount) const {
         auto data = static_cast<const void *>(m_data.data() + segment.id * MAX_PACKET_SIZE);
 

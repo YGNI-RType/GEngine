@@ -35,10 +35,10 @@ struct AnimationTrack {
     }
 };
 struct Animation : public Component<Animation> {
-    Network::NetString<32> trackName;       // Name of the current track (no std::string)
-    size_t currentFrameIndex; // Index of the current frame in the track
-    float frameDuration;      // Duration of each frame (in seconds)
-    float currentTime;        // Time accumulated to track frame switching
+    Network::NetString<32> trackName; // Name of the current track (no std::string)
+    size_t currentFrameIndex;         // Index of the current frame in the track
+    float frameDuration;              // Duration of each frame (in seconds)
+    float currentTime;                // Time accumulated to track frame switching
 
     Animation(const std::string &initialTrackName, float frameDuration,
               AnimationTrack::PlaybackMode mode = AnimationTrack::PlaybackMode::Forward, size_t startingFrame = 0)

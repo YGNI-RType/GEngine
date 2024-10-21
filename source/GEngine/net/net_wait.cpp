@@ -6,8 +6,8 @@
 */
 
 #include "GEngine/net/net_wait.hpp"
-#include "GEngine/net/net_socket_error.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/net/net_socket_error.hpp"
 
 #include <algorithm>
 
@@ -77,7 +77,8 @@ NetWait::NetWait() {
 
 bool NetWait::wait(uint32_t ms, NetWaitSet &set) {
 #ifdef NET_USE_HANDLE
-    /* TODO : WARNING: can make multiple threads that wake for each one a WaitForMultipleObjects, car on est niqué avec un max de 64 sockets (~30 joeurs max) */
+    /* TODO : WARNING: can make multiple threads that wake for each one a WaitForMultipleObjects, car on est niqué avec
+     * un max de 64 sockets (~30 joeurs max) */
     DWORD dwEvent = WSAWaitForMultipleEvents(set.getCount(), set.getHandles(), FALSE, ms, FALSE);
 
     switch (dwEvent) {
@@ -126,4 +127,4 @@ void NetWait::removeSocketPool(const ASocket &socket) {
         (m_highFd)--;
 #endif
 }
-}
+} // namespace Network

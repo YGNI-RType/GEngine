@@ -107,7 +107,8 @@ void ASocket::createHandle(void) {
 
 //////////////////////////////////////
 
-ANetSocket::ANetSocket(ANetSocket &&other) : ASocket(std::move(other)) {
+ANetSocket::ANetSocket(ANetSocket &&other)
+    : ASocket(std::move(other)) {
     m_port = other.m_port;
 }
 

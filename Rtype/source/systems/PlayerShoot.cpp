@@ -24,7 +24,7 @@ void PlayerShoot::init(void) {
     subscribeToEvent<gengine::interface::network::event::RemoteEvent<event::Shoot>>(&PlayerShoot::shoot);
     subscribeToEvent<gengine::interface::event::NewRemoteDriver>(&PlayerShoot::newShooter);
     subscribeToEvent<gengine::interface::event::DeleteRemoteDriver>(&PlayerShoot::deleteShooter);
-    subscribeToEvent<gengine::system::driver::input::KeySpaceEvent>(&PlayerShoot::bulletSound);
+    subscribeToEvent<geg::event::io::KeySpaceEvent>(&PlayerShoot::bulletSound);
 }
 
 void PlayerShoot::newShooter(gengine::interface::event::NewRemoteDriver &e) {
@@ -59,9 +59,9 @@ void PlayerShoot::shoot(gengine::interface::network::event::RemoteEvent<event::S
     }
 }
 
-void PlayerShoot::bulletSound(gengine::system::driver::input::KeySpaceEvent &e) {
+void PlayerShoot::bulletSound(geg::event::io::KeySpaceEvent &e) {
     auto &soundMan = getSystem<gengine::system::driver::output::SoundManager>();
-    if (e.state == gengine::system::driver::input::InputState::PRESSED)
+    if (e.state == geg::event::io::InputState::PRESSED)
         PlaySound(soundMan.get("shoot.mp3"));
 }
 

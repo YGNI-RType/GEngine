@@ -10,8 +10,8 @@
 #include "events/socket_event.hpp"
 #include "net_channel.hpp"
 #include "net_queue.hpp"
-#include "net_wait.hpp"
 #include "net_queue_heap.hpp"
+#include "net_wait.hpp"
 
 #include <memory>
 #include <string>
@@ -108,7 +108,7 @@ private:
 
     /* todo : change based on average size */
     NetQueue<UDPMessage, 1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
-    NetQueue<UDPMessage, 32, 1400> m_packOutData;     /* voiceip etc.. */
+    NetQueue<UDPMessage, 32, 1400> m_packOutData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 1, 17000> m_packOutDataAck; /* snapshot */
 
     NetQueueHeap<TCPMessage, 5> m_tcpIn;

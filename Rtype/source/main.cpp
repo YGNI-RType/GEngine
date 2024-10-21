@@ -121,7 +121,7 @@ void registerSystems(gengine::game::Engine &gameEngine, gengine::driver::Engine 
 
     driverEngine.registerSystem<gengine::system::driver::output::TextureManager>("../assets/sprites");
     driverEngine.registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
-    driverEngine.registerSystem<gengine::system::driver::input::KeyboardCatcher>();
+    driverEngine.registerSystem<gengine::system::driver::output::KeyboardCatcher>();
     driverEngine.registerSystem<system::InputsToGameEvents>();
     driverEngine.registerSystem<gengine::system::driver::output::SoundManager>("../assets/sounds");
     driverEngine.registerSystem<system::PlayerShoot>();
