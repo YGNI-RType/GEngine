@@ -130,9 +130,9 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Rtype/build/r-type_clientd",
-            "args": ["-i", "scenes/multiple_earths.cfg"],
+            "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/Rtype/build",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb"
