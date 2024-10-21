@@ -35,7 +35,7 @@ void NetChannel::createUdpAddress(uint16_t udpport) {
             std::make_unique<AddressV4>(AT_IPV4, udpport, static_cast<AddressV4 *>(m_toTCPAddress.get())->getAddress());
 }
 
-bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence,
+bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t gameThreadACK,
                                const std::vector<const Network::PacketPoolUdp::chunk_t *> &fragments) {
     auto [msgType, flags, maxSize, lastChunkSz, _mask, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
     uint8_t i = 0;
@@ -56,13 +56,13 @@ bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence,
 
         // std::cout << "(" << sequence << ") Sending fragment: " << (int)i << " | " << newMsg.getSize() << " H: " <<
         // newMsg.getHash() << std::endl;
-        sendDatagram(socket, newMsg);
+        sendDatagram(socket, newMsg, gameThreadACK);
         i++;
     }
     return true;
 }
 
-bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
+bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK) {
     if (!m_enabled || m_toUDPAddress == nullptr)
         return false;
 
@@ -80,7 +80,7 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
             return false;
 
         auto fragments = m_udpPoolSend.getMissingFragments(m_udpMyFragSequence, 0);
-        bool res = sendDatagrams(socket, m_udpMyFragSequence, fragments);
+        bool res = sendDatagrams(socket, m_udpMyFragSequence, gameThreadACK, fragments);
 
         // temp : normally we should get the missing sequences, but for now we don't need them
         m_udpPoolSend.deleteSequence(m_udpMyFragSequence);
@@ -92,7 +92,7 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
 
     UDPG_NetChannelHeader header = {.sequence = udpOutSequence, .ackFragmentSequence = m_udpFromFragSequence};
     if (msg.shouldAck())
-        header.ack = m_udpACKFullInSequence;
+        header.ack = gameThreadACK;
     msg.writeHeader(header);
 
     size_t sent = socket.send(msg, *m_toUDPAddress);
@@ -108,7 +108,7 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
     return true;
 }
 
-bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset) {
+bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK) {
     UDPG_NetChannelHeader header;
     msg.readHeader(header, readOffset);
 
@@ -140,7 +140,7 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             m_udpPoolSend.deleteSequence(fragHeader.idSequence);
             return true;
         }
-        sendDatagrams(socket, fragHeader.idSequence, missing);
+        sendDatagrams(socket, fragHeader.idSequence, gameThreadACK, missing);
         return true;
     }
 
@@ -168,7 +168,7 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             msg.setWasFragmented(true);
 
             readOffset = 0;
-            bool res = readDatagram(socket, msg, readOffset);
+            bool res = readDatagram(socket, msg, readOffset, gameThreadACK);
             m_udpPoolRecv.deleteSequence(fragSequence);
             m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
             return res;

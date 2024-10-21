@@ -10,6 +10,7 @@
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
+#include "net_wait.hpp"
 
 #include <memory>
 #include <vector>
@@ -41,9 +42,9 @@ public:
     bool connectToServer(const std::string &ip, uint16_t port, bool block = false);
     void disconnectFromServer(void);
 
-    void createSets(fd_set &readSet);
+    void createSets(NetWaitSet &readSet);
 
-    bool handleTCPEvents(fd_set &readSet);
+    bool handleTCPEvents(const NetWaitSet &readSet);
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
@@ -102,7 +103,7 @@ private:
     /* todo : change based on average size */
     NetQueue<24, 160> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
     NetQueue<32, 1400> m_packInData;    /* voiceip etc.. */
-    NetQueue<4, 16000> m_packInDataAck; /* snapshot */
+    NetQueue<20, 17000> m_packInDataAck; /* snapshot */
 
     SocketUDP &m_socketUdp;
     AddressType m_addrType;

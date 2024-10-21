@@ -69,11 +69,11 @@ void CLNetClient::disconnectFromServer(void) {
     m_connectionState = CON_DISCONNECTED;
 }
 
-void CLNetClient::createSets(fd_set &readSet) {
+void CLNetClient::createSets(NetWaitSet &set) {
     if (!m_enabled || !m_netChannel.canCommunicate())
         return;
 
-    m_netChannel.getTcpSocket().setFdSet(readSet);
+    set.setAlert(m_netChannel.getTcpSocket());
 }
 
 void CLNetClient::init(void) {
@@ -105,7 +105,7 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
         addr != m_netChannel.getAddressUDP()) // why sending udp packets to the client ? who are you ?
         return false;
 
-    if (!m_netChannel.readDatagram(socket, msg, readOffset))
+    if (!m_netChannel.readDatagram(socket, msg, readOffset, m_packInDataAck.getNbPopped()))
         return true;
 
     switch (msg.getType()) {
@@ -120,12 +120,12 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
     return true;
 }
 
-bool CLNetClient::handleTCPEvents(fd_set &readSet) {
+bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
     if (!m_enabled || !m_netChannel.isEnabled())
         return false;
 
     auto &sock = m_netChannel.getTcpSocket();
-    if (sock.isFdSet(readSet)) {
+    if (set.isSignaled(sock)) {
         TCPMessage msg(0);
         if (!m_netChannel.readStream(msg))
             return false;
@@ -201,7 +201,8 @@ bool CLNetClient::sendDatagram(UDPMessage &msg) {
     if (!m_enabled || !m_netChannel.isEnabled())
         return false;
 
-    return m_netChannel.sendDatagram(m_socketUdp, msg);
+    // std::cout << m_netChannel.getLastACKPacketId() << " " << m_packInDataAck.getNbPopped() << std::endl;
+    return m_netChannel.sendDatagram(m_socketUdp, msg, m_packInDataAck.getNbPopped());
 }
 
 /** Net Queue **/
@@ -221,7 +222,7 @@ bool CLNetClient::retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount)
 }
 
 bool CLNetClient::pushIncommingDataAck(const UDPMessage &msg, size_t readCount) {
-    return m_packInDataAck.push(msg, readCount);
+    return m_packInDataAck.fullpush(msg, readCount);
 }
 
 bool CLNetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {

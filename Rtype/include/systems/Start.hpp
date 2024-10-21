@@ -10,8 +10,7 @@
 #include "GEngine/interface/components/RemoteDriver.hpp"
 #include "GEngine/interface/events/RemoteDriver.hpp"
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
+#include "GEngine/libdev/Systems.hpp"
 
 namespace rtype::system {
 class Start : public gengine::System<Start, gengine::system::driver::output::TextureManager,
@@ -21,5 +20,8 @@ public:
     void onStartEngine(gengine::system::event::StartEngine &);
     void onNewRemoteDriver(gengine::interface::event::NewRemoteDriver &);
     void onDeleteRemoteDriver(gengine::interface::event::DeleteRemoteDriver &e);
+
+private:
+    size_t m_nbPlayer = 0;
 };
 } // namespace rtype::system

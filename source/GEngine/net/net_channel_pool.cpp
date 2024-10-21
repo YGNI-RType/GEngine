@@ -165,7 +165,7 @@ bool PacketPoolUdp::receivedFullSequence(uint32_t sequence) {
         return false; // or handle the error as needed
 
     auto idmax = (std::get<2>(it->second));
-    uint8_t wanted = (1 << idmax);
+    uint16_t wanted = (1 << idmax);
     for (int i = 0; i < idmax; i++)
         wanted |= (1 << i);
     auto curMask = getMask(sequence);

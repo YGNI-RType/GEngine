@@ -15,6 +15,7 @@
 #include "net_event.hpp"
 #include "net_server.hpp"
 #include "net_socket.hpp"
+#include "net_wait.hpp"
 
 #include <thread>
 #include <vector>
@@ -23,6 +24,8 @@ namespace Network {
 
 class NET {
 private:
+    static NetWait mg_wait;
+
     static SocketUDP mg_socketUdp;
     static SocketTCPMaster mg_socketListenTcp;
     static SocketUDP mg_socketUdpV6;
@@ -60,11 +63,11 @@ private:
     /* Usage of "select" */
 public:
     static bool sleep(uint32_t ms);
-    static bool handleEvents(fd_set &readSet);
+    static bool handleEvents(const NetWaitSet &set);
     static bool handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
 private:
-    static void createSets(fd_set &readSet);
+    static void createSets(NetWaitSet &readSet);
     /*********************/
 
     /* Ping servers */

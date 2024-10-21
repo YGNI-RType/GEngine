@@ -5,6 +5,7 @@
 !/r-type/build/.gitkeep
 
 ## Binaries
+test_dev/
 r-type_client
 r-type_server
 

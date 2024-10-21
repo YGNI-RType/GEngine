@@ -34,7 +34,7 @@ bool NetClient::sendDatagram(UDPMessage &msg) {
     if (!m_channel.isEnabled())
         return false;
 
-    return m_channel.sendDatagram(m_socketUdp, msg);
+    return m_channel.sendDatagram(m_socketUdp, msg, m_packInData.getNbPopped());
 }
 
 bool NetClient::handleClientStream(void) {
@@ -69,7 +69,7 @@ bool NetClient::handleClientStream(void) {
 bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
     size_t readOffset = 0;
 
-    if (!m_channel.readDatagram(socket, msg, readOffset))
+    if (!m_channel.isUDPEnabled() || !m_channel.readDatagram(socket, msg, readOffset, m_packInData.getNbPopped()))
         return false;
 
     if (msg.shouldAck())
@@ -81,9 +81,9 @@ bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
     return false;
 }
 
-bool NetClient::handleTCPEvents(fd_set &readSet) {
+bool NetClient::handleTCPEvents(const NetWaitSet &set) {
     auto &socket = m_channel.getTcpSocket();
-    if (!socket.isFdSet(readSet))
+    if (!set.isSignaled(socket))
         return false;
 
     return handleClientStream();
@@ -93,7 +93,7 @@ bool NetClient::handleTCPEvents(fd_set &readSet) {
 
 bool NetClient::pushData(const UDPMessage &msg, bool shouldAck) {
     if (shouldAck)
-        return m_packOutDataAck.push(msg, 0);
+        return m_packOutDataAck.fullpush(msg, 0);
     return m_packOutData.push(msg, 0);
 }
 
@@ -110,7 +110,7 @@ bool NetClient::retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount
 }
 
 bool NetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {
-    return m_packInData.push(msg, readCount);
+    return m_packInData.fullpush(msg, readCount);
 }
 
 /***************/
@@ -123,7 +123,7 @@ bool NetClient::sendPackets(void) {
     std::vector<bool (Network::NetClient::*)(Network::UDPMessage &, size_t &)> vecFuncs = {
         &NetClient::retrieveWantedOutgoingData, &NetClient::retrieveWantedOutgoingDataAck};
 
-    while (!vecFuncs.empty() || byteSent < m_maxRate) {
+    while (!vecFuncs.empty()) {
         size_t readCount;
         UDPMessage msg(0, 0);
         auto retrieveFunc = vecFuncs.front();
