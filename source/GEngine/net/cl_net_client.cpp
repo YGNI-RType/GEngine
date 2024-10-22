@@ -166,6 +166,7 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         return true;
     default:
         pushIncommingStream(msg, 0);
+        break;
     }
     return true;
 }

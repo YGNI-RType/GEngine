@@ -62,8 +62,8 @@ bool NetClient::handleClientStream(void) {
         return true;
     }
     default:
-        // std::cout << "SV: client just sent TCP specific message" << std::endl;
-        return false;
+        pushIncommingStream(msg, 0);
+        break;
     }
     return true;
 }
