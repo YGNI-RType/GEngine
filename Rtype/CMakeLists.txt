@@ -37,11 +37,11 @@ add_executable(r-type_client ${SOURCES} ${HEADERS})
 add_executable(r-type_server ${SOURCES} ${HEADERS})
 
 if(WIN32)
-target_link_libraries(r-type_client PRIVATE ${GEngine_LIB} raylib wsock32 ws2_32)
-target_link_libraries(r-type_server PRIVATE ${GEngine_LIB} raylib wsock32 ws2_32)
+    target_link_libraries(r-type_client PRIVATE ${GEngine_LIB} raylib wsock32 ws2_32)
+    target_link_libraries(r-type_server PRIVATE ${GEngine_LIB} raylib wsock32 ws2_32)
 else()
-target_link_libraries(r-type_client PRIVATE ${GEngine_LIB} raylib glfw)
-target_link_libraries(r-type_server PRIVATE ${GEngine_LIB} raylib glfw)
+    target_link_libraries(r-type_client PRIVATE ${GEngine_LIB} raylib glfw)
+    target_link_libraries(r-type_server PRIVATE ${GEngine_LIB} raylib glfw)
 endif()
 
 set_target_properties(r-type_client PROPERTIES
@@ -63,3 +63,26 @@ install(TARGETS r-type_client r-type_server
 
 target_compile_definitions(r-type_server PRIVATE GEngine_Server)
 target_compile_definitions(r-type_client PRIVATE GEngine_Client)
+
+# -------------------
+# Dynamic Library Compilation
+# -------------------
+
+add_library(r-type-plugin SHARED ${SOURCES} ${HEADERS})
+
+if(WIN32)
+    target_link_libraries(r-type-plugin PRIVATE ${GEngine_LIB} raylib wsock32 ws2_32)
+else()
+    target_link_libraries(r-type-plugin PRIVATE ${GEngine_LIB} raylib glfw)
+endif()
+
+set_target_properties(r-type-plugin PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
+)
+
+install(TARGETS r-type-plugin
+    LIBRARY DESTINATION lib
+)

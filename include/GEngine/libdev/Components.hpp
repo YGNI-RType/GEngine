@@ -41,8 +41,8 @@ using Animation = gengine::component::driver::output::Animation;
 using Drawable = gengine::component::driver::output::Drawable;
 using Drawable = gengine::component::driver::output::Drawable;
 
-using Circle = gengine::component::driver::output::Clr;
-using Rectangle = gengine::component::driver::output::Rect;
+using Circle = gengine::component::driver::output::Circle;
+using Rectangle = gengine::component::driver::output::Rectangle;
 
 using Sprite = gengine::component::driver::output::Sprite;
 

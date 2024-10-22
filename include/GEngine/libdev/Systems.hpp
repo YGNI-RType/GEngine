@@ -36,7 +36,7 @@ using Motion3D = gengine::system::Motion3D;
 #include "GEngine/libdev/systems/driver/output/SoundManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
-namespace gengine::system::driver::output {
+namespace geg::system::io {
 using KeyboardCatcher = gengine::system::driver::input::KeyboardCatcher;
 
 using MouseCatcher = gengine::system::driver::input::MouseCatcher;
