@@ -1,0 +1,133 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 15,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
+      },
+      "toolchainFile": "${sourceDir}/cmake/define-compilers.cmake"
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "description": "Release build (your own system)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "default",
+      "description": "Debug build (your own system)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release_armv8",
+      "inherits": "release",
+      "architecture": {
+        "value": "armv8",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm64"
+      }
+    },
+    {
+      "name": "debug_armv8",
+      "inherits": "debug",
+      "architecture": {
+        "value": "armv8",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm64"
+      }
+    },
+    {
+      "name": "release_armv7",
+      "inherits": "release",
+      "architecture": {
+        "value": "armv7",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm32"
+      }
+    },
+    {
+      "name": "debug_armv7",
+      "inherits": "debug",
+      "architecture": {
+        "value": "armv7",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "arm32"
+      }
+    },
+    {
+      "name": "debug_x86",
+      "inherits": "default",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ARCHITECTURE": "x86"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "configurePreset": "default"
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "configurePreset": "release"
+    },
+    {
+      "name": "debug",
+      "inherits": "default",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release_armv8",
+      "inherits": "default",
+      "configurePreset": "release_armv8"
+    },
+    {
+      "name": "debug_armv8",
+      "inherits": "default",
+      "configurePreset": "debug_armv8"
+    },
+    {
+      "name": "release_armv7",
+      "inherits": "default",
+      "configurePreset": "release_armv7"
+    },
+    {
+      "name": "debug_armv7",
+      "inherits": "default",
+      "configurePreset": "debug_armv7"
+    },
+    {
+      "name": "debug_x86",
+      "inherits": "default",
+      "configurePreset": "debug_x86"
+    }
+  ]
+}
