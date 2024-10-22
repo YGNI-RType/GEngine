@@ -8,17 +8,20 @@
 #pragma once
 
 #include "net_common.hpp"
+#include "net_huffman.hpp"
+#include "structs/msg_all_structs.hpp"
 #include "structs/msg_tcp_structs.hpp"
 #include "structs/msg_udp_structs.hpp"
-#include "structs/msg_all_structs.hpp"
 #include "utils/pack.hpp"
-#include "net_huffman.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
 #include <vector>
+
+// temp
+#include <iostream>
 
 namespace Network {
 
@@ -50,7 +53,7 @@ public:
         ENCRYPTED = 8,
         ACK = 16,
         WAS_FRAGMENTED = 32,
-        SHOULD_COMPRESS = 64,
+        END_COMPRESS = 64,
     };
 
 public:
@@ -71,26 +74,30 @@ public:
         m_type = type;
     }
 
-    bool isCompressed() const {
+    /* THERE IS A DIFFERENCE BETWEEN isCompressed & isEndCompress */
+    bool isCompressed(void) const {
         return m_flags & COMPRESSED;
     }
-    bool hasHeader() const {
+    bool isEndCompress(void) const {
+        return m_flags & END_COMPRESS;
+    }
+    bool hasHeader(void) const {
         return m_flags & HEADER;
     }
-    bool isFragmented() const {
+    bool isFragmented(void) const {
         return m_flags & FRAGMENTED;
     }
-    bool wasFragmented() const {
+    bool wasFragmented(void) const {
         return m_flags & WAS_FRAGMENTED;
     }
-    bool isEncrypted() const {
+    bool isEncrypted(void) const {
         return m_flags & ENCRYPTED;
     }
-    bool shouldAck() const {
+    bool shouldAck(void) const {
         return m_flags & ACK;
     }
 
-    uint8_t getFlags() const {
+    uint8_t getFlags(void) const {
         return m_flags;
     }
 
@@ -99,10 +106,22 @@ public:
     }
 
     virtual const byte_t *getData(void) const = 0;
+    virtual byte_t *getModifyData(void) = 0;
     virtual uint64_t getMaxMsgSize(void) const = 0;
+
+    /******** WRITE DATA ********/
 
     template <typename T>
     void appendData(const T &data, size_t offset = 0) {
+        if (m_compressNow) {
+            if (m_curSize + offset > getMaxMsgSize())
+                return;
+            size_t compressedSize = m_huffman.compressContinuous(*this, m_curSize + offset, (const byte_t *)&data, sizeof(T));
+            std::cout << "size: " << sizeof(T) << " | " << compressedSize << std::endl;
+            m_curSize += compressedSize;
+            return;
+        }
+
         byte_t *myData = getDataMember();
         uint64_t maxSz = getMaxMsgSize();
         if (m_curSize + offset + sizeof(T) > maxSz)
@@ -114,6 +133,9 @@ public:
 
     template <typename T>
     void writeData(const T &data, size_t msgDataOffset = 0, size_t dataOffset = 0, bool updateSize = true) {
+        if (isCompressed()) /* can't bceause the size will change */
+            return;
+
         byte_t *myData = getDataMember();
         uint64_t maxSz = getMaxMsgSize();
         if (msgDataOffset + sizeof(T) >= maxSz)
@@ -149,12 +171,27 @@ public:
     void writeData(const void *data, std::size_t size, bool updateSize = true);
     void readData(void *data, std::size_t offset, std::size_t size) const;
 
-    /* When you call, all the appendeed data from here will be compressed */
+    /****************************/
+
+    /* When you call, all the appendeed data from here will be compressed, this is for END_COMPRESS */
     void startCompressingSegment(void);
-    /* When you call, everything that was in that previous segment will stop being compressed (you should never use it)*/
+    /* When you call, everything that was in that previous segment will stop being compressed (you should never use
+     * it)*/
     void stopCompressingSegment(void);
+
+    /*
+        There is no:
+            void startDecompressingSegment(void);
+            void stopDecompressingSegment(void);
+
+        since as soon we get the data, we decompress it, and append inside the message in the queue
+    */
+
     bool getCompressingBuffer(void *&data, size_t &bufferSize);
 
+    byte_t &getBitBuffer(void) {
+        return bitBuffer;
+    }
 
 protected:
     AMessage(uint8_t type, uint8_t flags);
@@ -165,9 +202,11 @@ protected:
     std::uint64_t m_curSize = 0;
     uint8_t m_type;
     uint8_t m_flags = 0;
+    bool m_compressNow = false;
 
 private:
     static Compression::AHC m_huffman;
+    byte_t bitBuffer;
 };
 
 class TCPMessage : public AMessage {
@@ -177,7 +216,10 @@ public:
 
     TCPMessage &operator=(const TCPMessage &other);
 
-    const byte_t *getData() const override final {
+    const byte_t *getData(void) const override final {
+        return m_data;
+    }
+    byte_t *getModifyData(void) override final {
         return m_data;
     }
     uint64_t getMaxMsgSize(void) const override final {
@@ -206,7 +248,10 @@ public:
 
     UDPMessage &operator=(const UDPMessage &other);
 
-    const byte_t *getData() const override final {
+    const byte_t *getData(void) const override final {
+        return m_data;
+    }
+    byte_t *getModifyData(void) override final {
         return m_data;
     }
     uint64_t getMaxMsgSize(void) const override final {

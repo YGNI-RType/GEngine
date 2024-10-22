@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "net_common.hpp"
+
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -42,6 +44,9 @@ public:
 
     void addSymbol(uint8_t symbol);
 
+    /* Warning: The table should be complete with all the symbols, otherwise we get UB */
+    bool writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, byte_t &bitBuffer, size_t &writeCount);
+
 private:
     void swap(Node *lnode, Node *lright);
     void increment(Node *node);
@@ -71,6 +76,7 @@ public:
 
     /* compress the segment, shift everthing and update the size */
     void compress(AMessage &msg);
+    size_t compressContinuous(AMessage &msg, size_t offset, const byte_t *data, size_t size);
 
     /* decompress the segment, shift everyhting and update the actual size */
     void decompress(AMessage &msg);

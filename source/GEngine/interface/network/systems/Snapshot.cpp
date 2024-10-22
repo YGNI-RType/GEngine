@@ -79,12 +79,12 @@ void Snapshot::getAndSendDeltaDiff(void) {
 
         std::vector<ecs::component::component_info_t> deltaDiff = getDeltaDiff(current, last);
 
-        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK, // |
-                                    // Network::UDPMessage::COMPRESSED,
+        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                    Network::UDPMessage::COMPRESSED,
                                 Network::SV_SNAPSHOT);
         uint64_t nb_component = deltaDiff.size();
         msg.appendData(nb_component);
-        // msg.startCompressingSegment();
+        msg.startCompressingSegment();
         for (auto &[entity, type, set, any] : deltaDiff) {
             ecs::component::ComponentTools::component_size_t size = set ? getComponentSize(type) : 0;
             NetworkComponent c(entity, getComponentId(type), size);
@@ -92,9 +92,8 @@ void Snapshot::getAndSendDeltaDiff(void) {
             if (set)
                 msg.appendData(toVoid(type, any), c.size);
         }
-        // msg.stopCompressingSegment();
+        msg.stopCompressingSegment();
 
-        // std::cout << "SEND: "<< msg.getSize() << " snap " << nb_component << std::endl;
         if (!server.isRunning())
             continue;
         client.getNet()->pushData(msg, true);

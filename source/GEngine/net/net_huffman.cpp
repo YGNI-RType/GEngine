@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/net/net_huffman.hpp"
+#include "GEngine/net/msg.hpp"
 
 namespace Network::Compression {
 
@@ -22,17 +23,38 @@ AHC::AHC(bool dpcm) {
 
 /* do this if you want to compress one time */
 
-// void AHC::compress(AMessage &msg) {
-//     size_t size;
-//     void *data = nullptr;
-//     const size_t msgSize = msg.getSize();
+void AHC::compress(AMessage &msg) {
+    HuffTable huffCompress;
 
-//     if (!msg.getCompressingBuffer(data, size))
-//         return;
-//     if (data == nullptr)
-//         return;
-    
-// }
+    size_t size;
+    void *data = nullptr;
+    const size_t msgSize = msg.getSize();
+
+    if (!msg.getCompressingBuffer(data, size))
+        return;
+    if (data == nullptr)
+        return;
+
+    /* Use huffCompress instead of m_compress */
+}
+
+size_t AHC::compressContinuous(AMessage &msg, size_t offset, const byte_t *pushData, size_t size) {
+    byte_t *msgData = reinterpret_cast<byte_t *>(msg.getModifyData() + offset);
+    auto msgSize = msg.getMaxMsgSize() - offset;
+    size_t writeBitCount = 0;
+    auto oldBitBuffer = msg.getBitBuffer();
+
+    for (size_t i = 0; i < size; i++)
+        if (!m_compress.writeSymbol(pushData[i], msgData, msgSize, msg.getBitBuffer(), writeBitCount))
+            throw std::runtime_error("Message Overflow");
+    if (writeBitCount < 7) {
+        /* oldBitBuffer != 0 because that means it's the first time the bit buffer is used, and of course it's appended */
+        if (oldBitBuffer != 0 && msg.getBitBuffer() + oldBitBuffer > 7)
+            return 0;
+    }
+
+    return writeBitCount / 8 + 1;
+}
 
 /*************************************************************/
 
@@ -64,6 +86,21 @@ void Node::swapLL(Node *rnode) {
 }
 
 /*************************************************************/
+
+/* Add a bit to the output file (buffered) */
+static void add_bit(byte_t bit, byte_t *fout, byte_t &bitCount) {
+    if ((bitCount & 7) == 0)
+        fout[(bitCount * 8)] = 0;
+    fout[(bitCount * 8)] |= bit << (bitCount & 7);
+    bitCount++;
+}
+
+/* Receive one bit from the input file (buffered) */
+static byte_t get_bit(byte_t *fin, byte_t &bitCount) {
+    byte_t t = (fin[(bitCount * 8)] >> (bitCount & 7)) & 0x1;
+    bitCount++;
+    return t;
+}
 
 HuffTable::HuffTable() {
     m_tree = m_head = m_tail = m_nodeIndexSymbol[NYT] = &(m_nodeList[m_nextBlock++]);
@@ -218,6 +255,30 @@ void HuffTable::addSymbol(uint8_t sym) {
     } else {
         increment(m_nodeIndexSymbol[sym]);
     }
+}
+
+/* Send the prefix code for this node */
+static size_t writeSymbolRec(Node *node, Node *child, byte_t *data, size_t maxoffset, byte_t &bitCount, size_t &writeCount) {
+    bool shouldContinue = true;
+    if (node->parent) {
+        shouldContinue = writeSymbolRec(node->parent, node, data, maxoffset, bitCount, writeCount);
+        if (!shouldContinue)
+            return false;
+    }
+    if (child) {
+        if (bitCount >= maxoffset) { /* too much info, cancel */
+            bitCount = maxoffset + 1;
+            return -1;
+        }
+        writeCount++;
+        add_bit(node->right == child ? 1 : 0, data, bitCount);
+    }
+    return shouldContinue;
+}
+
+bool HuffTable::writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, byte_t &bitBuffer, size_t &writeCount) {
+    const size_t maxDataSizeBits = maxDataSizeBytes * 8;
+    return writeSymbolRec(m_nodeIndexSymbol[symbol], nullptr, data, maxDataSizeBits, bitBuffer, writeCount);
 }
 
 /* TODO : calculate own frequencies */

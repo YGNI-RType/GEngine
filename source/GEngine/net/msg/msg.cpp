@@ -12,16 +12,33 @@ namespace Network {
 Compression::AHC AMessage::m_huffman;
 
 AMessage::AMessage(uint8_t type, uint8_t flags)
-    : m_type(type), m_flags(flags) {
+    : m_type(type)
+    , m_flags(flags) {
 }
 
 void AMessage::appendData(const void *data, std::size_t size) {
+    if (m_compressNow) {
+        if (m_curSize + size > getMaxMsgSize())
+            return;
+        m_curSize += m_huffman.compressContinuous(*this, m_curSize, (const byte_t *)&data, size);
+        return;
+    }
+
+    if (m_curSize + size > getMaxMsgSize())
+        return;
+
     byte_t *myData = getDataMember();
     std::memcpy(myData + m_curSize, data, size);
     m_curSize += size;
 }
 
 void AMessage::writeData(const void *data, std::size_t size, bool updateSize) {
+    if (isCompressed()) /* can't bceause the size will change */
+        return;
+
+    if (m_curSize + size > getMaxMsgSize())
+        return;
+
     byte_t *myData = getDataMember();
     std::memcpy(myData, data, size);
     if (updateSize)
@@ -37,11 +54,17 @@ void AMessage::readData(void *data, size_t offset, std::size_t size) const {
 }
 
 void AMessage::startCompressingSegment(void) {
-    if (isCompressed())
+    if (isCompressed()) {
+        m_compressNow = true;
+        return;
+    }
+
+    if (!isEndCompress())
         return;
 
     auto data = getDataMember();
-    ALL_MessageCompressionHeader *header = reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+    ALL_MessageCompressionHeader *header =
+        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size != 0)
         return;
 
@@ -49,31 +72,36 @@ void AMessage::startCompressingSegment(void) {
 }
 
 void AMessage::stopCompressingSegment(void) {
-    if (!isCompressed())
+    if (isCompressed()) {
+        m_compressNow = false;
+        return;
+    }
+
+    if (!isEndCompress())
         return;
 
     auto data = getDataMember();
     /* todo: using UDP structs in amessage */
-    ALL_MessageCompressionHeader *header = reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+    ALL_MessageCompressionHeader *header =
+        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return;
 
     header->size = m_curSize - header->offset;
 }
 
-bool AMessage::getCompressingBuffer(void *&data, size_t &bufferSize)
-{
-    if (!isCompressed())
+bool AMessage::getCompressingBuffer(void *&data, size_t &bufferSize) {
+    if (!isEndCompress())
         return false;
 
     auto m_data = getDataMember();
-    ALL_MessageCompressionHeader *header = reinterpret_cast<ALL_MessageCompressionHeader *>(m_data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+    ALL_MessageCompressionHeader *header =
+        reinterpret_cast<ALL_MessageCompressionHeader *>(m_data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return false;
     data = m_data + header->offset;
     bufferSize = header->size;
     return true;
 }
-
 
 } // namespace Network

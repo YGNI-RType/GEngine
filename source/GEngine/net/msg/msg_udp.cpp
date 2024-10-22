@@ -15,7 +15,7 @@ namespace Network {
 UDPMessage::UDPMessage(uint8_t flags, uint8_t type)
     : AMessage(type, flags) {
     m_curSize = hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0;
-    if (isCompressed()) {
+    if (isEndCompress()) {
         ALL_MessageCompressionHeader cHeader = {.offset = 0, .size = 0};
         appendData(cHeader);
     }
@@ -109,7 +109,7 @@ void UDPMessage::clear(void) {
     memset(m_data + offset, 0, m_curSize - offset);
     m_curSize = offset;
 
-    if (isCompressed()) {
+    if (isEndCompress()) {
         ALL_MessageCompressionHeader cHeader = {.offset = 0, .size = 0};
         appendData(cHeader);
     }
