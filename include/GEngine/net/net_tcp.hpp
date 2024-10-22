@@ -7,20 +7,15 @@
 
 #pragma once
 
-#include "net_socket.hpp"
 #include "net_queue_heap.hpp"
+#include "net_socket.hpp"
 
 #include <chrono>
 
 namespace Network {
 class TCPManager {
 public:
-
-enum Result {
-    OK_NOW,
-    OK_LATER,
-    KO_FULL
-};
+    enum Result { OK_NOW, OK_LATER, KO_FULL };
 
 public:
     TCPManager(SocketTCP &&socket);
@@ -70,5 +65,6 @@ private:
 
     TCPSerializedMessage m_curMessageIn;
     size_t m_curMessageInOffset = 0;
-};;
+};
+;
 } // namespace Network

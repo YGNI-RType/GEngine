@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2024
 ** GameEngine
 ** File description:
-** queue
+** net_queue_heap
 */
 
 #pragma once
@@ -133,7 +133,6 @@ private:
         m_socketEvent.signal();
         return true;
     }
-
 
 private:
     std::unordered_map<uint8_t, std::queue<std::unique_ptr<TCPMessage>>> m_msgs;

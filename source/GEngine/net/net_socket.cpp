@@ -314,7 +314,8 @@ void SocketTCP::receive(TCPMessage &msg) const {
     TCPSerializedMessage sMsg;
     auto ptrMsg = reinterpret_cast<char *>(&sMsg);
 
-    size_t recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), 0);
+    size_t recvSz =
+        receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), 0);
     if (sMsg.curSize > MAX_TCP_MSGLEN)
         throw SocketException("Message too big");
     recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg + recvSz),
@@ -323,8 +324,7 @@ void SocketTCP::receive(TCPMessage &msg) const {
     msg.setSerialize(sMsg);
 }
 
-bool SocketTCP::sendPartial(const TCPMessage &msg, size_t sizeToSend, size_t &offset) const
-{
+bool SocketTCP::sendPartial(const TCPMessage &msg, size_t sizeToSend, size_t &offset) const {
     TCPSerializedMessage sMsg;
     msg.getSerialize(sMsg);
 
@@ -336,12 +336,12 @@ bool SocketTCP::sendPartial(const TCPMessage &msg, size_t sizeToSend, size_t &of
     return sent != 0;
 }
 
-bool SocketTCP::receivePartial(TCPSerializedMessage &sMsg, size_t size, size_t &offset) const
-{
+bool SocketTCP::receivePartial(TCPSerializedMessage &sMsg, size_t size, size_t &offset) const {
     auto ptrMsg = reinterpret_cast<char *>(&sMsg);
 
     if (offset < sizeof(HeaderSerializedMessage)) { /* new message */
-        size_t recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), offset);
+        size_t recvSz =
+            receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), offset);
         offset += recvSz;
         if (offset < sizeof(HeaderSerializedMessage))
             return false; /* the message is too small, can't proceed */
@@ -349,17 +349,18 @@ bool SocketTCP::receivePartial(TCPSerializedMessage &sMsg, size_t size, size_t &
 
     size_t nowOffset = CF_NET_MIN(offset, sMsg.curSize + sizeof(TCPSerializedMessage) - MAX_TCP_MSGLEN);
 
-    size_t recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), nowOffset);
+    size_t recvSz =
+        receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), nowOffset);
     offset += recvSz;
     return true;
 }
-
 
 size_t SocketTCP::receiveReliant(TCPSerializedMessage *buffer, size_t size, size_t offset) const {
     size_t receivedTotal = 0;
 
     while (receivedTotal < size) {
-        auto received = ::recv(m_sock, reinterpret_cast<char *>(buffer + offset + receivedTotal), size - receivedTotal, 0);
+        auto received =
+            ::recv(m_sock, reinterpret_cast<char *>(buffer + offset + receivedTotal), size - receivedTotal, 0);
         if (received == 0)
             throw SocketDisconnected();
         if (received < 0) {
@@ -378,7 +379,8 @@ size_t SocketTCP::sendReliant(const TCPSerializedMessage *msg, size_t msgDataSiz
     msgDataSize += sizeof(TCPSerializedMessage) - MAX_TCP_MSGLEN;
 
     while (sentTotal < msgDataSize) {
-        auto sent = ::send(m_sock, reinterpret_cast<const char *>(msg + offset + sentTotal), msgDataSize - sentTotal, 0);
+        auto sent =
+            ::send(m_sock, reinterpret_cast<const char *>(msg + offset + sentTotal), msgDataSize - sentTotal, 0);
         if (sent < 0) {
             int e = socketError;
             if (e == WSAECONNRESET)
