@@ -9,6 +9,33 @@
 
 namespace Network::Compression {
 
+AHC::AHC(bool dpcm) {
+    /* Add the frequency table to the huffman table, creating it in the process */
+    for (size_t sym = 0; const auto freq : m_symbolFrequencies) {
+        for (int32_t i = 0; i < freq; i++) {
+            m_compress.addSymbol(sym);
+            m_decompress.addSymbol(sym);
+        }
+        sym++;
+    }
+}
+
+/* do this if you want to compress one time */
+
+// void AHC::compress(AMessage &msg) {
+//     size_t size;
+//     void *data = nullptr;
+//     const size_t msgSize = msg.getSize();
+
+//     if (!msg.getCompressingBuffer(data, size))
+//         return;
+//     if (data == nullptr)
+//         return;
+    
+// }
+
+/*************************************************************/
+
 /* swap linked list logic */
 void Node::swapLL(Node *rnode) {
     Node *lnodeParent;
@@ -34,19 +61,6 @@ void Node::swapLL(Node *rnode) {
         this->prev->next = this;
     if (rnode->prev)
         rnode->prev->next = rnode;
-}
-
-/*************************************************************/
-
-AHC::AHC(bool dpcm) {
-    /* Add the frequency table to the huffman table, creating it in the process */
-    for (size_t sym = 0; const auto freq : m_symbolFrequencies) {
-        for (int32_t i = 0; i < freq; i++) {
-            compress.addSymbol(sym);
-            decompress.addSymbol(sym);
-        }
-        sym++;
-    }
 }
 
 /*************************************************************/

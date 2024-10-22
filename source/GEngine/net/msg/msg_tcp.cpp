@@ -10,7 +10,7 @@
 namespace Network {
 
 TCPMessage::TCPMessage(uint8_t type)
-    : AMessage(type) {
+    : AMessage(type, 0) {
 }
 
 TCPMessage &TCPMessage::operator=(const TCPMessage &other) {

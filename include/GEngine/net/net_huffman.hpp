@@ -11,6 +11,10 @@
 #include <cstdint>
 #include <memory>
 
+namespace Network {
+    class AMessage;
+}
+
 namespace Network::Compression {
 
 #define HMAX 256 /* Maximum symbol */
@@ -65,11 +69,16 @@ public:
     AHC(bool dpcm = false);
     ~AHC() = default;
 
+    /* compress the segment, shift everthing and update the size */
+    void compress(AMessage &msg);
+
+    /* decompress the segment, shift everyhting and update the actual size */
+    void decompress(AMessage &msg);
 private:
     static std::array<uint32_t, HMAX> m_symbolFrequencies;
 
 private:
-    HuffTable compress;
-    HuffTable decompress;
+    HuffTable m_compress;
+    HuffTable m_decompress;
 };
 } // namespace Network::Compression

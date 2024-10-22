@@ -10,7 +10,9 @@
 #include "net_common.hpp"
 #include "structs/msg_tcp_structs.hpp"
 #include "structs/msg_udp_structs.hpp"
+#include "structs/msg_all_structs.hpp"
 #include "utils/pack.hpp"
+#include "net_huffman.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -41,6 +43,17 @@ PACK(struct TCPSerializedMessage {
 
 class AMessage {
 public:
+    enum Flag {
+        COMPRESSED = 1,
+        HEADER = 2,
+        FRAGMENTED = 4,
+        ENCRYPTED = 8,
+        ACK = 16,
+        WAS_FRAGMENTED = 32,
+        SHOULD_COMPRESS = 64,
+    };
+
+public:
     /* there is no constructor, the data is casted as the class it was meant to
      * be delivered */
     /* commented since we don't use AMessage anyway, so don't use the vtable */
@@ -56,6 +69,33 @@ public:
     }
     void setType(uint8_t type) {
         m_type = type;
+    }
+
+    bool isCompressed() const {
+        return m_flags & COMPRESSED;
+    }
+    bool hasHeader() const {
+        return m_flags & HEADER;
+    }
+    bool isFragmented() const {
+        return m_flags & FRAGMENTED;
+    }
+    bool wasFragmented() const {
+        return m_flags & WAS_FRAGMENTED;
+    }
+    bool isEncrypted() const {
+        return m_flags & ENCRYPTED;
+    }
+    bool shouldAck() const {
+        return m_flags & ACK;
+    }
+
+    uint8_t getFlags() const {
+        return m_flags;
+    }
+
+    void setFlag(uint8_t flag) {
+        m_flags = flag;
     }
 
     virtual const byte_t *getData(void) const = 0;
@@ -109,14 +149,25 @@ public:
     void writeData(const void *data, std::size_t size, bool updateSize = true);
     void readData(void *data, std::size_t offset, std::size_t size) const;
 
+    /* When you call, all the appendeed data from here will be compressed */
+    void startCompressingSegment(void);
+    /* When you call, everything that was in that previous segment will stop being compressed (you should never use it)*/
+    void stopCompressingSegment(void);
+    bool getCompressingBuffer(void *&data, size_t &bufferSize);
+
+
 protected:
-    AMessage(uint8_t type);
+    AMessage(uint8_t type, uint8_t flags);
     virtual ~AMessage() = default;
 
     virtual byte_t *getDataMember() = 0;
 
     std::uint64_t m_curSize = 0;
     uint8_t m_type;
+    uint8_t m_flags = 0;
+
+private:
+    static Compression::AHC m_huffman;
 };
 
 class TCPMessage : public AMessage {
@@ -149,18 +200,8 @@ private:
 
 class UDPMessage : public AMessage {
 public:
-    enum Flag {
-        COMPRESSED = 1,
-        HEADER = 2,
-        FRAGMENTED = 4,
-        ENCRYPTED = 8,
-        ACK = 16,
-        WAS_FRAGMENTED = 32,
-    };
-
-public:
     /* hasHeader = tell if it will be transmitted into the channel, with the necessity to have additional headers */
-    UDPMessage(bool hasHeader, uint8_t type);
+    UDPMessage(uint8_t flags, uint8_t type);
     ~UDPMessage() = default;
 
     UDPMessage &operator=(const UDPMessage &other);
@@ -172,36 +213,9 @@ public:
         return MAX_UDP_MSGLEN;
     }
 
-    bool isCompressed() const {
-        return m_flags & COMPRESSED;
-    }
-    bool hasHeader() const {
-        return m_flags & HEADER;
-    }
-    bool isFragmented() const {
-        return m_flags & FRAGMENTED;
-    }
-    bool wasFragmented() const {
-        return m_flags & WAS_FRAGMENTED;
-    }
-    bool isEncrypted() const {
-        return m_flags & ENCRYPTED;
-    }
-    bool shouldAck() const {
-        return m_flags & ACK;
-    }
-
-    uint8_t getFlags() const {
-        return m_flags;
-    }
-
-    void setFlag(uint8_t flag) {
-        m_flags = flag;
-    }
-
     uint64_t getHash(void) const;
 
-    void clear(bool hasHeader);
+    void clear(void);
 
     void setCompressed(bool compressed);
     void setHeader(bool header);
@@ -223,8 +237,6 @@ private:
     byte_t *getDataMember() override final {
         return m_data;
     };
-
-    uint8_t m_flags = 0;
 
     /* always set field to last, this is not a header !!!*/
     byte_t m_data[MAX_UDP_MSGLEN];

@@ -26,7 +26,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
         if (client.shouldDelete())
             continue;
 
-        Network::UDPMessage msg(true, Network::CL_EVENT);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_EVENT);
         if (!client.getNet()->popIncommingData(msg, readCount))
             continue;
 

@@ -26,7 +26,7 @@ void Updater::onGameLoop(gengine::system::event::GameLoop &e) {
 
     size_t size = cl.getSizeIncommingData(Network::SV_SNAPSHOT, true);
     for (size_t i = 0; i < size; i++) {
-        Network::UDPMessage msg(true, Network::SV_SNAPSHOT);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::SV_SNAPSHOT);
         size_t readCount;
         if (!cl.popIncommingData(msg, readCount, true))
             continue;
