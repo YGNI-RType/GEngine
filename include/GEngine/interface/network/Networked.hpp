@@ -43,7 +43,7 @@ public:
 #ifdef GEngine_Server
         Network::NET::initServer();
         m_remote.registerSystem<gengine::interface::network::system::Snapshot>(m_remote.getWorld());
-
+        m_remote.registerSystem<gengine::interface::network::system::ServerClientsHandler>();
 #elif GEngine_Client
         Network::NET::initClient();
         em.addEvent<Network::Event::ConnectInfo>(Network::Event::CONNECT, Network::Event::ConnectInfo(ip, port));
@@ -51,6 +51,8 @@ public:
 #endif
         Network::NET::start();
 
+        m_remote.registerSystem<gengine::system::AutoMainLoop>();
+        m_local.registerSystem<gengine::system::AutoMainLoop>();
     }
 
     ~Networked() {
