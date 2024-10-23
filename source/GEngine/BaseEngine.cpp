@@ -26,4 +26,12 @@ void BaseEngine::compute(void) {
 void BaseEngine::start(void) {
     m_ecs.publishEvent(system::event::StartEngine());
 }
+
+const BaseEngine::world_t &BaseEngine::getWorld(void) {
+    return m_ecs.getComponentMap();
+} // TODO keep ?
+
+void BaseEngine::setFirstEntity(ecs::entity::Entity start) {
+    m_ecs.setFirstEntity(start);
+}
 } // namespace gengine

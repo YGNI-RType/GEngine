@@ -27,19 +27,15 @@ public:
 
     void start(void);
 
-    const world_t &getWorld(void) {
-        return m_ecs.getComponentMap();
-    } // TODO keep ?
+    const world_t &getWorld(void);
 
     template <typename Type>
-    void subscribeCallback(std::function<void(Type &)> callback) {
-        m_ecs.subscribeCallback(callback);
-    }
+    void subscribeCallback(std::function<void(Type &)> callback);
 
     template <typename T>
-    void publishEvent(T &e) {
-        m_ecs.publishEvent<T>(e);
-    }
+    void publishEvent(T &e);
+
+    void setFirstEntity(ecs::entity::Entity start);
 
 private:
     ecs::ECS m_ecs;
