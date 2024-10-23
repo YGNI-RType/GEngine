@@ -10,6 +10,7 @@
 #include "events/socket_event.hpp"
 #include "net_channel.hpp"
 #include "net_queue.hpp"
+#include "net_queue_heap.hpp"
 #include "net_wait.hpp"
 
 #include <memory>
@@ -83,7 +84,9 @@ public:
     /** Net Queue **/
 
     bool pushData(const UDPMessage &msg, bool shouldAck);
+    bool pushStream(const TCPMessage &msg);
     bool popIncommingData(UDPMessage &msg, size_t &readCount);
+    bool popIncommingStream(TCPMessage &msg, size_t &readCount);
     size_t getSizeIncommingData(void) const {
         return m_packInData.size();
     }
@@ -91,7 +94,9 @@ public:
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
     bool retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount);
+    bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
     bool pushIncommingData(const UDPMessage &msg, size_t readCount);
+    bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
 private:
     NetChannel m_channel;
@@ -102,11 +107,12 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
-    NetQueue<32, 1400> m_packOutData;    /* voiceip etc.. */
-    NetQueue<1, 17000> m_packOutDataAck; /* snapshot */
+    NetQueue<UDPMessage, 1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 32, 1400> m_packOutData;    /* voiceip etc.. */
+    NetQueue<UDPMessage, 1, 17000> m_packOutDataAck; /* snapshot */
 
-    // NetClientSnapshot m_snapshots[PACKET_BACKUP];
+    NetQueueHeap<TCPMessage, 5> m_tcpIn;
+    NetQueueHeap<TCPMessage, 5> m_tcpOut;
 
     /* sends CMD, not any data */
 
