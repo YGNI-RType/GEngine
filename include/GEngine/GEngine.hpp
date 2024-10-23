@@ -16,6 +16,8 @@
 #include <utility> // For std::forward
 #include <vector>
 
+#include "GEngine/libdev/System.hpp"
+
 /**
  * @brief Registry class for managing components and systems registration.
  */
@@ -25,8 +27,9 @@ struct Registry {
      *
      * @param engines A vector of reference wrappers to engines for component and system registration.
      */
-    Registry(std::vector<std::reference_wrapper<gengine::BaseEngine>> &engines)
-        : m_engines(engines) {
+    Registry(gengine::BaseEngine &local, gengine::BaseEngine &remote)
+        : m_local(local)
+        , m_remote(remote) {
     }
 
     /**
@@ -38,8 +41,8 @@ struct Registry {
      */
     template <typename ComponentType>
     void registerComponent(void) {
-        for (auto &engine : m_engines)
-            engine.get().registerComponent<ComponentType>();
+        m_local.registerComponent<ComponentType>();
+        m_remote.registerComponent<ComponentType>();
     }
 
     /**
@@ -54,12 +57,15 @@ struct Registry {
      */
     template <typename SystemType, class... Args>
     void registerSystem(Args &&...params) {
-        for (auto &engine : m_engines)
-            engine.get().registerSystem<SystemType>(std::forward<Args>(params)...);
+        if constexpr (!std::is_base_of<gengine::LocalSystem, SystemType>::value)
+            m_remote.registerSystem<SystemType>(std::forward<Args>(params)...);
+        if constexpr (!std::is_base_of<gengine::RemoteSystem, SystemType>::value)
+            m_local.registerSystem<SystemType>(std::forward<Args>(params)...);
     }
 
 private:
-    std::vector<std::reference_wrapper<gengine::BaseEngine>> m_engines; ///< Engines registered with this registry.
+    gengine::BaseEngine &m_local;
+    gengine::BaseEngine &m_remote;
 };
 
 extern "C" {
@@ -71,7 +77,7 @@ extern "C" {
  *
  * @param r Pointer to the Registry instance for registering components and systems.
  */
-void GEngineDeclareGame(Registry *r);
+void GEngineDeclareComponents(Registry *r);
 
 /**
  * @brief Declare driver components and systems for the engine.
@@ -81,7 +87,7 @@ void GEngineDeclareGame(Registry *r);
  *
  * @param r Pointer to the Registry instance for registering components and systems.
  */
-void GEngineDeclareDriver(Registry *r);
+void GEngineDeclareSystems(Registry *r);
 
 /**
  * @brief Declare shared components and events for the engine.
@@ -91,7 +97,7 @@ void GEngineDeclareDriver(Registry *r);
  *
  * @param r Pointer to the Registry instance for registering components and systems.
  */
-void GEngineDeclareShared(Registry *r);
+void GEngineDeclareEvents(Registry *r);
 }
 
 /**
@@ -151,16 +157,16 @@ public:
      */
     ~GEngine() = default;
 
-    static gengine::game::Engine &getGame(void) {
+    static gengine::BaseEngine &getLocal(void) {
         if (!instance)
             init();
-        return instance->m_gameEngine;
+        return instance->m_local;
     }
 
-    static gengine::driver::Engine &getDriver(void) {
+    static gengine::BaseEngine &getRemote(void) {
         if (!instance)
             init();
-        return instance->m_driverEngine;
+        return instance->m_remote;
     }
 
 private:
@@ -182,19 +188,11 @@ private:
         if (!instance)
             init();
 
-        std::vector<std::reference_wrapper<gengine::BaseEngine>> shared = {std::ref(instance->m_gameEngine),
-                                                                           std::ref(instance->m_driverEngine)};
-        std::vector<std::reference_wrapper<gengine::BaseEngine>> game = {std::ref(instance->m_gameEngine)};
-        std::vector<std::reference_wrapper<gengine::BaseEngine>> driver = {std::ref(instance->m_driverEngine)};
+        auto sharedRegistry = std::make_unique<Registry>(instance->m_local, instance->m_remote);
 
-        auto sharedRegistry = std::make_unique<Registry>(shared);
-        GEngineDeclareShared(sharedRegistry.get());
-
-        auto gameRegistry = std::make_unique<Registry>(game);
-        GEngineDeclareGame(gameRegistry.get());
-
-        auto driverRegistry = std::make_unique<Registry>(driver);
-        GEngineDeclareDriver(driverRegistry.get());
+        GEngineDeclareComponents(sharedRegistry.get());
+        GEngineDeclareSystems(sharedRegistry.get());
+        GEngineDeclareEvents(sharedRegistry.get());
     }
 
     // Delete copy constructor and assignment operator to enforce singleton pattern
@@ -205,8 +203,8 @@ private:
     static std::unique_ptr<GEngine> instance;
     static std::once_flag initFlag;
 
-    gengine::game::Engine m_gameEngine;     ///< Instance of the game engine.
-    gengine::driver::Engine m_driverEngine; ///< Instance of the driver engine.
+    gengine::BaseEngine m_local;     ///< Instance of the game engine.
+    gengine::BaseEngine m_remote; ///< Instance of the driver engine.
 };
 
 // Initialize static members

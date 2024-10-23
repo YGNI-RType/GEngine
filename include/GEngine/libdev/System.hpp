@@ -22,4 +22,8 @@ struct OnEventSystem : public System<OnEventSystem<T, EventType, DependTypes...>
     }
     virtual void onEvent(EventType &e) = 0;
 };
+
+class LocalSystem {};
+
+class RemoteSystem {};
 } // namespace gengine

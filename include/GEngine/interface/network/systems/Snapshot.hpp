@@ -32,7 +32,7 @@ class NetClient;
 
 namespace gengine::interface::network::system {
 
-class Snapshot : public System<Snapshot, gengine::interface::network::system::ServerClientsHandler> {
+class Snapshot : public System<Snapshot, gengine::interface::network::system::ServerClientsHandler>, public RemoteSystem {
 public:
     using snapshot_t = BaseEngine::world_t;
     using snapshots_t = std::array<snapshot_t, MAX_SNAPSHOT>;

@@ -59,7 +59,7 @@ private:
     bool m_shouldDelete = false;
 };
 
-class ServerClientsHandler : public System<ServerClientsHandler> {
+class ServerClientsHandler : public System<ServerClientsHandler>, public RemoteSystem {
 public:
     ServerClientsHandler();
 

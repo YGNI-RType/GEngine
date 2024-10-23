@@ -24,7 +24,7 @@
 namespace gengine::interface::network::system {
 
 template <class... Events>
-class ClientEventPublisher : public System<ClientEventPublisher<Events...>> {
+class ClientEventPublisher : public System<ClientEventPublisher<Events...>>, public LocalSystem {
 public:
     ClientEventPublisher();
 

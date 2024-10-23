@@ -28,7 +28,7 @@ using json = nlohmann::json;
 
 namespace gengine::system::driver::output {
 using ATrack = component::driver::output::AnimationTrack;
-class AnimationManager : public gengine::System<AnimationManager> {
+class AnimationManager : public gengine::System<AnimationManager>, public LocalSystem {
 public:
     AnimationManager(const std::string &folder);
 
@@ -46,7 +46,7 @@ private:
 };
 
 class Animate : public System<Animate, component::driver::output::Sprite, component::driver::output::Animation,
-                              AnimationManager> {
+                              AnimationManager>, public LocalSystem {
 public:
     void init(void) override;
 

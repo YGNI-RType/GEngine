@@ -20,7 +20,7 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 namespace gengine::system::driver::output {
-class TextureManager : public gengine::System<TextureManager> {
+class TextureManager : public gengine::System<TextureManager>, public LocalSystem {
 public:
     TextureManager(const std::string &folder);
     void init(void) override;
