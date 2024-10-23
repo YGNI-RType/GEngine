@@ -33,6 +33,15 @@ public:
     ECS(void);
 
     /**
+     * @brief Set the entity counter to a custom start.
+     *
+     * Useful if the ECS is used in two diferent instances to avoid entity conflicts (ex: network).
+     *
+     * @param Entity The entity at which the counter will start.
+     */
+    void setFirstEntity(entity::Entity start);
+
+    /**
      * @brief Spawns a new entity and assigns the provided components to it.
      *
      * This method creates a new entity in the ECS and assigns a variable number of components to it.
