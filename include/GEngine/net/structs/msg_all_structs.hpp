@@ -12,8 +12,8 @@
 #include <cstdint>
 
 namespace Network {
-    PACK(struct ALL_MessageCompressionHeader {
-        uint16_t offset;
-        uint16_t size;
-    });
-}
+PACK(struct ALL_MessageCompressionHeader {
+    uint16_t offset;
+    uint16_t size;
+});
+} // namespace Network

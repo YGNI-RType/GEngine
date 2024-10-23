@@ -20,9 +20,6 @@
 #include <stdexcept>
 #include <vector>
 
-// temp
-#include <iostream>
-
 namespace Network {
 
 PACK(struct HeaderSerializedMessage {
