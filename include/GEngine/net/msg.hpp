@@ -117,7 +117,6 @@ public:
             if (m_curSize + offset > getMaxMsgSize())
                 return;
             m_huffman.compressContinuous(*this, m_curSize + offset, (const byte_t *)&data, sizeof(T));
-            // std::cout << "size: " << sizeof(T) << " | " << compressedSize << std::endl;
             return;
         }
 
@@ -174,7 +173,7 @@ public:
         if (!isCompressed())
             throw std::runtime_error("Message is not compressed");
 
-        if (m_curSize + offset + getBitBuffer() / 8  > getMaxMsgSize())
+        if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize())
             throw std::runtime_error("Message overflow when reading");
         return m_huffman.decompressContinuous(*this, offset, (byte_t *)&data, sizeof(T));
     }
@@ -188,7 +187,8 @@ public:
 
     /* When you call, all the appendeed data from here will be compressed, this is for END_COMPRESS */
     void startCompressingSegment(bool reading);
-    /* When you call, everything that was in that previous segment will stop being compressed. THIS WILL APPLY THE SIZE ONCE DONE */
+    /* When you call, everything that was in that previous segment will stop being compressed. THIS WILL APPLY THE SIZE
+     * ONCE DONE */
     void stopCompressingSegment(bool reading);
 
     /*

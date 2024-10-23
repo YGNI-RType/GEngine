@@ -39,13 +39,11 @@ void Updater::handleSnapshotMsg(Network::UDPMessage &msg, size_t readCount) {
     msg.readContinuousData(nb, readCount);
 
     msg.startCompressingSegment(true);
-    // std::cout << "RECV: "<< msg.getSize() << " snap " << nb << std::endl;
     for (int i = 0; i < nb; i++) {
         NetworkComponent c;
         msg.readContinuousCompressed(c, readCount);
         std::vector<Network::byte_t> component(c.size);
         msg.readDataCompressed(component.data(), readCount, c.size);
-        // std::cout << "entity: " << c.entity << " | type: " << c.typeId << " | size: " << c.size << std::endl;
         auto &type = getTypeindex(c.typeId); // TODO array for opti
         if (c.size)
             setComponent(c.entity, type, toAny(type, component.data()));

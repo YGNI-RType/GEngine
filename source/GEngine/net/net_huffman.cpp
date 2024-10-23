@@ -49,17 +49,6 @@ size_t AHC::compressContinuous(AMessage &msg, size_t offset, const byte_t *pushD
             throw std::runtime_error("Message Overflow");
 
     auto diff = msg.getBitBuffer() - oldBitBuffer;
-    // std::cout << "WRITE:" << diff << " (" << size << ")" << std::endl;
-
-    // byte_t oldRemaningBytes = bitRemaningUntilByte;
-    // bitRemaningUntilByte = (diff + bitRemaningUntilByte) % 8;
-    // if (diff < 7) {
-    //     if (oldBitBuffer != 0 && oldRemaningBytes + diff < 8)
-    //         return 0;
-    //     else
-    //         return 1;
-    // }
-
     return diff / 8 + 1;
 }
 
@@ -72,8 +61,6 @@ size_t AHC::decompressContinuous(AMessage &msg, size_t offset, byte_t *pushData,
         throw std::runtime_error("Message Overflow");
 
     auto diff = msg.getBitBuffer() - old;
-    // std::cout << "READ:" << diff << " (" << size << ")" << std::endl;
-
     return diff;
 }
 
@@ -302,7 +289,7 @@ bool HuffTable::writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeByte
 }
 
 static bool readSymbolRec(Node *node, const byte_t *inData, byte_t &symbol, const size_t maxDataSizeBits,
-                       size_t &readCountBits) {
+                          size_t &readCountBits) {
     while (node && node->symbol == INTERNAL_NODE) {
         if (readCountBits >= maxDataSizeBits)
             return false;
@@ -325,7 +312,6 @@ bool HuffTable::readSymbol(const byte_t *inData, byte_t *outData, size_t sizeToR
             return false;
     return true;
 }
-
 
 /* TODO : calculate own frequencies */
 std::array<uint32_t, HMAX> AHC::m_symbolFrequencies = {

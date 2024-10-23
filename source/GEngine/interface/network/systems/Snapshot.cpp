@@ -88,7 +88,6 @@ void Snapshot::getAndSendDeltaDiff(void) {
         for (auto &[entity, type, set, any] : deltaDiff) {
             ecs::component::ComponentTools::component_size_t size = set ? getComponentSize(type) : 0;
             NetworkComponent c(entity, getComponentId(type), size);
-            // std::cout << "entity: " << c.entity << " | type: " << c.typeId << " | size: " << c.size << std::endl;
             msg.appendData(c);
             if (set)
                 msg.appendData(toVoid(type, any), c.size);
