@@ -20,7 +20,9 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_socketUdp(socketudp)
     , m_packOutData(socketEvent)
     , m_packOutDataAck(socketEvent)
-    , m_packInData(socketEvent) {
+    , m_packInData(socketEvent)
+    , m_tcpIn(socketEvent)
+    , m_tcpOut(socketEvent) {
 }
 
 void NetClient::sendStream(const TCPMessage &msg) {
@@ -60,8 +62,8 @@ bool NetClient::handleClientStream(void) {
         return true;
     }
     default:
-        // std::cout << "SV: client just sent TCP specific message" << std::endl;
-        return false;
+        pushIncommingStream(msg, 0);
+        break;
     }
     return true;
 }
@@ -97,12 +99,24 @@ bool NetClient::pushData(const UDPMessage &msg, bool shouldAck) {
     return m_packOutData.push(msg, 0);
 }
 
+bool NetClient::pushStream(const TCPMessage &msg) {
+    return m_tcpOut.push(std::make_unique<TCPMessage>(msg), 0);
+}
+
 bool NetClient::popIncommingData(UDPMessage &msg, size_t &readCount) {
     return m_packInData.pop(msg, readCount, msg.getType());
 }
 
+bool NetClient::popIncommingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpIn.pop(msg, readCount);
+}
+
 bool NetClient::retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount) {
     return m_packOutData.pop(msg, readCount);
+}
+
+bool NetClient::retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpOut.pop(msg, readCount);
 }
 
 bool NetClient::retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount) {
@@ -111,6 +125,10 @@ bool NetClient::retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount
 
 bool NetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {
     return m_packInData.fullpush(msg, readCount);
+}
+
+bool NetClient::pushIncommingStream(const TCPMessage &msg, size_t readCount) {
+    return m_tcpIn.push(std::make_unique<TCPMessage>(msg), readCount);
 }
 
 /***************/
@@ -137,6 +155,17 @@ bool NetClient::sendPackets(void) {
             return false; /* how */
         std::rotate(vecFuncs.begin(), vecFuncs.begin() + 1, vecFuncs.end());
         byteSent += size;
+    }
+
+    size_t outStreamSz = m_tcpOut.size();
+    for (size_t i = 0; i < outStreamSz; i++) {
+        TCPMessage msg(0);
+        size_t readOffset;
+        if (!retrieveWantedOutgoingStream(msg, readOffset))
+            return false;
+
+        if (!m_channel.sendStream(msg))
+            return false;
     }
     return true;
 }

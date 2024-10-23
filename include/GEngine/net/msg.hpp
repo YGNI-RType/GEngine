@@ -134,7 +134,7 @@ public:
     }
 
     void getSerialize(TCPSerializedMessage &msg) const;
-    void setSerialize(TCPSerializedMessage &msg);
+    void setSerialize(const TCPSerializedMessage &msg);
 
 private:
     byte_t *getDataMember() override final {
