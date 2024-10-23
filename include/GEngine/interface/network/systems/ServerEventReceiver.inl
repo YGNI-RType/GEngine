@@ -12,13 +12,13 @@ gengine::interface::network::system::ServerEventReceiver<Events...>::ServerEvent
 
 template <class... Events>
 void gengine::interface::network::system::ServerEventReceiver<Events...>::init(void) {
-    this->template subscribeToEvent<gengine::system::event::MainLoop>(&ServerEventReceiver::onMainLoop);
+    this->template subscribeToEvent<gengine::system::event::GameLoop>(&ServerEventReceiver::onGameLoop);
     (dynamicPublish<Events>(), ...);
 }
 
 template <class... Events>
-void gengine::interface::network::system::ServerEventReceiver<Events...>::onMainLoop(
-    gengine::system::event::MainLoop &e) {
+void gengine::interface::network::system::ServerEventReceiver<Events...>::onGameLoop(
+    gengine::system::event::GameLoop &e) {
     auto &clients = this->template getSystem<gengine::interface::network::system::ServerClientsHandler>();
     size_t readCount = 0;
 

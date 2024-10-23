@@ -32,8 +32,8 @@ struct Transform2D : public Component<Transform2D> {
 struct Transform3D : public Component<Transform3D> {
     Vect3 pos;
     Vect3 scale;
-    float rotation;
-    Transform3D(const Vect3 &pos, const Vect3 &scale = {1, 1}, float rotation = 0.f)
+    Vect3 rotation;
+    Transform3D(const Vect3 &pos, const Vect3 &scale = {1, 1, 1}, Vect3 rotation = {0, 0, 0})
         : pos(pos)
         , scale(scale)
         , rotation(rotation) {

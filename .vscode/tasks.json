@@ -17,7 +17,7 @@
                 "&&",
                 "cmake",
                 "--build",
-                "${workspaceFolder}/Rtype/build",
+                "${workspaceFolder}/POC_3D/build",
                 "--parallel",
                 "4",
                 "--config",

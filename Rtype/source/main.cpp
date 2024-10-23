@@ -71,11 +71,13 @@
 namespace rtype {
 void registerComponents(gengine::game::Engine &gameEngine, gengine::driver::Engine &driverEngine) {
     gameEngine.registerComponent<gengine::component::Transform2D>();
+    gameEngine.registerComponent<gengine::component::Transform3D>();
     gameEngine.registerComponent<gengine::component::Velocity2D>();
     gameEngine.registerComponent<gengine::component::driver::output::Animation>();
     gameEngine.registerComponent<gengine::component::driver::output::Drawable>();
     gameEngine.registerComponent<gengine::component::driver::output::Sprite>();
     gameEngine.registerComponent<gengine::component::driver::output::Text>();
+    gameEngine.registerComponent<gengine::component::driver::output::Model>();
     gameEngine.registerComponent<gengine::component::driver::output::Rectangle>();
     gameEngine.registerComponent<gengine::component::HitBoxSquare2D>();
     gameEngine.registerComponent<gengine::component::HitBoxCircle2D>();
@@ -92,11 +94,13 @@ void registerComponents(gengine::game::Engine &gameEngine, gengine::driver::Engi
     gameEngine.registerComponent<component::Life>();
 
     driverEngine.registerComponent<gengine::component::Transform2D>();
+    driverEngine.registerComponent<gengine::component::Transform3D>();
     driverEngine.registerComponent<gengine::component::Velocity2D>();
     driverEngine.registerComponent<gengine::component::driver::output::Animation>();
     driverEngine.registerComponent<gengine::component::driver::output::Drawable>();
     driverEngine.registerComponent<gengine::component::driver::output::Sprite>();
     driverEngine.registerComponent<gengine::component::driver::output::Text>();
+    driverEngine.registerComponent<gengine::component::driver::output::Model>();
     driverEngine.registerComponent<gengine::component::driver::output::Rectangle>();
     driverEngine.registerComponent<gengine::component::HitBoxSquare2D>();
     driverEngine.registerComponent<gengine::component::HitBoxCircle2D>();
@@ -115,11 +119,13 @@ void registerComponents(gengine::game::Engine &gameEngine, gengine::driver::Engi
 
 void registerSystems(gengine::game::Engine &gameEngine, gengine::driver::Engine &driverEngine) {
     driverEngine.registerSystem<gengine::system::driver::output::RenderWindow>(1280, 750, "R-Type");
-    driverEngine.registerSystem<gengine::system::driver::output::Draw2D>(BLACK);
+    driverEngine.registerSystem<gengine::system::driver::output::Draw>(BLACK);
+    driverEngine.registerSystem<gengine::system::driver::output::DrawModel>();
     driverEngine.registerSystem<gengine::system::driver::output::DrawSprite>();
     driverEngine.registerSystem<gengine::system::driver::output::DrawText>();
 
     driverEngine.registerSystem<gengine::system::driver::output::TextureManager>("../assets/sprites");
+    driverEngine.registerSystem<gengine::system::driver::output::ModelManager>("../assets/models");
     driverEngine.registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
     driverEngine.registerSystem<gengine::system::driver::output::KeyboardCatcher>();
     driverEngine.registerSystem<system::InputsToGameEvents>();

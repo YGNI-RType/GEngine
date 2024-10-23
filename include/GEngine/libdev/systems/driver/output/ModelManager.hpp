@@ -2,53 +2,36 @@
 ** ════════════════════════════════════════════════════════════════════════════
 **                           GEngine (libdev) System
 ** ════════════════════════════════════════════════════════════════════════════
-**  File        : ClientEventPublisher.hpp
-**  Create at   : 2024-10-15 04:49
+**  File        : ModelManager.hpp
+**  Create at   : 2024-10-15 05:01
 **  Author      : AUTHOR
-**  Description : DESCRIPTION
+**  Description : DESCRIPTION // TODO popoche
 ** ═══════════════════════════════════════════════════════════════════════════
 */
 
 #pragma once
 
+#include "module/raylib_safe.h"
+#include <filesystem>
+#include <unordered_map>
+
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
-#include "GEngine/net/net.hpp"
-#include <iostream>
-#include <memory>
-#include <mutex>
-#include <typeindex>
-#include <unordered_map>
 
-namespace gengine::interface::network::system {
-
-template <class... Events>
-class ClientEventPublisher : public System<ClientEventPublisher<Events...>> {
+namespace gengine::system::driver::output {
+class ModelManager : public gengine::System<ModelManager> {
 public:
-    ClientEventPublisher();
-
+    ModelManager(const std::string &folder);
     void init(void) override;
 
     void onStartEngine(gengine::system::event::StartEngine &e);
+    void onStopEngine(gengine::system::event::StopEngine &e);
 
-    void onGameLoop(gengine::system::event::GameLoop &e);
+    const Model &get(const std::string &path);
 
 private:
-    template <typename T>
-    void dynamicSubscribe(void);
-
-    static constexpr auto m_maxEventToSend = 20;
-
-    std::uint64_t m_id = 0;
-    Network::UDPMessage m_msg;
-    std::uint64_t m_eventCount = 0;
-    Network::CLNetClient &m_client;
-    bool m_ready = false;
-    std::unordered_map<std::type_index, std::uint64_t> m_events;
-    mutable std::mutex m_netMutex;
+    std::string m_folder;
+    std::unordered_map<std::string, Model> m_modelTable;
 };
-
-#include "ClientEventPublisher.inl" // Inline implementation if needed
-
-} // namespace gengine::interface::network::system
+} // namespace gengine::system::driver::output

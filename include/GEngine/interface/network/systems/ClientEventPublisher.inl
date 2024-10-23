@@ -16,7 +16,7 @@ gengine::interface::network::system::ClientEventPublisher<Events...>::ClientEven
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::init(void) {
     this->template subscribeToEvent<gengine::system::event::StartEngine>(&ClientEventPublisher::onStartEngine);
-    this->template subscribeToEvent<gengine::system::event::MainLoop>(&ClientEventPublisher::onMainLoop);
+    this->template subscribeToEvent<gengine::system::event::GameLoop>(&ClientEventPublisher::onGameLoop);
     (dynamicSubscribe<Events>(), ...);
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<int>(Network::Event::CT_OnServerReady, [this](int) -> void {
@@ -34,8 +34,8 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onSta
 }
 
 template <class... Events>
-void gengine::interface::network::system::ClientEventPublisher<Events...>::onMainLoop(
-    gengine::system::event::MainLoop &e) {
+void gengine::interface::network::system::ClientEventPublisher<Events...>::onGameLoop(
+    gengine::system::event::GameLoop &e) {
     if (!m_ready)
         return;
 

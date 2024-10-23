@@ -50,6 +50,7 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
                 gengine::component::driver::output::Drawable(0),
                 gengine::component::driver::output::Sprite("r-typesheet0.png", Rectangle{0, 0, 1120, 207}, WHITE));
 
+    spawnEntity(gengine::component::driver::output::Model("gmApart.glb"), gengine::component::driver::output::Drawable(1), gengine::component::Transform3D({0.0f, 2.0f, 4.0f}));
     for (std::size_t i = 0; i < 2; i++) {
         spawnEntity(component::Life(), gengine::component::Transform2D({99 - i * 66.f, 726}, {1, 1}, 0),
                     gengine::component::driver::output::Drawable(1),

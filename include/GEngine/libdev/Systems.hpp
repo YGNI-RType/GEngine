@@ -44,7 +44,7 @@ using MouseCatcher = gengine::system::driver::input::MouseCatcher;
 using AnimationManager = gengine::system::driver::output::AnimationManager;
 using Animate = gengine::system::driver::output::Animate;
 
-using Draw2D = gengine::system::driver::output::Draw2D;
+using Draw = gengine::system::driver::output::Draw;
 using DrawSprite = gengine::system::driver::output::DrawSprite;
 using DrawText = gengine::system::driver::output::DrawText;
 using DrawRectangle = gengine::system::driver::output::DrawRectangle;

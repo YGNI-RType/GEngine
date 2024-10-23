@@ -39,7 +39,7 @@ public:
     ServerEventReceiver();
 
     void init(void) override;
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onGameLoop(gengine::system::event::GameLoop &e);
 
 private:
     template <typename T>
