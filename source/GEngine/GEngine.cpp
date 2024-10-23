@@ -8,8 +8,8 @@
 #include "GEngine/GEngine.hpp"
 
 // Definition of static members
-std::unique_ptr<GEngine> GEngine::instance = nullptr;  ///< Initialization of the static instance pointer.
-std::once_flag GEngine::initFlag;                       ///< Initialization of the static initialization flag.
+std::unique_ptr<GEngine> GEngine::instance = nullptr; ///< Initialization of the static instance pointer.
+std::once_flag GEngine::initFlag;                     ///< Initialization of the static initialization flag.
 
 // GEngine::GEngine() {
 //     // Constructor implementation (if needed)

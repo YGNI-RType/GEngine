@@ -11,7 +11,6 @@
 
 #include "systems/InputsToGameEvents.hpp"
 #include "systems/PlayerMotion.hpp"
-#include "systems/InputsToGameEvents.hpp"
 
 void GEngineDeclareDriver(Registry *r) {
     r->registerSystem<geg::system::io::RenderWindow>(1280, 750, "R-Type");
@@ -24,5 +23,4 @@ void GEngineDeclareDriver(Registry *r) {
     r->registerSystem<geg::system::io::KeyboardCatcher>();
     r->registerSystem<rtype::system::InputsToGameEvents>();
     r->registerSystem<geg::system::io::SoundManager>("../assets/sounds");
-
 }

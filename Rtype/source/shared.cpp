@@ -22,8 +22,8 @@
 #include "systems/Start.hpp"
 #include "systems/UpdateScoreText.hpp"
 
-#include "components/Player.hpp"
 #include "components/Monster.hpp"
+#include "components/Player.hpp"
 
 void GEngineDeclareShared(Registry *r) {
     r->registerComponent<geg::component::HitBoxSquare2D>();

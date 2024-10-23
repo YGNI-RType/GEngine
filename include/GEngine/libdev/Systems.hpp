@@ -57,4 +57,4 @@ using RenderWindow = gengine::system::driver::output::RenderWindow;
 using SoundManager = gengine::system::driver::output::SoundManager;
 
 using TextureManager = gengine::system::driver::output::TextureManager;
-}; // namespace gengine::system::driver::output
+}; // namespace geg::system::io
