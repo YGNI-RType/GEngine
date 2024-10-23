@@ -177,7 +177,8 @@ private:
         auto data = m_data.data() + segment.id * MAX_PACKET_SIZE;
 
         segment.flag = msg.getFlags();
-        msg.readData(data, 0, segment.msgSize);
+        size_t offset = 0;
+        msg.readData(data, offset, segment.msgSize);
     }
 
     uint32_t getFreeSegment(void) {

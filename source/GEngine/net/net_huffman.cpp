@@ -41,19 +41,40 @@ void AHC::compress(AMessage &msg) {
 size_t AHC::compressContinuous(AMessage &msg, size_t offset, const byte_t *pushData, size_t size) {
     byte_t *msgData = reinterpret_cast<byte_t *>(msg.getModifyData() + offset);
     auto msgSize = msg.getMaxMsgSize() - offset;
-    size_t writeBitCount = 0;
-    auto oldBitBuffer = msg.getBitBuffer();
+    size_t oldBitBuffer = msg.getBitBuffer();
+    auto bitRemaningUntilByte = msg.getBitRemains();
 
     for (size_t i = 0; i < size; i++)
-        if (!m_compress.writeSymbol(pushData[i], msgData, msgSize, msg.getBitBuffer(), writeBitCount))
+        if (!m_compress.writeSymbol(pushData[i], msgData, msgSize, msg.getBitBuffer()))
             throw std::runtime_error("Message Overflow");
-    if (writeBitCount < 7) {
-        /* oldBitBuffer != 0 because that means it's the first time the bit buffer is used, and of course it's appended */
-        if (oldBitBuffer != 0 && msg.getBitBuffer() + oldBitBuffer > 7)
-            return 0;
-    }
 
-    return writeBitCount / 8 + 1;
+    auto diff = msg.getBitBuffer() - oldBitBuffer;
+    // std::cout << "WRITE:" << diff << " (" << size << ")" << std::endl;
+
+    // byte_t oldRemaningBytes = bitRemaningUntilByte;
+    // bitRemaningUntilByte = (diff + bitRemaningUntilByte) % 8;
+    // if (diff < 7) {
+    //     if (oldBitBuffer != 0 && oldRemaningBytes + diff < 8)
+    //         return 0;
+    //     else
+    //         return 1;
+    // }
+
+    return diff / 8 + 1;
+}
+
+size_t AHC::decompressContinuous(AMessage &msg, size_t offset, byte_t *pushData, size_t size) {
+    auto offsetBits = msg.getBitBuffer();
+    const size_t msgSize = msg.getMaxMsgSize() - offset - offsetBits / 8;
+    size_t old = msg.getBitBuffer();
+
+    if (!m_decompress.readSymbol(msg.getData() + offset, pushData, size, msgSize, msg.getBitBuffer()))
+        throw std::runtime_error("Message Overflow");
+
+    auto diff = msg.getBitBuffer() - old;
+    // std::cout << "READ:" << diff << " (" << size << ")" << std::endl;
+
+    return diff;
 }
 
 /*************************************************************/
@@ -88,16 +109,16 @@ void Node::swapLL(Node *rnode) {
 /*************************************************************/
 
 /* Add a bit to the output file (buffered) */
-static void add_bit(byte_t bit, byte_t *fout, byte_t &bitCount) {
+static void add_bit(byte_t bit, byte_t *fout, size_t &bitCount) {
     if ((bitCount & 7) == 0)
-        fout[(bitCount * 8)] = 0;
-    fout[(bitCount * 8)] |= bit << (bitCount & 7);
+        fout[(bitCount / 8)] = 0;
+    fout[(bitCount / 8)] |= bit << (bitCount & 7);
     bitCount++;
 }
 
 /* Receive one bit from the input file (buffered) */
-static byte_t get_bit(byte_t *fin, byte_t &bitCount) {
-    byte_t t = (fin[(bitCount * 8)] >> (bitCount & 7)) & 0x1;
+static byte_t get_bit(const byte_t *inData, size_t &bitCount) {
+    byte_t t = (inData[(bitCount / 8)] >> (bitCount & 7)) & 0x1;
     bitCount++;
     return t;
 }
@@ -222,12 +243,12 @@ void HuffTable::addSymbol(uint8_t sym) {
             if (m_head->next->weight == 1) {
                 tnode->head = m_head->next->head;
             } else {
-                /* this should never happen */
+                /* impossible */
                 tnode->head = getFreeNode();
                 *tnode->head = tnode2;
             }
         } else {
-            /* this should never happen */
+            /* impossible */
             tnode->head = getFreeNode();
             *tnode->head = tnode;
         }
@@ -258,10 +279,10 @@ void HuffTable::addSymbol(uint8_t sym) {
 }
 
 /* Send the prefix code for this node */
-static size_t writeSymbolRec(Node *node, Node *child, byte_t *data, size_t maxoffset, byte_t &bitCount, size_t &writeCount) {
+static size_t writeSymbolRec(Node *node, Node *child, byte_t *data, size_t maxoffset, size_t &bitCount) {
     bool shouldContinue = true;
     if (node->parent) {
-        shouldContinue = writeSymbolRec(node->parent, node, data, maxoffset, bitCount, writeCount);
+        shouldContinue = writeSymbolRec(node->parent, node, data, maxoffset, bitCount);
         if (!shouldContinue)
             return false;
     }
@@ -270,16 +291,41 @@ static size_t writeSymbolRec(Node *node, Node *child, byte_t *data, size_t maxof
             bitCount = maxoffset + 1;
             return -1;
         }
-        writeCount++;
         add_bit(node->right == child ? 1 : 0, data, bitCount);
     }
     return shouldContinue;
 }
 
-bool HuffTable::writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, byte_t &bitBuffer, size_t &writeCount) {
+bool HuffTable::writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, size_t &bitBuffer) {
     const size_t maxDataSizeBits = maxDataSizeBytes * 8;
-    return writeSymbolRec(m_nodeIndexSymbol[symbol], nullptr, data, maxDataSizeBits, bitBuffer, writeCount);
+    return writeSymbolRec(m_nodeIndexSymbol[symbol], nullptr, data, maxDataSizeBits, bitBuffer);
 }
+
+static bool readSymbolRec(Node *node, const byte_t *inData, byte_t &symbol, const size_t maxDataSizeBits,
+                       size_t &readCountBits) {
+    while (node && node->symbol == INTERNAL_NODE) {
+        if (readCountBits >= maxDataSizeBits)
+            return false;
+        if (get_bit(inData, readCountBits))
+            node = node->right;
+        else
+            node = node->left;
+    }
+    if (!node)
+        return false;
+    symbol = node->symbol;
+    return true;
+}
+
+bool HuffTable::readSymbol(const byte_t *inData, byte_t *outData, size_t sizeToRead, size_t maxDataSizeBytes,
+                           size_t &readCountBits) {
+    const size_t maxDataSizeBits = maxDataSizeBytes * 8;
+    for (size_t i = 0; i < sizeToRead; i++)
+        if (!readSymbolRec(m_tree, inData, outData[i], maxDataSizeBits, readCountBits))
+            return false;
+    return true;
+}
+
 
 /* TODO : calculate own frequencies */
 std::array<uint32_t, HMAX> AHC::m_symbolFrequencies = {

@@ -45,7 +45,8 @@ public:
     void addSymbol(uint8_t symbol);
 
     /* Warning: The table should be complete with all the symbols, otherwise we get UB */
-    bool writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, byte_t &bitBuffer, size_t &writeCount);
+    bool writeSymbol(uint8_t symbol, byte_t *data, size_t maxDataSizeBytes, size_t &bitBuffer);
+    bool readSymbol(const byte_t *inData, byte_t *outData, size_t sizeToRead, size_t maxDataSizeBytes, size_t &bitBuffer);
 
 private:
     void swap(Node *lnode, Node *lright);
@@ -80,6 +81,7 @@ public:
 
     /* decompress the segment, shift everyhting and update the actual size */
     void decompress(AMessage &msg);
+    size_t decompressContinuous(AMessage &msg, size_t offset, byte_t *data, size_t size);
 private:
     static std::array<uint32_t, HMAX> m_symbolFrequencies;
 

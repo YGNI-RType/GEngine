@@ -116,9 +116,8 @@ public:
         if (m_compressNow) {
             if (m_curSize + offset > getMaxMsgSize())
                 return;
-            size_t compressedSize = m_huffman.compressContinuous(*this, m_curSize + offset, (const byte_t *)&data, sizeof(T));
-            std::cout << "size: " << sizeof(T) << " | " << compressedSize << std::endl;
-            m_curSize += compressedSize;
+            m_huffman.compressContinuous(*this, m_curSize + offset, (const byte_t *)&data, sizeof(T));
+            // std::cout << "size: " << sizeof(T) << " | " << compressedSize << std::endl;
             return;
         }
 
@@ -133,7 +132,7 @@ public:
 
     template <typename T>
     void writeData(const T &data, size_t msgDataOffset = 0, size_t dataOffset = 0, bool updateSize = true) {
-        if (isCompressed()) /* can't bceause the size will change */
+        if (m_compressNow) /* can't bceause the size will change */
             return;
 
         byte_t *myData = getDataMember();
@@ -148,6 +147,9 @@ public:
 
     template <typename T>
     size_t readData(T &data) const {
+        if (m_compressNow)
+            return -1; /* todo : raise the fact that you can't */
+
         if (sizeof(T) > m_curSize)
             throw std::runtime_error("Message is too small to read data");
 
@@ -158,7 +160,7 @@ public:
 
     template <typename T>
     size_t readContinuousData(T &data, size_t &readOffset) const {
-        if (sizeof(T) + readOffset > m_curSize)
+        if (sizeof(T) + readOffset > CF_NET_MIN(m_curSize, getMaxMsgSize()))
             throw std::runtime_error("Message is too small to read data");
 
         const byte_t *myData = getData();
@@ -167,17 +169,27 @@ public:
         return sizeof(T);
     }
 
+    template <typename T>
+    size_t readContinuousCompressed(T &data, size_t &offset) {
+        if (!isCompressed())
+            throw std::runtime_error("Message is not compressed");
+
+        if (m_curSize + offset + getBitBuffer() / 8  > getMaxMsgSize())
+            throw std::runtime_error("Message overflow when reading");
+        return m_huffman.decompressContinuous(*this, offset, (byte_t *)&data, sizeof(T));
+    }
+
     void appendData(const void *data, std::size_t size);
     void writeData(const void *data, std::size_t size, bool updateSize = true);
-    void readData(void *data, std::size_t offset, std::size_t size) const;
+    void readData(void *data, std::size_t &offset, std::size_t size) const;
+    void readDataCompressed(void *data, std::size_t &offsetBits, std::size_t size);
 
     /****************************/
 
     /* When you call, all the appendeed data from here will be compressed, this is for END_COMPRESS */
-    void startCompressingSegment(void);
-    /* When you call, everything that was in that previous segment will stop being compressed (you should never use
-     * it)*/
-    void stopCompressingSegment(void);
+    void startCompressingSegment(bool reading);
+    /* When you call, everything that was in that previous segment will stop being compressed. THIS WILL APPLY THE SIZE ONCE DONE */
+    void stopCompressingSegment(bool reading);
 
     /*
         There is no:
@@ -189,7 +201,10 @@ public:
 
     bool getCompressingBuffer(void *&data, size_t &bufferSize);
 
-    byte_t &getBitBuffer(void) {
+    size_t &getBitBuffer(void) {
+        return bitBuffer;
+    }
+    size_t &getBitRemains(void) {
         return bitBuffer;
     }
 
@@ -206,7 +221,7 @@ protected:
 
 private:
     static Compression::AHC m_huffman;
-    byte_t bitBuffer;
+    size_t bitBuffer = 0;
 };
 
 class TCPMessage : public AMessage {

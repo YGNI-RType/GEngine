@@ -46,7 +46,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
             std::vector<Network::byte_t> data(size);
 
             msg.readData(data.data(), readCount, size);
-            readCount += size;
+            // readCount += size;
             gengine::interface::component::RemoteDriver id = remote;
             callback(data.data(), id);
         }

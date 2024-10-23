@@ -84,15 +84,16 @@ void Snapshot::getAndSendDeltaDiff(void) {
                                 Network::SV_SNAPSHOT);
         uint64_t nb_component = deltaDiff.size();
         msg.appendData(nb_component);
-        msg.startCompressingSegment();
+        msg.startCompressingSegment(true);
         for (auto &[entity, type, set, any] : deltaDiff) {
             ecs::component::ComponentTools::component_size_t size = set ? getComponentSize(type) : 0;
             NetworkComponent c(entity, getComponentId(type), size);
+            // std::cout << "entity: " << c.entity << " | type: " << c.typeId << " | size: " << c.size << std::endl;
             msg.appendData(c);
             if (set)
                 msg.appendData(toVoid(type, any), c.size);
         }
-        msg.stopCompressingSegment();
+        msg.stopCompressingSegment(false);
 
         if (!server.isRunning())
             continue;

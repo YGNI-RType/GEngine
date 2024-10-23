@@ -20,7 +20,7 @@ void AMessage::appendData(const void *data, std::size_t size) {
     if (m_compressNow) {
         if (m_curSize + size > getMaxMsgSize())
             return;
-        m_curSize += m_huffman.compressContinuous(*this, m_curSize, (const byte_t *)&data, size);
+        m_huffman.compressContinuous(*this, m_curSize, (const byte_t *)data, size);
         return;
     }
 
@@ -33,7 +33,7 @@ void AMessage::appendData(const void *data, std::size_t size) {
 }
 
 void AMessage::writeData(const void *data, std::size_t size, bool updateSize) {
-    if (isCompressed()) /* can't bceause the size will change */
+    if (m_compressNow) /* can't bceause the size will change */
         return;
 
     if (m_curSize + size > getMaxMsgSize())
@@ -45,21 +45,31 @@ void AMessage::writeData(const void *data, std::size_t size, bool updateSize) {
         m_curSize = size;
 }
 
-void AMessage::readData(void *data, size_t offset, std::size_t size) const {
+void AMessage::readData(void *data, size_t &offset, std::size_t size) const {
     if (offset + size > m_curSize)
         throw std::runtime_error("Not enough data to read");
 
     const byte_t *myData = getData();
     std::memcpy(data, myData + offset, size);
+    offset += size;
 }
 
-void AMessage::startCompressingSegment(void) {
+void AMessage::readDataCompressed(void *data, size_t &offset, std::size_t size) {
+    if (!isCompressed())
+        throw std::runtime_error("Message is not compressed");
+
+    if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize())
+        throw std::runtime_error("Message overflow when reading");
+    m_huffman.decompressContinuous(*this, offset, (byte_t *)data, size);
+}
+
+void AMessage::startCompressingSegment(bool reading) {
     if (isCompressed()) {
         m_compressNow = true;
         return;
     }
 
-    if (!isEndCompress())
+    if (!isEndCompress() || reading)
         return;
 
     auto data = getDataMember();
@@ -71,13 +81,17 @@ void AMessage::startCompressingSegment(void) {
     header->offset = m_curSize;
 }
 
-void AMessage::stopCompressingSegment(void) {
+void AMessage::stopCompressingSegment(bool reading) {
     if (isCompressed()) {
         m_compressNow = false;
+        if (!reading) {
+            size_t wroteData = getBitBuffer() / 8;
+            m_curSize += wroteData + (wroteData % 8 == 0 ? 0 : 1);
+        }
         return;
     }
 
-    if (!isEndCompress())
+    if (!isEndCompress() || reading)
         return;
 
     auto data = getDataMember();
