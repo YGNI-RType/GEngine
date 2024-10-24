@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "GEngine/interface/components/RemoteDriver.hpp"
-#include "GEngine/interface/events/RemoteEvent.hpp"
+#include "GEngine/interface/components/RemoteLocal.hpp"
+#include "GEngine/interface/events/SharedEvent.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
@@ -67,12 +67,12 @@ public:
     void onStartEngine(gengine::system::event::StartEngine &);
     void onMainLoop(gengine::system::event::MainLoop &);
 
-    std::unordered_map<component::RemoteDriver, ServerClient> &getClients(void) {
+    std::unordered_map<interface::component::RemoteLocal, ServerClient> &getClients(void) {
         return m_clients;
     }
 
 private:
-    std::unordered_map<component::RemoteDriver, ServerClient> m_clients;
+    std::unordered_map<interface::component::RemoteLocal, ServerClient> m_clients;
 
     mutable std::mutex m_netMutex;
 };
