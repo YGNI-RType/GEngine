@@ -12,7 +12,7 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/net/net.hpp"
 #include <iostream>
@@ -32,7 +32,7 @@ public:
 
     void onStartEngine(gengine::system::event::StartEngine &e);
 
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onGameLoop(gengine::system::event::GameLoop &e);
 
 private:
     template <typename T>
