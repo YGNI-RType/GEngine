@@ -87,7 +87,7 @@ void AnimationManager::onStartEngine(gengine::system::event::StartEngine &e) {
 const ATrack AnimationManager::getAnimationTrack(const std::string &name) const {
     auto it = m_trackMap.find(name);
     if (it == m_trackMap.end())
-        THROW_ERROR("This animation is not in the AnimationManager");
+        THROW_ERROR("The animation " + name + " is not in the AnimationManager");
     return it->second;
 }
 

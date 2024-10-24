@@ -21,7 +21,7 @@
 
 namespace gengine::system::driver::input {
 using InputState = gengine::system::event::driver::input::state_t;
-class MouseCatcher : public gengine::System<MouseCatcher> {
+class MouseCatcher : public gengine::System<MouseCatcher>, public LocalSystem {
 public:
     void init(void) override;
 

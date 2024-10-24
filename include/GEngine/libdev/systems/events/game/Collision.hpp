@@ -16,10 +16,10 @@
 #include "GEngine/libdev/System.hpp"
 
 namespace gengine::system::event {
-struct Collsion : public Event {
+struct Collision : public Event {
     Entity entity1;
     Entity entity2;
-    Collsion(const Entity &entity1, const Entity entity2)
+    Collision(const Entity &entity1, const Entity entity2)
         : entity1(entity1)
         , entity2(entity2) {
     }

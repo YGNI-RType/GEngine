@@ -48,3 +48,9 @@ using Sprite = gengine::component::driver::output::Sprite;
 
 using Text = gengine::component::driver::output::Text;
 } // namespace geg::component::io
+
+#include "GEngine/interface/network/components/NetSend.hpp"
+
+namespace geg::component::network {
+using NetSend = gengine::interface::network::component::NetSend;
+} // namespace geg::component::network
