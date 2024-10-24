@@ -8,7 +8,7 @@
 template <class... Events>
 gengine::interface::network::system::ClientEventPublisher<Events...>::ClientEventPublisher()
     : m_client(Network::NET::getClient())
-    , m_msg(true, Network::CL_EVENT) {
+    , m_msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK, Network::CL_EVENT) {
 }
 
 template <class... Events>
@@ -26,7 +26,6 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::init(
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::onStartEngine(
     gengine::system::event::StartEngine &e) {
-    m_msg.setAck(true);
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
 }
@@ -39,7 +38,7 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onGam
 
     m_msg.writeData(m_eventCount, sizeof(Network::UDPG_NetChannelHeader), 0, false);
     m_client.pushData(m_msg);
-    m_msg.clear(true);
+    m_msg.clear();
 
     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     m_msg.appendData<std::uint64_t>(0);

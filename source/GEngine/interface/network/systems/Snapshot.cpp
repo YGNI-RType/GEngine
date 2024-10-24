@@ -79,10 +79,12 @@ void Snapshot::getAndSendDeltaDiff(void) {
         for (auto [e, r, netsend] : Zip(remotes, currentNetSends))
             netsend.update();
 
-        Network::UDPMessage msg(true, Network::SV_SNAPSHOT);
-        msg.setAck(true);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                    Network::UDPMessage::COMPRESSED,
+                                Network::SV_SNAPSHOT);
         uint32_t nbEntity = 0;
         msg.appendData(nbEntity);
+        msg.startCompressingSegment(true);
         for (auto [entity, currentNetSend] : currentNetSends) {
             if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
                 auto [bytes, comps] = getDeltaDiff(entity, current, last);
@@ -110,10 +112,10 @@ void Snapshot::getAndSendDeltaDiff(void) {
                 }
                 nbEntity++;
             }
-        }
+        } // TODO cleaner
+        msg.stopCompressingSegment(false);
         msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
-        // std::cout << "SEND: "<< msg.getSize() << " snap " << nb_component << std::endl;
         if (!server.isRunning())
             continue;
         client.getNet()->pushData(msg, true);

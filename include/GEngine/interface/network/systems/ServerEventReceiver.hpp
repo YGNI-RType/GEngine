@@ -15,7 +15,7 @@
 #include "GEngine/interface/events/SharedEvent.hpp"
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/net/net.hpp"
 
@@ -39,7 +39,7 @@ public:
     ServerEventReceiver();
 
     void init(void) override;
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onGameLoop(gengine::system::event::GameLoop &e);
 
 private:
     template <typename T>

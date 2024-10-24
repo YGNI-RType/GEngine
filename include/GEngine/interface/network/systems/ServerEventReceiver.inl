@@ -12,13 +12,13 @@ gengine::interface::network::system::ServerEventReceiver<Events...>::ServerEvent
 
 template <class... Events>
 void gengine::interface::network::system::ServerEventReceiver<Events...>::init(void) {
-    this->template subscribeToEvent<gengine::system::event::MainLoop>(&ServerEventReceiver::onMainLoop);
+    this->template subscribeToEvent<gengine::system::event::GameLoop>(&ServerEventReceiver::onGameLoop);
     (dynamicPublish<Events>(), ...);
 }
 
 template <class... Events>
-void gengine::interface::network::system::ServerEventReceiver<Events...>::onMainLoop(
-    gengine::system::event::MainLoop &e) {
+void gengine::interface::network::system::ServerEventReceiver<Events...>::onGameLoop(
+    gengine::system::event::GameLoop &e) {
     auto &clients = this->template getSystem<gengine::interface::network::system::ServerClientsHandler>();
     size_t readCount = 0;
 
@@ -26,7 +26,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
         if (client.shouldDelete())
             continue;
 
-        Network::UDPMessage msg(true, Network::CL_EVENT);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_EVENT);
         if (!client.getNet()->popIncommingData(msg, readCount))
             continue;
 
@@ -46,7 +46,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
             std::vector<Network::byte_t> data(size);
 
             msg.readData(data.data(), readCount, size);
-            readCount += size;
+
             gengine::interface::component::RemoteLocal id = remote;
             callback(data.data(), id);
         }
