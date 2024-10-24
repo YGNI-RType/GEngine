@@ -10,12 +10,14 @@
 using namespace ecs;
 
 component::ComponentTools::ComponentTools(component_id_t id, component_size_t size, destroyer_t destroyer,
-                                          setter_t setter, comparer_t comparer, voider_t voider, anyer_t anyer)
+                                          setter_t setter, comparer_t comparer, comparer_entity_t comparerEntity,
+                                          voider_t voider, anyer_t anyer)
     : m_componentId(id)
     , m_size(size)
     , m_destroyer(destroyer)
     , m_setter(setter)
     , m_comparer(comparer)
+    , m_comparerEntity(comparerEntity)
     , m_voider(voider)
     , m_anyer(anyer) {
 }
@@ -34,6 +36,9 @@ const component::ComponentTools::setter_t &component::ComponentTools::setter(voi
 }
 const component::ComponentTools::comparer_t &component::ComponentTools::comparer(void) const {
     return m_comparer;
+}
+const component::ComponentTools::comparer_entity_t &component::ComponentTools::comparerEntity(void) const {
+    return m_comparerEntity;
 }
 const component::ComponentTools::voider_t &component::ComponentTools::voider(void) const {
     return m_voider;
@@ -89,6 +94,12 @@ component::ComponentTools::component_size_t component::Manager::getComponentSize
 std::vector<component::component_info_t>
 component::Manager::compareComponents(const std::type_index &type, const std::any &any1, const std::any &any2) const {
     return m_componentToolsMap.find(type)->second.comparer()(any1, any2);
+}
+std::optional<component::component_info_t> component::Manager::compareComponentsEntity(entity::Entity entity,
+                                                                        const std::type_index &type,
+                                                                        const std::any &any1,
+                                                                        const std::any &any2) const {
+    return m_componentToolsMap.find(type)->second.comparerEntity()(entity, any1, any2);
 }
 const void *component::Manager::toVoid(const std::type_index &type, const std::any &any) const {
     return m_componentToolsMap.find(type)->second.voider()(any);

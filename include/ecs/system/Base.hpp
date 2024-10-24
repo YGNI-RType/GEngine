@@ -82,6 +82,8 @@ public:
     ecs::component::ComponentTools::component_size_t getComponentSize(const std::type_index &type) const;
     std::vector<ecs::component::component_info_t> compareComponents(const std::type_index &type, const std::any &any1,
                                                                     const std::any &any2) const;
+    std::optional<ecs::component::component_info_t> compareComponentsEntity(entity::Entity entity, const std::type_index &type, const std::any &any1,
+                                                                    const std::any &any2) const;
     const void *toVoid(const std::type_index &type, const std::any &any) const;
     const std::any toAny(const std::type_index &type, const void *component) const;
 
