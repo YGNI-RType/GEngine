@@ -47,7 +47,7 @@ public:
 #elif GEngine_Client
         Network::NET::initClient();
         em.addEvent<Network::Event::ConnectInfo>(Network::Event::CONNECT, Network::Event::ConnectInfo(ip, port));
-        m_local.registerSystem<gengine::interface::network::system::Updater>();
+        m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
 #endif
         Network::NET::start();
 
