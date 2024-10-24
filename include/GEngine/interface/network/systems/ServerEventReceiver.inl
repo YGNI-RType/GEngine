@@ -26,7 +26,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
         if (client.shouldDelete())
             continue;
 
-        Network::UDPMessage msg(true, Network::CL_EVENT);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_EVENT);
         if (!client.getNet()->popIncommingData(msg, readCount))
             continue;
 
@@ -46,7 +46,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onMain
             std::vector<Network::byte_t> data(size);
 
             msg.readData(data.data(), readCount, size);
-            readCount += size;
+            // readCount += size;
             gengine::interface::component::RemoteDriver id = remote;
             callback(data.data(), id);
         }
