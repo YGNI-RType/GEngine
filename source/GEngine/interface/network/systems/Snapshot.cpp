@@ -84,7 +84,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
                                 Network::SV_SNAPSHOT);
         uint32_t nbEntity = 0;
         msg.appendData(nbEntity);
-        msg.startCompressingSegment(true);
+        msg.startCompressingSegment(false);
         for (auto [entity, currentNetSend] : currentNetSends) {
             if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
                 auto [bytes, comps] = getDeltaDiff(entity, current, last);
