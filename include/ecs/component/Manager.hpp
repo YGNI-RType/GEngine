@@ -8,6 +8,7 @@
 #pragma once
 
 #include <any>
+#include <optional>
 #include <cstring>
 #include <functional>
 #include <iostream>
