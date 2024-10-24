@@ -10,6 +10,7 @@
 #include "GEngine/interface/events/RemoteDriver.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/net_client.hpp"
 
 namespace gengine::interface::network::system {
@@ -64,14 +65,14 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
             it->second.setReady(true);
         });
 
-    eventManager.registerCallback<Network::NetClient *>(
-        Network::Event::CT_OnClientDisconnect, [this](Network::NetClient *client) {
+    eventManager.registerCallback<Network::Event::DisconnectInfo>(
+        Network::Event::CT_OnClientDisconnect, [this](Network::Event::DisconnectInfo info) {
             std::lock_guard<std::mutex> lock(m_netMutex);
 
             auto it = std::find_if(m_clients.begin(), m_clients.end(),
-                                   [client](auto &pair) { return pair.second.getClient().get() == client; });
+                                   [info](auto &pair) { return pair.second.getClient().get() == info.client; });
             if (it == m_clients.end()) {
-                unwantedClients.push_back(client);
+                unwantedClients.push_back(info.client);
                 return;
             }
             it->second.setShouldDelete(true);

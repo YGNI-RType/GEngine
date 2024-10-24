@@ -60,10 +60,10 @@ bool CLNetClient::connectToServer(const std::string &ip, uint16_t port, bool blo
     return true;
 }
 
-void CLNetClient::disconnectFromServer(void) {
+void CLNetClient::disconnectFromServer(Event::DisonnectType disconnectType) {
     m_netChannel.setTcpSocket(SocketTCP());
 
-    NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, 0);
+    NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, disconnectType);
 
     m_state = CS_FREE;
     m_connectionState = CON_DISCONNECTED;
@@ -131,7 +131,7 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
             return false;
 
         if (m_netChannel.isDisconnected()) {
-            disconnectFromServer(); /* ensure proper disconnection */
+            disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
             return true;
         }
         return handleServerTCP(msg);
@@ -169,6 +169,14 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         break;
     }
     return true;
+}
+
+void CLNetClient::checkTimeouts(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return;
+
+    if (m_netChannel.isTimeout())
+        disconnectFromServer(Event::DT_TIMEOUT);
 }
 
 void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {

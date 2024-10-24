@@ -25,6 +25,10 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_tcpOut(socketEvent) {
 }
 
+bool NetClient::isTimeout(void) const {
+    return m_channel.isTimeout();
+}
+
 void NetClient::sendStream(const TCPMessage &msg) {
     if (!m_channel.isEnabled())
         return;
