@@ -45,7 +45,8 @@ private:
 };
 
 class DrawSprite : public gengine::System<DrawSprite, component::driver::output::Sprite, component::Transform2D,
-                                          system::driver::output::TextureManager>, public LocalSystem {
+                                          system::driver::output::TextureManager>,
+                   public LocalSystem {
 public:
     void init(void) override;
 
@@ -53,7 +54,8 @@ public:
 };
 
 class DrawText : public gengine::System<DrawText, component::driver::output::Text, component::Transform2D,
-                                        system::driver::output::FontManager>, public LocalSystem {
+                                        system::driver::output::FontManager>,
+                 public LocalSystem {
 public:
     void init(void) override;
 
@@ -61,14 +63,16 @@ public:
 };
 
 class DrawRectangle
-    : public gengine::System<DrawRectangle, component::driver::output::Rectangle, component::Transform2D>, public LocalSystem {
+    : public gengine::System<DrawRectangle, component::driver::output::Rectangle, component::Transform2D>,
+      public LocalSystem {
 public:
     void init(void) override;
 
     void onDraw(gengine::system::event::Draw &e);
 };
 
-class DrawCircle : public gengine::System<DrawCircle, component::driver::output::Circle, component::Transform2D>, public LocalSystem {
+class DrawCircle : public gengine::System<DrawCircle, component::driver::output::Circle, component::Transform2D>,
+                   public LocalSystem {
 public:
     void init(void) override;
 

@@ -7,10 +7,10 @@
 
 #include "GEngine/interface/network/systems/Snapshot.hpp"
 
+#include "GEngine/libdev/Components.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/net_client.hpp"
-#include "GEngine/libdev/Components.hpp"
 
 namespace gengine::interface::network::system {
 
@@ -89,9 +89,8 @@ void Snapshot::getAndSendDeltaDiff(void) {
             if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
                 auto [bytes, comps] = getDeltaDiff(entity, current, last);
                 msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes) {
+                for (auto &byte : bytes)
                     msg.appendData(byte);
-                }
                 for (auto &[typeId, comp] : comps) {
                     auto &type = getTypeindex(typeId);
                     msg.appendData(toVoid(type, comp), getComponentSize(type));
@@ -103,9 +102,8 @@ void Snapshot::getAndSendDeltaDiff(void) {
             if (!currentNetSends.contains(entity)) {
                 auto [bytes, comps] = getDeltaDiff(entity, current, last);
                 msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes) {
+                for (auto &byte : bytes)
                     msg.appendData(byte);
-                }
                 for (auto &[typeId, comp] : comps) {
                     auto &type = getTypeindex(typeId);
                     msg.appendData(toVoid(type, comp), getComponentSize(type));

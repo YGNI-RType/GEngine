@@ -19,7 +19,6 @@
 #include "GEngine/interface/network/components/NetSend.hpp"
 #include "GEngine/net/msg.hpp"
 
-
 namespace gengine::interface::network::system {
 
 class Updater : public System<Updater, component::NetSend> {

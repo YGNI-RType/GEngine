@@ -8,7 +8,6 @@
 
 #include "GEngine/interface/network/systems/Updater.hpp"
 
-
 #include "GEngine/net/events/connection.hpp"
 
 #include "GEngine/net/msg.hpp"

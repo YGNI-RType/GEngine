@@ -45,8 +45,9 @@ private:
     std::unordered_map<std::string, ATrack> m_trackMap;
 };
 
-class Animate : public System<Animate, component::driver::output::Sprite, component::driver::output::Animation,
-                              AnimationManager>, public LocalSystem {
+class Animate
+    : public System<Animate, component::driver::output::Sprite, component::driver::output::Animation, AnimationManager>,
+      public LocalSystem {
 public:
     void init(void) override;
 

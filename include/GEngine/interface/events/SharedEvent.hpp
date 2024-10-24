@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "GEngine/libdev/System.hpp"
 #include "GEngine/interface/components/RemoteLocal.hpp"
+#include "GEngine/libdev/System.hpp"
 
 namespace gengine::interface::event {
 
@@ -41,4 +41,4 @@ public:
 private:
     T m_event;
 };
-} // namespace gengine::interface::network::event
+} // namespace gengine::interface::event

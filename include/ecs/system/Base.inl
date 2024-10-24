@@ -139,8 +139,8 @@ Base<Derived, DependTypes...>::compareComponents(const std::type_index &type, co
 }
 template <class Derived, class... DependTypes>
 std::optional<ecs::component::component_info_t>
-Base<Derived, DependTypes...>::compareComponentsEntity(entity::Entity entity, const std::type_index &type, const std::any &any1,
-                                                 const std::any &any2) const {
+Base<Derived, DependTypes...>::compareComponentsEntity(entity::Entity entity, const std::type_index &type,
+                                                       const std::any &any1, const std::any &any2) const {
     return m_ecs->get().compareComponentsEntity(entity, type, any1, any2);
 }
 

@@ -96,9 +96,9 @@ component::Manager::compareComponents(const std::type_index &type, const std::an
     return m_componentToolsMap.find(type)->second.comparer()(any1, any2);
 }
 std::optional<component::component_info_t> component::Manager::compareComponentsEntity(entity::Entity entity,
-                                                                        const std::type_index &type,
-                                                                        const std::any &any1,
-                                                                        const std::any &any2) const {
+                                                                                       const std::type_index &type,
+                                                                                       const std::any &any1,
+                                                                                       const std::any &any2) const {
     return m_componentToolsMap.find(type)->second.comparerEntity()(entity, any1, any2);
 }
 const void *component::Manager::toVoid(const std::type_index &type, const std::any &any) const {

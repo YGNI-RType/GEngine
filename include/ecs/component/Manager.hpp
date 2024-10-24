@@ -8,10 +8,10 @@
 #pragma once
 
 #include <any>
-#include <optional>
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <typeindex>
@@ -66,9 +66,11 @@ public:
      * @param entity The entity.
      * @param sparse1 First SparseArray to compare (as std::any).
      * @param sparse2 Second SparseArray to compare (as std::any).
-     * @return an optional `component_info_t` representing differences between the two components if there is a component for this entity.
+     * @return an optional `component_info_t` representing differences between the two components if there is a
+     * component for this entity.
      */
-    typedef std::function<std::optional<component_info_t>(entity::Entity, const std::any &, const std::any &)> comparer_entity_t;
+    typedef std::function<std::optional<component_info_t>(entity::Entity, const std::any &, const std::any &)>
+        comparer_entity_t;
 
     /**
      * @brief Type alias for a function that retrieves a raw pointer to the data held in a `std::any` object.
@@ -281,8 +283,8 @@ public:
      * @param any2 The second sparse array to compare (as `std::any`).
      * @return A vector of `component_info_t` representing the differences between the two sparse array.
      */
-    std::optional<component_info_t> compareComponentsEntity(entity::Entity entity, const std::type_index &type, const std::any &any1,
-                                             const std::any &any2) const;
+    std::optional<component_info_t> compareComponentsEntity(entity::Entity entity, const std::type_index &type,
+                                                            const std::any &any1, const std::any &any2) const;
 
     /**
      * @brief Converts a component into a raw pointer.
@@ -325,7 +327,7 @@ private:
 
     template <class Component>
     std::optional<component_info_t> deltaDiffSparseEntity(entity::Entity entity, const SparseArray<Component> &sparse1,
-                                           const SparseArray<Component> &sparse2) const;
+                                                          const SparseArray<Component> &sparse2) const;
 };
 } // namespace ecs::component
 

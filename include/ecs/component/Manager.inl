@@ -84,8 +84,9 @@ std::vector<component_info_t> Manager::deltaDiffSparse(const SparseArray<Compone
 }
 
 template <class Component>
-std::optional<component_info_t> Manager::deltaDiffSparseEntity(entity::Entity entity, const SparseArray<Component> &sparse1,
-                                                       const SparseArray<Component> &sparse2) const {
+std::optional<component_info_t> Manager::deltaDiffSparseEntity(entity::Entity entity,
+                                                               const SparseArray<Component> &sparse1,
+                                                               const SparseArray<Component> &sparse2) const {
     std::optional<component_info_t> diff;
     const std::type_index &type = m_componentMap.find(typeid(Component))->first;
 

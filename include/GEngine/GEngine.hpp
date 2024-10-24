@@ -203,7 +203,7 @@ private:
     static std::unique_ptr<GEngine> instance;
     static std::once_flag initFlag;
 
-    gengine::BaseEngine m_local;     ///< Instance of the game engine.
+    gengine::BaseEngine m_local;  ///< Instance of the game engine.
     gengine::BaseEngine m_remote; ///< Instance of the driver engine.
 };
 

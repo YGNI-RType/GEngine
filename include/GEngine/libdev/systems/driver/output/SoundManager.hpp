@@ -21,7 +21,7 @@
 #include <filesystem>
 
 namespace gengine::system::driver::output {
-class SoundManager : public gengine::System<SoundManager>, public LocalSystem{
+class SoundManager : public gengine::System<SoundManager>, public LocalSystem {
 public:
     SoundManager(const std::string &folder);
     void init(void) override;
