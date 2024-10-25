@@ -106,7 +106,7 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
         addr != m_netChannel.getAddressUDP()) // why sending udp packets to the client ? who are you ?
         return false;
 
-    if (!m_netChannel.readDatagram(socket, msg, readOffset, m_packInDataAck.getNbPopped()))
+    if (!m_netChannel.readDatagram(socket, msg, readOffset))
         return true;
 
     switch (msg.getType()) {
@@ -213,8 +213,7 @@ bool CLNetClient::sendDatagram(UDPMessage &msg) {
     if (!m_enabled || !m_netChannel.isEnabled())
         return false;
 
-    // std::cout << m_netChannel.getLastACKPacketId() << " " << m_packInDataAck.getNbPopped() << std::endl;
-    return m_netChannel.sendDatagram(m_socketUdp, msg, m_packInDataAck.getNbPopped());
+    return m_netChannel.sendDatagram(m_socketUdp, msg);
 }
 
 /** Net Queue **/

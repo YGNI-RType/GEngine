@@ -181,6 +181,7 @@ void NetServer::checkTimeouts(void) {
         if (!client->isTimeout())
             continue;
 
+        std::cout << "SV: Client timeout" << std::endl;
         disconnectClient(client.get(), Event::DT_TIMEOUT);
     }
 }
@@ -191,7 +192,7 @@ void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type ) 
 
     std::cout << "SV: Client disconnected" << std::endl;
     Network::Event::DisconnectInfo info = {client, type};
-    NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, client);
+    NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, info);
     m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
                                    [&client](const std::shared_ptr<NetClient> &cl) { return cl.get() == client; }),
                     m_clients.end());

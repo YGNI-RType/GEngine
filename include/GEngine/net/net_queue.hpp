@@ -60,7 +60,6 @@ public:
         segment.msgSize = msg.getSize();
 
         queueSegment.pop_front();
-        m_popped++;
         deconstructMessage(msg, segment);
         queueSegment.push_back(segment);
 
@@ -83,7 +82,6 @@ public:
         segment.msgSize = msg.getSize();
 
         queueSegment.pop_back();
-        m_popped++;
         deconstructMessage(msg, segment);
         queueSegment.push_back(segment);
 
@@ -108,7 +106,6 @@ public:
         constructMessage(msg, segment, readCount);
         m_isUsed[segment.id] = false;
         m_nbUsed--;
-        m_popped++;
 
         return true;
     }
@@ -126,7 +123,6 @@ public:
             msg.setType(type);
             m_isUsed[segment.id] = false;
             m_nbUsed--;
-            m_popped++;
 
             return true;
         }
@@ -146,10 +142,6 @@ public:
         return m_nbUsed;
     }
 
-    size_t getNbPopped(void) const {
-        return m_popped;
-    }
-
     size_t size(uint8_t type) const {
         std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -161,7 +153,6 @@ public:
 
         m_msgs.clear();
         m_nbUsed = 0;
-        m_popped = 0;
         m_isUsed = {0};
     }
 
@@ -223,7 +214,6 @@ private:
     std::array<bool, NB_PACKETS> m_isUsed = {0};
     std::atomic_size_t m_nbUsed = 0;
     std::unordered_map<uint8_t, std::deque<Segment>> m_msgs;
-    std::atomic_size_t m_popped = 0;
 
     mutable std::mutex m_mutex;
     Event::SocketEvent &m_socketEvent;
