@@ -23,7 +23,7 @@
 
 namespace gengine::system::driver::input {
 using InputState = gengine::system::event::driver::input::state_t;
-class KeyboardCatcher : public gengine::System<KeyboardCatcher> {
+class KeyboardCatcher : public gengine::System<KeyboardCatcher>, public LocalSystem {
 public:
     void init(void) override;
 

@@ -2,20 +2,20 @@
 ** EPITECH PROJECT, 2024
 ** GameEngine
 ** File description:
-** RemoteEvent.hpp
+** SharedEvent.hpp
 */
 
 #pragma once
 
-#include "GEngine/interface/components/RemoteDriver.hpp"
+#include "GEngine/interface/components/RemoteLocal.hpp"
 #include "GEngine/libdev/System.hpp"
 
-namespace gengine::interface::network::event {
+namespace gengine::interface::event {
 
 template <class T>
-class RemoteEvent : public Event {
+class SharedEvent : public Event {
 public:
-    explicit RemoteEvent(T &event, component::RemoteDriver &remote)
+    explicit SharedEvent(T &event, interface::component::RemoteLocal &remote)
         : remote(remote)
         , m_event(event) {
     }
@@ -36,9 +36,9 @@ public:
         return m_event;
     }
 
-    component::RemoteDriver remote;
+    interface::component::RemoteLocal remote;
 
 private:
     T m_event;
 };
-} // namespace gengine::interface::network::event
+} // namespace gengine::interface::event

@@ -2,45 +2,45 @@
 ** EPITECH PROJECT, 2024
 ** GameEngine
 ** File description:
-** RemoteDriver.cpp
+** RemoteLocal.cpp
 */
 
-#include "GEngine/interface/components/RemoteDriver.hpp"
+#include "GEngine/interface/components/RemoteLocal.hpp"
 
 namespace gengine::interface::component {
 
-RemoteDriver::RemoteDriver() {
+RemoteLocal::RemoteLocal() {
     generateUUID();
 }
 
 // Copy constructor
-RemoteDriver::RemoteDriver(const RemoteDriver &other) {
+RemoteLocal::RemoteLocal(const RemoteLocal &other) {
     m_uuid = other.getUUIDBytes();
 }
 
 // Assignment operator
-RemoteDriver &RemoteDriver::operator=(const RemoteDriver &other) {
+RemoteLocal &RemoteLocal::operator=(const RemoteLocal &other) {
     if (this != &other)
         m_uuid = other.getUUIDBytes();
     return *this;
 }
 
 // Overloading the == operator to compare based on UUID
-bool RemoteDriver::operator==(const RemoteDriver &other) const {
+bool RemoteLocal::operator==(const RemoteLocal &other) const {
     return m_uuid == other.getUUIDBytes();
 }
 
 // Getter for the UUID as a string (hexadecimal format)
-std::string RemoteDriver::getUUIDString() const {
+std::string RemoteLocal::getUUIDString() const {
     return uuids::to_string(m_uuid);
 }
 
 // Getter for the raw UUID bytes (for network transmission)
-const uuids::uuid &RemoteDriver::getUUIDBytes() const {
+const uuids::uuid &RemoteLocal::getUUIDBytes() const {
     return m_uuid;
 }
 
-void RemoteDriver::generateUUID() {
+void RemoteLocal::generateUUID() {
     std::random_device rd;
     auto seed_data = std::array<int, std::mt19937::state_size>{};
     std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));

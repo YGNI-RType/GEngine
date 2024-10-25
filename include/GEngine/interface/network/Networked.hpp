@@ -8,13 +8,13 @@
 
 #include "GEngine/interface/network/systems/Updater.hpp"
 
-#include "GEngine/interface/components/RemoteDriver.hpp"
-#include "GEngine/interface/network/systems/Snapshot.hpp"
 #include "GEngine/net/events/connection.hpp"
 
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
+
+#include "GEngine/interface/network/systems/Snapshot.hpp"
 
 #include <functional>
 #include <iostream>
@@ -29,29 +29,29 @@ namespace gengine::interface::network {
 
 class Networked : public Base {
 public:
-    Networked(driver::Engine &driverEngine, game::Engine &gameEngine, const std::string &ip = "", uint16_t port = 0,
+    Networked(BaseEngine &driverEngine, BaseEngine &gameEngine, const std::string &ip = "", uint16_t port = 0,
               bool block = false)
-        : m_gameEngine(gameEngine)
-        , m_driverEngine(driverEngine)
+        : m_remote(gameEngine)
+        , m_local(driverEngine)
         , m_ip(ip)
         , m_port(port)
         , m_block(block) {
-        m_driverEngine.setFirstEntity(ENTITY_ID_START_CLIENT);
+        m_local.setFirstEntity(ENTITY_ID_START_CLIENT);
         Network::NET::init();
         Network::Event::Manager &em = Network::NET::getEventManager();
-        registerComponent<gengine::interface::component::RemoteDriver>();
 #ifdef GEngine_Server
         Network::NET::initServer();
-        m_gameEngine.registerSystem<system::Snapshot>(gameEngine.getWorld());
-        m_gameEngine.registerSystem<gengine::interface::network::system::ServerClientsHandler>();
+        m_remote.registerSystem<gengine::interface::network::system::Snapshot>(m_remote.getWorld());
+        m_remote.registerSystem<gengine::interface::network::system::ServerClientsHandler>();
 #elif GEngine_Client
         Network::NET::initClient();
         em.addEvent<Network::Event::ConnectInfo>(Network::Event::CONNECT, Network::Event::ConnectInfo(ip, port));
-        m_driverEngine.registerSystem<gengine::interface::network::system::Updater>();
+        m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
 #endif
         Network::NET::start();
-        m_driverEngine.registerSystem<gengine::system::AutoMainLoop>();
-        m_gameEngine.registerSystem<gengine::system::AutoMainLoop>();
+
+        m_remote.registerSystem<gengine::system::AutoMainLoop>();
+        m_local.registerSystem<gengine::system::AutoMainLoop>();
     }
 
     ~Networked() {
@@ -61,24 +61,19 @@ public:
 
 #ifdef GEngine_Server
     void run() override {
-        m_gameEngine.start();
-        m_gameEngine.compute();
+        m_remote.start();
+        m_remote.compute();
     }
 #else
     void run() override {
-        m_driverEngine.start();
-        m_driverEngine.compute();
+        m_local.start();
+        m_local.compute();
     }
 #endif
-    template <typename T>
-    void registerComponent(void) {
-        m_gameEngine.registerComponent<T>();
-        m_driverEngine.registerComponent<T>();
-    }
 
 private:
-    game::Engine &m_gameEngine;
-    driver::Engine &m_driverEngine;
+    BaseEngine &m_remote;
+    BaseEngine &m_local;
     const std::string m_ip;
     uint16_t m_port;
     bool m_block;

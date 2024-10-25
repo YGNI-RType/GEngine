@@ -44,7 +44,7 @@ bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t game
 
     /* todo : add rate limit and all, only do it once though */
     for (const auto &chunk : fragments) {
-        UDPMessage newMsg(true, msgType);
+        UDPMessage newMsg(Network::UDPMessage::HEADER, msgType);
         newMsg.setFlag(flags);
         newMsg.setFragmented(true);
 
@@ -156,7 +156,7 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
         }
 
         if (m_udpPoolRecv.receivedFullSequence(fragSequence)) {
-            msg = UDPMessage(true, msg.getType()); /* recreate */
+            msg = UDPMessage(UDPMessage::HEADER, msg.getType()); /* recreate */
 
             auto [sequence, _] = m_udpFragmentsOgSequences[fragSequence];
             m_udpFragmentsOgSequences.erase(fragSequence);

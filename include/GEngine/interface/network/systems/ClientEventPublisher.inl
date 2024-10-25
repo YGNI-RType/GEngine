@@ -5,18 +5,16 @@
 ** ClientEventPublisher.cpp
 */
 
-// #include "GEngine/interface/network/systems/ClientEventPublisher.hpp"
-
 template <class... Events>
 gengine::interface::network::system::ClientEventPublisher<Events...>::ClientEventPublisher()
     : m_client(Network::NET::getClient())
-    , m_msg(true, Network::CL_EVENT) {
+    , m_msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK, Network::CL_EVENT) {
 }
 
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::init(void) {
     this->template subscribeToEvent<gengine::system::event::StartEngine>(&ClientEventPublisher::onStartEngine);
-    this->template subscribeToEvent<gengine::system::event::MainLoop>(&ClientEventPublisher::onMainLoop);
+    this->template subscribeToEvent<gengine::system::event::GameLoop>(&ClientEventPublisher::onGameLoop);
     (dynamicSubscribe<Events>(), ...);
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<int>(Network::Event::CT_OnServerReady, [this](int) -> void {
@@ -28,20 +26,19 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::init(
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::onStartEngine(
     gengine::system::event::StartEngine &e) {
-    m_msg.setAck(true);
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
 }
 
 template <class... Events>
-void gengine::interface::network::system::ClientEventPublisher<Events...>::onMainLoop(
-    gengine::system::event::MainLoop &e) {
+void gengine::interface::network::system::ClientEventPublisher<Events...>::onGameLoop(
+    gengine::system::event::GameLoop &e) {
     if (!m_ready)
         return;
 
     m_msg.writeData(m_eventCount, sizeof(Network::UDPG_NetChannelHeader), 0, false);
     m_client.pushData(m_msg);
-    m_msg.clear(true);
+    m_msg.clear();
 
     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     m_msg.appendData<std::uint64_t>(0);
