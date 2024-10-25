@@ -10,9 +10,9 @@
 
 #include "GEngine/net/net.hpp"
 
-#ifdef NET_DEBUG
+// #ifdef NET_DEBUG
 #include <iostream>
-#endif
+// #endif
 
 namespace Network {
 
@@ -87,9 +87,9 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     else
         return; /* impossible */
 
-#ifdef NET_DEBUG
-    std::cout << "SV: New client connected" << std::endl;
-#endif
+// #ifdef NET_DEBUG
+    std::cout << "SV: Client connected" << std::endl;
+// #endif
     m_clients.push_back(cl);
 
     auto msg = TCPMessage(SV_INIT_CONNECTON);
@@ -189,6 +189,7 @@ void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type ) 
     if (!isRunning())
         return;
 
+    std::cout << "SV: Client disconnected" << std::endl;
     Network::Event::DisconnectInfo info = {client, type};
     NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, client);
     m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),

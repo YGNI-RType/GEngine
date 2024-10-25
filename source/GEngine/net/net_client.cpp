@@ -22,10 +22,14 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_packOutDataAck(socketEvent)
     , m_packInData(socketEvent)
     , m_tcpIn(socketEvent)
-    , m_tcpOut(socketEvent) {
+    , m_tcpOut(socketEvent),
+    m_state(CS_CONNECTED) {
 }
 
 bool NetClient::isTimeout(void) const {
+    if (m_state < CS_ACTIVE)
+        return false;
+
     return m_channel.isTimeout();
 }
 
@@ -63,6 +67,7 @@ bool NetClient::handleClientStream(void) {
 
         auto msg = TCPMessage(SV_YOU_ARE_READY);
         m_channel.sendStream(msg);
+        m_state = CS_PRIMED;
         return true;
     }
     default:
@@ -82,6 +87,7 @@ bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
         // std::cout << "SV: client just sent UDP specific message" << std::endl;
         switch (msg.getType()) {
         default:
+            m_state = CS_ACTIVE;
             return pushIncommingData(msg, readOffset);
         }
     return false;

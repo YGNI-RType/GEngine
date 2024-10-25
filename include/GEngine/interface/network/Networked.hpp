@@ -13,6 +13,7 @@
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
+#include "GEngine/net/events/disconnection.hpp"
 
 #include "GEngine/interface/network/systems/Snapshot.hpp"
 
@@ -56,7 +57,7 @@ public:
 
     ~Networked() {
         Network::NET::stop();
-        Network::NET::getClient().disconnectFromServer();
+        Network::NET::getClient().disconnectFromServer(Network::Event::DT_WANTED);
     }
 
 #ifdef GEngine_Server

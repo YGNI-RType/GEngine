@@ -17,6 +17,6 @@ ConVar net_recv_dropsim("net_recv_dropsim", "0", ConVar::flag::SELF, "Simulate r
 ConVar net_send_dropsim("net_send_dropsim", "0", ConVar::flag::SELF, "Simulate send packet drop rate (%)");
 
 ConVar net_kick_timeout(
-    "net_active_timeout", "10000", ConVar::flag::SELF,
+    "net_active_timeout", "30000", ConVar::flag::SELF,
     "Set the timeout to disconnect a client (self or server client) based on the last received packet");
 } // namespace CVar

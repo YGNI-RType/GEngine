@@ -59,10 +59,33 @@ public:
         segment.flag = msg.getFlags();
         segment.msgSize = msg.getSize();
 
-        queueSegment.pop();
+        queueSegment.pop_front();
         m_popped++;
         deconstructMessage(msg, segment);
-        queueSegment.push(segment);
+        queueSegment.push_back(segment);
+
+        m_socketEvent.signal();
+        return true;
+    }
+
+    bool fullpushlast(const MSGTYPE &msg, size_t readcount) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        auto it = m_msgs.find(msg.getType());
+        if (it == m_msgs.end() || !full())
+            return pushUnsafe(msg, readcount);
+
+        auto &[_, queueSegment] = *it;
+
+        auto segment = queueSegment.back();
+        segment.readCount = readcount;
+        segment.flag = msg.getFlags();
+        segment.msgSize = msg.getSize();
+
+        queueSegment.pop_back();
+        m_popped++;
+        deconstructMessage(msg, segment);
+        queueSegment.push_back(segment);
 
         m_socketEvent.signal();
         return true;
@@ -81,7 +104,7 @@ public:
             return false;
 
         auto segment = queueSegment.front();
-        queueSegment.pop();
+        queueSegment.pop_front();
         constructMessage(msg, segment, readCount);
         m_isUsed[segment.id] = false;
         m_nbUsed--;
@@ -98,7 +121,7 @@ public:
                 continue;
 
             auto segment = queueSegment.front();
-            queueSegment.pop();
+            queueSegment.pop_front();
             constructMessage(msg, segment, readCount);
             msg.setType(type);
             m_isUsed[segment.id] = false;
@@ -149,7 +172,7 @@ private:
 
         auto it = m_msgs.find(msg.getType());
         if (it == m_msgs.end())
-            m_msgs[msg.getType()] = std::queue<Segment>();
+            m_msgs[msg.getType()] = std::deque<Segment>();
 
         auto &q = m_msgs[msg.getType()];
         auto idSegment = getFreeSegment();
@@ -158,7 +181,7 @@ private:
 
         Segment segment = {idSegment, msg.getFlags(), msg.getSize(), readcount};
         deconstructMessage(msg, segment);
-        q.push(segment);
+        q.push_back(segment);
         m_nbUsed++;
 
         m_socketEvent.signal();
@@ -199,7 +222,7 @@ private:
     std::array<byte_t, NB_PACKETS * MAX_PACKET_SIZE> m_data;
     std::array<bool, NB_PACKETS> m_isUsed = {0};
     std::atomic_size_t m_nbUsed = 0;
-    std::unordered_map<uint8_t, std::queue<Segment>> m_msgs;
+    std::unordered_map<uint8_t, std::deque<Segment>> m_msgs;
     std::atomic_size_t m_popped = 0;
 
     mutable std::mutex m_mutex;
