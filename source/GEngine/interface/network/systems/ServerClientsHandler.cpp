@@ -7,7 +7,7 @@
 
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 
-#include "GEngine/interface/events/RemoteDriver.hpp"
+#include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/net_client.hpp"
@@ -47,10 +47,10 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
                 return;
             }
 
-            gengine::interface::component::RemoteDriver newRemoteDriver;
-            m_clients.insert({newRemoteDriver, client});
-            publishEvent<gengine::interface::event::NewRemoteDriver>(
-                gengine::interface::event::NewRemoteDriver(newRemoteDriver));
+            gengine::interface::component::RemoteLocal newRemoteLocal;
+            m_clients.insert({newRemoteLocal, client});
+            publishEvent<gengine::interface::event::NewRemoteLocal>(
+                gengine::interface::event::NewRemoteLocal(newRemoteLocal));
         });
 
     eventManager.registerCallback<Network::NetClient *>(
@@ -76,8 +76,8 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
             }
             it->second.setShouldDelete(true);
 
-            publishEvent<gengine::interface::event::DeleteRemoteDriver>(
-                gengine::interface::event::DeleteRemoteDriver(it->first));
+            publishEvent<gengine::interface::event::DeleteRemoteLocal>(
+                gengine::interface::event::DeleteRemoteLocal(it->first));
         });
 }
 

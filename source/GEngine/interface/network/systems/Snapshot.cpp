@@ -20,7 +20,7 @@ Snapshot::Snapshot(const snapshot_t &currentWorld)
 
 void Snapshot::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&Snapshot::onGameLoop);
-    subscribeToEvent<gengine::interface::event::NewRemoteDriver>(&Snapshot::registerSnapshot);
+    subscribeToEvent<gengine::interface::event::NewRemoteLocal>(&Snapshot::registerSnapshot);
 }
 
 void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
@@ -34,13 +34,13 @@ void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
 }
 
 /* todo warning : mutex please */
-void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteDriver &e) {
-    component::RemoteDriver r(e.remote);
+void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteLocal &e) {
+    component::RemoteLocal r(e.remote);
     m_clientSnapshots.insert(std::make_pair(r, std::make_pair(m_currentSnapshotId, snapshots_t())));
     m_clientSnapshots[r].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
 }
 
-void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteDriver &e) {
+void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e) {
     m_clientSnapshots.erase(e.remote);
 }
 

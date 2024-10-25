@@ -5,21 +5,21 @@
 **  File        : ServerEventReceiver.hpp
 **  Create at   : 2024-10-15 04:51
 **  Author      : AUTHOR
-**  Description : This system catch all RemoteEvent send by ClientEventPublisher
+**  Description : This system catch all SharedEvent send by ClientEventPublisher
                     and publis them to GameEngine event Bus.
 ** ═══════════════════════════════════════════════════════════════════════════
 */
 
 #pragma once
 
-#include "GEngine/interface/events/RemoteEvent.hpp"
+#include "GEngine/interface/events/SharedEvent.hpp"
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/net/net.hpp"
 
-#include "GEngine/interface/components/RemoteDriver.hpp"
+#include "GEngine/interface/components/RemoteLocal.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -47,7 +47,7 @@ private:
 
     std::uint64_t m_id = 0;
     const Network::NetServer &m_server;
-    std::unordered_map<std::uint64_t, std::pair<std::function<void(void *, component::RemoteDriver &)>, size_t>>
+    std::unordered_map<std::uint64_t, std::pair<std::function<void(void *, component::RemoteLocal &)>, size_t>>
         m_eventsCallbacks;
     mutable std::mutex m_netMutex;
 };

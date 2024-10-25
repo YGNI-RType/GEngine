@@ -20,7 +20,7 @@
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
-#include "GEngine/interface/events/RemoteDriver.hpp"
+#include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/network/systems/NetworkComponent.hpp"
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 
@@ -42,15 +42,15 @@ public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
 
-    void registerSnapshot(gengine::interface::event::NewRemoteDriver &e);
-    void destroySnapshot(gengine::interface::event::DeleteRemoteDriver &e);
+    void registerSnapshot(gengine::interface::event::NewRemoteLocal &e);
+    void destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e);
     void createSnapshots(void);
     void getAndSendDeltaDiff(void);
 
 private:
     const snapshot_t &m_currentWorld;
     snapshot_t m_dummySnapshot;
-    std::unordered_map<component::RemoteDriver, std::pair<uint64_t, snapshots_t>> m_clientSnapshots;
+    std::unordered_map<component::RemoteLocal, std::pair<uint64_t, snapshots_t>> m_clientSnapshots;
     uint64_t m_currentSnapshotId = -1;
 
     std::vector<ecs::component::component_info_t> getDeltaDiff(const snapshot_t &snap1, const snapshot_t &snap2) const;
