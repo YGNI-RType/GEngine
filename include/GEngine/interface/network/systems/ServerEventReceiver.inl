@@ -46,7 +46,6 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onGame
             std::vector<Network::byte_t> data(size);
 
             msg.readData(data.data(), readCount, size);
-
             gengine::interface::component::RemoteLocal id = remote;
             callback(data.data(), id);
         }

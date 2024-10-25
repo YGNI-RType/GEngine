@@ -47,10 +47,10 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
                 return;
             }
 
-            gengine::interface::component::RemoteLocal NewRemoteLocal;
-            m_clients.insert({NewRemoteLocal, client});
+            gengine::interface::component::RemoteLocal newRemoteLocal;
+            m_clients.insert({newRemoteLocal, client});
             publishEvent<gengine::interface::event::NewRemoteLocal>(
-                gengine::interface::event::NewRemoteLocal(NewRemoteLocal));
+                gengine::interface::event::NewRemoteLocal(newRemoteLocal));
         });
 
     eventManager.registerCallback<Network::NetClient *>(

@@ -10,7 +10,7 @@
 namespace gengine::interface::component {
 
 RemoteLocal::RemoteLocal() {
-    generateUUID();
+    generateUUID(m_uuid);
 }
 
 // Copy constructor
@@ -40,7 +40,7 @@ const uuids::uuid &RemoteLocal::getUUIDBytes() const {
     return m_uuid;
 }
 
-void RemoteLocal::generateUUID() {
+void RemoteLocal::generateUUID(uuids::uuid &toGenerate) {
     std::random_device rd;
     auto seed_data = std::array<int, std::mt19937::state_size>{};
     std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
@@ -49,6 +49,6 @@ void RemoteLocal::generateUUID() {
     uuids::uuid_random_generator gen{generator};
 
     uuids::uuid_random_generator uuidG(gen);
-    m_uuid = uuidG();
+    toGenerate = uuidG();
 }
 } // namespace gengine::interface::component

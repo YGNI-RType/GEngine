@@ -30,4 +30,14 @@ struct DeleteRemoteLocal : gengine::Event {
         : remote(remote) {
     }
 };
+
+struct GetRemoteLocalWhoIAm : gengine::Event {
+    component::RemoteLocal remote;
+    GetRemoteLocalWhoIAm(component::RemoteLocal &remote)
+        : remote(remote) {
+    }
+    GetRemoteLocalWhoIAm(const component::RemoteLocal &remote)
+        : remote(remote) {
+    }
+};
 } // namespace gengine::interface::event
