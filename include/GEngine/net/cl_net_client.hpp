@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "events/disconnection.hpp"
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
@@ -42,7 +43,7 @@ public:
     /* index of the pinged servers */
     bool connectToServer(size_t index);
     bool connectToServer(const std::string &ip, uint16_t port, bool block = false);
-    void disconnectFromServer(void);
+    void disconnectFromServer(Event::DisonnectType disconnectType);
 
     void createSets(NetWaitSet &readSet);
 
@@ -51,6 +52,8 @@ public:
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
     bool handleServerTCP(const TCPMessage &msg);
+
+    void checkTimeouts(void);
 
     void setChallenge(int challenge) {
         m_challenge = challenge;
@@ -107,9 +110,9 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 24, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 1, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;     /* voiceip etc.. */
-    NetQueue<UDPMessage, 20, 17000> m_packInDataAck; /* snapshot */
+    NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 
     NetQueueHeap<TCPMessage, 5> m_tcpIn;
     NetQueueHeap<TCPMessage, 5> m_tcpOut;
