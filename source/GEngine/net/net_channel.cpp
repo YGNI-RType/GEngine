@@ -161,9 +161,9 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             auto [sequence, _] = m_udpFragmentsOgSequences[fragSequence];
             m_udpFragmentsOgSequences.erase(fragSequence);
             if (sequence < m_udpACKFullInSequence) {
-// #ifdef NET_DEBUG
+                // #ifdef NET_DEBUG
                 std::cout << "RECV DELETED: " << sequence << " Msgsize: " << msg.getSize() << std::endl;
-// #endif
+                // #endif
                 return false; /* on se fait chier pour ça les gars !! */
             }
 

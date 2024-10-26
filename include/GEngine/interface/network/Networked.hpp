@@ -10,10 +10,10 @@
 
 #include "GEngine/net/events/connection.hpp"
 
+#include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
-#include "GEngine/net/events/disconnection.hpp"
 
 #include "GEngine/interface/network/systems/Snapshot.hpp"
 

@@ -87,9 +87,9 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     else
         return; /* impossible */
 
-// #ifdef NET_DEBUG
+    // #ifdef NET_DEBUG
     std::cout << "SV: Client connected" << std::endl;
-// #endif
+    // #endif
     m_clients.push_back(cl);
 
     auto msg = TCPMessage(SV_INIT_CONNECTON);
@@ -186,7 +186,7 @@ void NetServer::checkTimeouts(void) {
     }
 }
 
-void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type ) {
+void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type) {
     if (!isRunning())
         return;
 

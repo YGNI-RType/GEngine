@@ -8,9 +8,9 @@
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 
 #include "GEngine/interface/events/RemoteLocal.hpp"
+#include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
-#include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/net_client.hpp"
 
 namespace gengine::interface::network::system {
