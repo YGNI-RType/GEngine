@@ -2,8 +2,8 @@
 ** ════════════════════════════════════════════════════════════════════════════
 **                           GEngine (libdev) System
 ** ════════════════════════════════════════════════════════════════════════════
-**  File        : NetworkComponent.hpp
-**  Create at   : 2024-10-15 04:50
+**  File        : NetSend.hpp
+**  Create at   : 2024-10-15 04:49
 **  Author      : AUTHOR
 **  Description : DESCRIPTION
 ** ═══════════════════════════════════════════════════════════════════════════
@@ -11,18 +11,20 @@
 
 #pragma once
 
-#include <cstdint>
+#include "GEngine/libdev/Component.hpp"
 
-namespace gengine::interface::network::system {
-struct NetworkComponent {
-    uint64_t entity;
-    uint16_t typeId;
-    uint16_t size;
+namespace gengine::interface::network::component {
+class NetSend : public Component<NetSend> {
+public:
+    uint8_t version;
 
-    NetworkComponent(uint64_t entity = 0, uint16_t typeId = 0, uint16_t size = 0)
-        : entity(entity)
-        , typeId(typeId)
-        , size(size) {
+    NetSend()
+        : version(0) {
+    }
+
+    bool operator==(const NetSend &) const = default;
+    void update() {
+        version++;
     }
 };
-} // namespace gengine::interface::network::system
+} // namespace gengine::interface::network::component

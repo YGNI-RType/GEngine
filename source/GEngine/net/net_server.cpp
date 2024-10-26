@@ -10,7 +10,9 @@
 
 #include "GEngine/net/net.hpp"
 
+// #ifdef NET_DEBUG
 #include <iostream>
+// #endif
 
 namespace Network {
 
@@ -85,7 +87,9 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     else
         return; /* impossible */
 
-    // // std::cout << "SV: New client connected" << std::endl;
+    // #ifdef NET_DEBUG
+    std::cout << "SV: Client connected" << std::endl;
+    // #endif
     m_clients.push_back(cl);
 
     auto msg = TCPMessage(SV_INIT_CONNECTON);
@@ -94,8 +98,6 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     msg.writeData<TCPSV_ClientInit>(
         {.challenge = channel.getChallenge(),
          .udpPort = clientAddrType == AT_IPV6 ? m_socketUdpV6.getPort() : m_socketUdpV4.getPort()});
-
-    // // std::cout << "SV: Client challange: " << channel.getChallenge() << std::endl;
 
     NET::getEventManager().invokeCallbacks(Event::CT_OnClientConnect, cl);
     channel.sendStream(msg);
@@ -142,14 +144,8 @@ bool NetServer::handleTCPEvent(const NetWaitSet &set) {
 
     for (const auto &client : m_clients)
         if (client->handleTCPEvents(set)) {
-            if (client->isDisconnected()) {
-                NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, client.get());
-                m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
-                                               [&client](const std::shared_ptr<NetClient> &cl) {
-                                                   return cl.get() == client.get();
-                                               }),
-                                m_clients.end());
-            }
+            if (client->isDisconnected())
+                disconnectClient(client.get(), Event::DT_WANTED);
             return true;
         }
 
@@ -175,6 +171,31 @@ void NetServer::sendToClient(NetClient &client, UDPMessage &msg) {
         return;
 
     client.sendDatagram(msg);
+}
+
+void NetServer::checkTimeouts(void) {
+    if (!isRunning())
+        return;
+
+    for (const auto &client : m_clients) {
+        if (!client->isTimeout())
+            continue;
+
+        std::cout << "SV: Client timeout" << std::endl;
+        disconnectClient(client.get(), Event::DT_TIMEOUT);
+    }
+}
+
+void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type) {
+    if (!isRunning())
+        return;
+
+    std::cout << "SV: Client disconnected" << std::endl;
+    Network::Event::DisconnectInfo info = {client, type};
+    NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, info);
+    m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
+                                   [&client](const std::shared_ptr<NetClient> &cl) { return cl.get() == client; }),
+                    m_clients.end());
 }
 
 } // namespace Network

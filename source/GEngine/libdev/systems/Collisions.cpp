@@ -6,7 +6,7 @@
 */
 
 #include "GEngine/libdev/systems/Collisions.hpp"
-#include "GEngine/libdev/systems/events/Collision.hpp"
+#include "GEngine/libdev/systems/events/game/Collision.hpp"
 #include <algorithm>
 #include <cmath>
 

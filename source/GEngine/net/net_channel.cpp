@@ -10,7 +10,9 @@
 #include "GEngine/net/net_socket_error.hpp"
 #include "GEngine/time/time.hpp"
 
+// #ifdef NET_DEBUG
 #include <iostream>
+// #endif
 
 namespace Network {
 
@@ -35,14 +37,14 @@ void NetChannel::createUdpAddress(uint16_t udpport) {
             std::make_unique<AddressV4>(AT_IPV4, udpport, static_cast<AddressV4 *>(m_toTCPAddress.get())->getAddress());
 }
 
-bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t gameThreadACK,
+bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence,
                                const std::vector<const Network::PacketPoolUdp::chunk_t *> &fragments) {
     auto [msgType, flags, maxSize, lastChunkSz, _mask, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
     uint8_t i = 0;
 
     /* todo : add rate limit and all, only do it once though */
     for (const auto &chunk : fragments) {
-        UDPMessage newMsg(true, msgType);
+        UDPMessage newMsg(Network::UDPMessage::HEADER, msgType);
         newMsg.setFlag(flags);
         newMsg.setFragmented(true);
 
@@ -54,15 +56,17 @@ bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t game
         m_udpPoolSend.constructMessage(newMsg, chunk, fragments.back() == chunk ? lastChunkSz : chunk->size(),
                                        fragHeader);
 
-        // std::cout << "(" << sequence << ") Sending fragment: " << (int)i << " | " << newMsg.getSize() << " H: " <<
-        // newMsg.getHash() << std::endl;
-        sendDatagram(socket, newMsg, gameThreadACK);
+#ifdef NET_DEBUG
+        std::cout << "(" << sequence << ") Sending fragment: " << (int)i << " | " << newMsg.getSize()
+                  << " H: " << newMsg.getHash() << std::endl;
+#endif
+        sendDatagram(socket, newMsg);
         i++;
     }
     return true;
 }
 
-bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK) {
+bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
     if (!m_enabled || m_toUDPAddress == nullptr)
         return false;
 
@@ -75,12 +79,14 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThr
 
     // rah shit, fragment too big. put the rest in the pool in case of network rating issue
     if (msgLen > MAX_UDP_PACKET_LENGTH) {
-        // std::cout << "Msg Hash (" << udpOutSequence << " | " << msg.getSize() << "): " << msg.getHash() << std::endl;
+#ifdef NET_DEBUG
+        std::cout << "Msg Hash (" << udpOutSequence << " | " << msg.getSize() << "): " << msg.getHash() << std::endl;
+#endif
         if (!m_udpPoolSend.addMessage(m_udpMyFragSequence, msg))
             return false;
 
         auto fragments = m_udpPoolSend.getMissingFragments(m_udpMyFragSequence, 0);
-        bool res = sendDatagrams(socket, m_udpMyFragSequence, gameThreadACK, fragments);
+        bool res = sendDatagrams(socket, m_udpMyFragSequence, fragments);
 
         // temp : normally we should get the missing sequences, but for now we don't need them
         m_udpPoolSend.deleteSequence(m_udpMyFragSequence);
@@ -92,7 +98,7 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThr
 
     UDPG_NetChannelHeader header = {.sequence = udpOutSequence, .ackFragmentSequence = m_udpFromFragSequence};
     if (msg.shouldAck())
-        header.ack = gameThreadACK;
+        header.ack = m_udpACKFullInSequence;
     msg.writeHeader(header);
 
     size_t sent = socket.send(msg, *m_toUDPAddress);
@@ -108,21 +114,18 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThr
     return true;
 }
 
-bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK) {
+bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset) {
     UDPG_NetChannelHeader header;
     msg.readHeader(header, readOffset);
-
-    // if (!NETCHAN_GENCHECKSUM(m_challenge, header.sequence))
-    //     return false; /* what is going on sir ???? */
 
     uint64_t &udpOutSequence = msg.shouldAck() ? m_udpACKOutSequence : m_udpOutSequence;
     uint64_t &udpInSequence = msg.shouldAck() ? m_udpACKInSequence : m_udpInSequence;
 
-    if (header.sequence <= udpInSequence) {
-        /*out of order packet, delete it */
-        // std::cout << "OOB packet: " << header.sequence << std::endl;
+    m_udplastrecv = Time::Clock::milliseconds();
+
+    /*out of order packet, delete it */
+    if (header.sequence <= udpInSequence)
         return false;
-    }
 
     if (msg.shouldAck()) { /* only care about reliable packets */
         m_udpACKClientLastACK = header.ack;
@@ -140,7 +143,7 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             m_udpPoolSend.deleteSequence(fragHeader.idSequence);
             return true;
         }
-        sendDatagrams(socket, fragHeader.idSequence, gameThreadACK, missing);
+        sendDatagrams(socket, fragHeader.idSequence, missing);
         return true;
     }
 
@@ -153,22 +156,26 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
         }
 
         if (m_udpPoolRecv.receivedFullSequence(fragSequence)) {
-            msg = UDPMessage(true, msg.getType()); /* recreate */
+            msg = UDPMessage(UDPMessage::HEADER, msg.getType()); /* recreate */
 
             auto [sequence, _] = m_udpFragmentsOgSequences[fragSequence];
             m_udpFragmentsOgSequences.erase(fragSequence);
             if (sequence < m_udpACKFullInSequence) {
+                // #ifdef NET_DEBUG
                 std::cout << "RECV DELETED: " << sequence << " Msgsize: " << msg.getSize() << std::endl;
+                // #endif
                 return false; /* on se fait chier pour ça les gars !! */
             }
 
             m_udpPoolRecv.reconstructMessage(fragSequence, msg);
-            // std::cout << "Msg Hash (" << sequence << "| "<< msg.getSize() <<"): " << msg.getHash() << std::endl;
+#ifdef NET_DEBUG
+            std::cout << "Msg Hash (" << sequence << "| " << msg.getSize() << "): " << msg.getHash() << std::endl;
+#endif
             msg.writeHeader(header);
             msg.setWasFragmented(true);
 
             readOffset = 0;
-            bool res = readDatagram(socket, msg, readOffset, gameThreadACK);
+            bool res = readDatagram(socket, msg, readOffset);
             m_udpPoolRecv.deleteSequence(fragSequence);
             m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
             return res;
@@ -177,8 +184,6 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
     } else if (msg.shouldAck() && !msg.wasFragmented()) {
         m_udpACKFullInSequence = header.sequence;
     }
-
-    m_udplastrecv = Time::Clock::milliseconds();
 
     udpInSequence = header.sequence;
     return true;
@@ -196,8 +201,6 @@ bool NetChannel::sendStream(const TCPMessage &msg) {
 }
 
 bool NetChannel::readStream(TCPMessage &msg) {
-    /* todo : add header check etc */
-
     try {
         m_tcpSocket.receive(msg);
     } catch (const SocketDisconnected &e) {

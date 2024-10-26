@@ -9,6 +9,7 @@
 
 #include "net_msg.hpp"
 #include "net_socket.hpp"
+#include "net_tcp.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -155,16 +156,14 @@ public:
     void createUdpAddress(uint16_t udpport);
 
 public:
-    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK);
+    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset);
     bool readStream(TCPMessage &msg);
 
-    /* gameThreadACK => since the game thread is in another thread, the message isn't really ack inside the network part
-     */
-    bool sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK);
+    bool sendDatagram(SocketUDP &socket, UDPMessage &msg);
     bool sendStream(const TCPMessage &msg);
 
 private:
-    bool sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t gameThreadACK,
+    bool sendDatagrams(SocketUDP &socket, uint32_t sequence,
                        const std::vector<const Network::PacketPoolUdp::chunk_t *> &vec);
 
 public:
@@ -213,6 +212,7 @@ private:
 
     /* TCP */
 
+    // TCPManager m_tcpManager;
     SocketTCP m_tcpSocket;
     /* unsent data (mostly rather small data, downloads are another story)*/
     // PacketPoolTcp m_tcpPool;

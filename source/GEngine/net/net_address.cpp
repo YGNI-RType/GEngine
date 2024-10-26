@@ -49,19 +49,19 @@ bool Address::isEqual(const byte_t *addr1, const byte_t *addr2, uint32_t mask) c
 /**********************************************/
 
 AddressV4::AddressV4(AddressType type, uint16_t port, const ipv4_t &address)
-    : Address(type, port)
+    : Address(type, port, 32)
     , m_address(address) {
 }
 AddressV4::AddressV4(AddressType type, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 32) {
 }
 
 AddressV4::AddressV4(AddressType type, uint16_t port, in_addr_t ip)
-    : Address(type, port) {
+    : Address(type, port, 32) {
     m_address = *(ipv4_t *)&ip;
 }
 AddressV4::AddressV4(AddressType type, const std::string &ip, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 32) {
     in_addr_t addr = inet_addr(ip.c_str());
 
     if (addr == INADDR_NONE)
@@ -113,22 +113,22 @@ bool AddressV4::isLanAddr(void) const {
 /**********************************************/
 
 AddressV6::AddressV6(AddressType type, uint16_t port, const ipv6_t &address, uint64_t scopeId)
-    : Address(type, port)
+    : Address(type, port, 128)
     , m_address(address)
     , m_scopeId(scopeId) {
 }
 AddressV6::AddressV6(AddressType type, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 128) {
 }
 
 AddressV6::AddressV6(AddressType type, uint16_t port, in6_addr ip, uint32_t scopeId)
-    : Address(type, port)
+    : Address(type, port, 128)
     , m_scopeId(scopeId) {
     m_address = *(ipv6_t *)&ip;
     m_scopeId = scopeId;
 }
 AddressV6::AddressV6(AddressType type, const std::string &ip, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 128) {
     in6_addr addr;
 
     if (inet_pton(AF_INET6, ip.c_str(), &addr) != 1)

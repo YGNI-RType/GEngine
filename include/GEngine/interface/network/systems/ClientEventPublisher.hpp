@@ -11,8 +11,10 @@
 
 #pragma once
 
+#include "GEngine/interface/events/RemoteLocal.hpp"
+#include "GEngine/interface/events/SharedEvent.hpp"
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/net/net.hpp"
 #include <iostream>
@@ -24,15 +26,17 @@
 namespace gengine::interface::network::system {
 
 template <class... Events>
-class ClientEventPublisher : public System<ClientEventPublisher<Events...>> {
+class ClientEventPublisher : public System<ClientEventPublisher<Events...>>, public LocalSystem {
 public:
     ClientEventPublisher();
 
     void init(void) override;
 
-    void onStartEngine(gengine::system::event::StartEngine &e);
+    void onStartEngine(gengine::system::event::StartEngine &);
 
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onGameLoop(gengine::system::event::GameLoop &);
+
+    void setMe(interface::event::ItsMe &);
 
 private:
     template <typename T>
@@ -46,6 +50,8 @@ private:
     Network::CLNetClient &m_client;
     bool m_ready = false;
     std::unordered_map<std::type_index, std::uint64_t> m_events;
+
+    uuids::uuid m_me;
     mutable std::mutex m_netMutex;
 };
 
