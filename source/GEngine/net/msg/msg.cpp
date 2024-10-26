@@ -86,7 +86,7 @@ void AMessage::stopCompressingSegment(bool reading) {
         m_compressNow = false;
         if (!reading) {
             size_t wroteData = getBitBuffer() / 8;
-            m_curSize += wroteData + (wroteData % 8 == 0 ? 0 : 1);
+            m_curSize += wroteData + 1;
         }
         return;
     }

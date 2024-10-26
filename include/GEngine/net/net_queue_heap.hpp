@@ -45,7 +45,6 @@ public:
 
         auto &[_, q] = *it;
         q.pop();
-        m_popped++;
         q.push(std::move(msg));
 
         m_socketEvent.signal();
@@ -67,7 +66,6 @@ public:
         *msg = q.front();
         q.pop();
         m_nbUsed--;
-        m_popped++;
 
         return true;
     }
@@ -82,7 +80,6 @@ public:
             msg = *q.front();
             q.pop();
             m_nbUsed--;
-            m_popped++;
 
             return true;
         }
@@ -102,10 +99,6 @@ public:
         return m_nbUsed;
     }
 
-    size_t getNbPopped(void) const {
-        return m_popped;
-    }
-
     size_t size(uint8_t type) const {
         std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -116,7 +109,6 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
 
         m_msgs.clear();
-        m_popped = 0;
     }
 
 private:
@@ -136,7 +128,6 @@ private:
 
 private:
     std::unordered_map<uint8_t, std::queue<std::unique_ptr<TCPMessage>>> m_msgs;
-    std::atomic_size_t m_popped = 0;
     std::atomic_size_t m_nbUsed = 0;
 
     mutable std::mutex m_mutex;

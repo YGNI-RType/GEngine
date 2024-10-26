@@ -256,6 +256,7 @@ bool NET::sleep(uint32_t ms) {
 
     createSets(set);
     bool res = mg_wait.wait(ms, set);
+    handleTimeouts();
     if (!res)
         return false;
     return handleEvents(set);
@@ -312,6 +313,11 @@ bool NET::handleEvents(const NetWaitSet &set) {
         return true;
 
     return mg_client.handleTCPEvents(set);
+}
+
+void NET::handleTimeouts(void) {
+    mg_server.checkTimeouts();
+    mg_client.checkTimeouts();
 }
 
 /**************************************************************/

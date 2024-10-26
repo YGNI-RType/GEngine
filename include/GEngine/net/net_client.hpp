@@ -71,6 +71,8 @@ public:
         return m_channel.isDisconnected();
     }
 
+    bool isTimeout(void) const;
+
     bool handleTCPEvents(const NetWaitSet &set);
     bool handleClientStream(void);
     bool handleClientDatagram(SocketUDP &socket, UDPMessage &msg);

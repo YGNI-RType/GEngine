@@ -53,16 +53,17 @@ public:
 
 protected:
     virtual const byte_t *getData() const = 0;
-    Address(AddressType type, uint16_t port)
+    Address(AddressType type, uint16_t port, uint32_t mask = 0)
         : m_type(type)
-        , m_port(port) {
+        , m_port(port)
+        , m_mask(mask) {
     }
 
     bool isEqual(const byte_t *addr1, const byte_t *addr2, uint32_t mask) const;
 
     AddressType m_type;
     uint16_t m_port;
-    uint32_t m_mask = 0;
+    uint32_t m_mask;
 };
 
 class AddressV4 : public Address {

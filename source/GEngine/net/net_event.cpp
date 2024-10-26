@@ -64,7 +64,7 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
     case DISCONNECT: {
         auto &client = NET::getClient();
 
-        client.disconnectFromServer();
+        client.disconnectFromServer(Event::DT_WANTED);
     } break;
     case PING:
         NET::pingServers();

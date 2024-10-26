@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "events/disconnection.hpp"
 #include "events/socket_event.hpp"
 #include "net_client.hpp"
 #include "net_socket.hpp"
@@ -59,6 +60,9 @@ public:
     bool sendPackets(void);
     void sendToAllClients(UDPMessage &msg);
     void sendToClient(NetClient &client, UDPMessage &msg);
+
+    void checkTimeouts(void);
+    void disconnectClient(NetClient *client, Event::DisonnectType info);
 
 private:
     bool m_isRunning = false;

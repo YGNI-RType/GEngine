@@ -7,7 +7,8 @@
 
 #include "GEngine/interface/network/systems/ServerClient.hpp"
 
-#include "GEngine/interface/events/RemoteDriver.hpp"
+#include "GEngine/interface/events/RemoteLocal.hpp"
+#include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/net_client.hpp"
@@ -47,10 +48,10 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
                 return;
             }
 
-            gengine::interface::component::RemoteDriver newRemoteDriver;
-            m_clients.insert({newRemoteDriver, client});
-            publishEvent<gengine::interface::event::NewRemoteDriver>(
-                gengine::interface::event::NewRemoteDriver(newRemoteDriver));
+            uuids::uuid uuid;
+            component::RemoteLocal::generateUUID(uuid);
+            m_clients.insert({uuid, client});
+            publishEvent<gengine::interface::event::NewRemoteLocal>(gengine::interface::event::NewRemoteLocal(uuid));
         });
 
     eventManager.registerCallback<Network::NetClient *>(
@@ -64,20 +65,20 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
             it->second.setReady(true);
         });
 
-    eventManager.registerCallback<Network::NetClient *>(
-        Network::Event::CT_OnClientDisconnect, [this](Network::NetClient *client) {
+    eventManager.registerCallback<Network::Event::DisconnectInfo>(
+        Network::Event::CT_OnClientDisconnect, [this](Network::Event::DisconnectInfo info) {
             std::lock_guard<std::mutex> lock(m_netMutex);
 
             auto it = std::find_if(m_clients.begin(), m_clients.end(),
-                                   [client](auto &pair) { return pair.second.getClient().get() == client; });
+                                   [info](auto &pair) { return pair.second.getClient().get() == info.client; });
             if (it == m_clients.end()) {
-                unwantedClients.push_back(client);
+                unwantedClients.push_back(info.client);
                 return;
             }
             it->second.setShouldDelete(true);
 
-            publishEvent<gengine::interface::event::DeleteRemoteDriver>(
-                gengine::interface::event::DeleteRemoteDriver(it->first));
+            publishEvent<gengine::interface::event::DeleteRemoteLocal>(
+                gengine::interface::event::DeleteRemoteLocal(it->first));
         });
 }
 

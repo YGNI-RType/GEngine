@@ -17,6 +17,10 @@ ComponentTools Manager::registerTools(void) {
             return deltaDiffSparse<T>(std::any_cast<const SparseArray<T>>(any1),
                                       std::any_cast<const SparseArray<T> &>(any2));
         },
+        [this](entity::Entity entity, const std::any any1, const std::any &any2) {
+            return deltaDiffSparseEntity<T>(entity, std::any_cast<const SparseArray<T>>(any1),
+                                            std::any_cast<const SparseArray<T> &>(any2));
+        },
         [this](const std::any &any) { return &std::any_cast<const T &>(any); },
         [this](const void *ptr) { return *static_cast<const T *>(ptr); });
 }
@@ -75,6 +79,23 @@ std::vector<component_info_t> Manager::deltaDiffSparse(const SparseArray<Compone
         auto &[entity, component] = *it;
         if (!sparse1.contains(entity))
             diff.emplace_back(entity, type, false, std::any());
+    }
+    return diff;
+}
+
+template <class Component>
+std::optional<component_info_t> Manager::deltaDiffSparseEntity(entity::Entity entity,
+                                                               const SparseArray<Component> &sparse1,
+                                                               const SparseArray<Component> &sparse2) const {
+    std::optional<component_info_t> diff;
+    const std::type_index &type = m_componentMap.find(typeid(Component))->first;
+
+    if (sparse1.contains(entity)) {
+        auto comp = sparse1.get(entity);
+        if (!sparse2.contains(entity) || comp != sparse2.get(entity))
+            diff.emplace(component_info_t(entity, type, true, comp));
+    } else if (sparse2.contains(entity)) {
+        diff.emplace(component_info_t(entity, type, false, std::any()));
     }
     return diff;
 }

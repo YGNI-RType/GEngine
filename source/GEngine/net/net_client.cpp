@@ -22,7 +22,15 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_packOutDataAck(socketEvent)
     , m_packInData(socketEvent)
     , m_tcpIn(socketEvent)
-    , m_tcpOut(socketEvent) {
+    , m_tcpOut(socketEvent)
+    , m_state(CS_CONNECTED) {
+}
+
+bool NetClient::isTimeout(void) const {
+    if (m_state < CS_ACTIVE)
+        return false;
+
+    return m_channel.isTimeout();
 }
 
 void NetClient::sendStream(const TCPMessage &msg) {
@@ -36,7 +44,7 @@ bool NetClient::sendDatagram(UDPMessage &msg) {
     if (!m_channel.isEnabled())
         return false;
 
-    return m_channel.sendDatagram(m_socketUdp, msg, m_packInData.getNbPopped());
+    return m_channel.sendDatagram(m_socketUdp, msg);
 }
 
 bool NetClient::handleClientStream(void) {
@@ -59,6 +67,7 @@ bool NetClient::handleClientStream(void) {
 
         auto msg = TCPMessage(SV_YOU_ARE_READY);
         m_channel.sendStream(msg);
+        m_state = CS_PRIMED;
         return true;
     }
     default:
@@ -71,13 +80,14 @@ bool NetClient::handleClientStream(void) {
 bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
     size_t readOffset = 0;
 
-    if (!m_channel.isUDPEnabled() || !m_channel.readDatagram(socket, msg, readOffset, m_packInData.getNbPopped()))
+    if (!m_channel.isUDPEnabled() || !m_channel.readDatagram(socket, msg, readOffset))
         return false;
 
     if (msg.shouldAck())
         // std::cout << "SV: client just sent UDP specific message" << std::endl;
         switch (msg.getType()) {
         default:
+            m_state = CS_ACTIVE;
             return pushIncommingData(msg, readOffset);
         }
     return false;
@@ -138,23 +148,30 @@ bool NetClient::sendPackets(void) {
         return false;
 
     size_t byteSent = 0;
-    std::vector<bool (Network::NetClient::*)(Network::UDPMessage &, size_t &)> vecFuncs = {
-        &NetClient::retrieveWantedOutgoingData, &NetClient::retrieveWantedOutgoingDataAck};
+
+    size_t nbPakcetUdp = m_packOutData.size();
+    size_t nbPakcetUdpAck = m_packOutDataAck.size();
+
+    std::vector<std::pair<size_t, bool (Network::NetClient::*)(Network::UDPMessage &, size_t &)>> vecFuncs = {
+        std::make_pair<>(nbPakcetUdp, &NetClient::retrieveWantedOutgoingData),
+        std::make_pair<>(nbPakcetUdpAck, &NetClient::retrieveWantedOutgoingDataAck)};
 
     while (!vecFuncs.empty()) {
         size_t readCount;
         UDPMessage msg(0, 0);
         auto retrieveFunc = vecFuncs.front();
-        if (!(this->*retrieveFunc)(msg, readCount)) {
-            vecFuncs.erase(vecFuncs.begin());
-            continue;
-        }
+        size_t maxPacket = retrieveFunc.first;
 
-        size_t size = msg.getSize();
-        if (!sendDatagram(msg))
-            return false; /* how */
-        std::rotate(vecFuncs.begin(), vecFuncs.begin() + 1, vecFuncs.end());
-        byteSent += size;
+        for (size_t i = 0; i < maxPacket; i++) {
+            if (!(this->*retrieveFunc.second)(msg, readCount))
+                break;
+
+            size_t size = msg.getSize();
+            if (!sendDatagram(msg))
+                return false; /* how */
+            byteSent += size;
+        }
+        vecFuncs.erase(vecFuncs.begin());
     }
 
     size_t outStreamSz = m_tcpOut.size();

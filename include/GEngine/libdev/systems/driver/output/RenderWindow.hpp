@@ -20,7 +20,7 @@
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
 
 namespace gengine::system::driver::output {
-class RenderWindow : public gengine::System<RenderWindow> {
+class RenderWindow : public gengine::System<RenderWindow>, public LocalSystem {
 public:
     RenderWindow(int width, int height, const std::string &title);
 

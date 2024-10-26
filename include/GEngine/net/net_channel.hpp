@@ -156,16 +156,14 @@ public:
     void createUdpAddress(uint16_t udpport);
 
 public:
-    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset, size_t gameThreadACK);
+    bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset);
     bool readStream(TCPMessage &msg);
 
-    /* gameThreadACK => since the game thread is in another thread, the message isn't really ack inside the network part
-     */
-    bool sendDatagram(SocketUDP &socket, UDPMessage &msg, size_t gameThreadACK);
+    bool sendDatagram(SocketUDP &socket, UDPMessage &msg);
     bool sendStream(const TCPMessage &msg);
 
 private:
-    bool sendDatagrams(SocketUDP &socket, uint32_t sequence, size_t gameThreadACK,
+    bool sendDatagrams(SocketUDP &socket, uint32_t sequence,
                        const std::vector<const Network::PacketPoolUdp::chunk_t *> &vec);
 
 public:
