@@ -47,10 +47,10 @@ void ServerClientsHandler::onStartEngine(gengine::system::event::StartEngine &e)
                 return;
             }
 
-            gengine::interface::component::RemoteLocal newRemoteLocal;
-            m_clients.insert({newRemoteLocal, client});
-            publishEvent<gengine::interface::event::NewRemoteLocal>(
-                gengine::interface::event::NewRemoteLocal(newRemoteLocal));
+            uuids::uuid uuid;
+            component::RemoteLocal::generateUUID(uuid);
+            m_clients.insert({uuid, client});
+            publishEvent<gengine::interface::event::NewRemoteLocal>(gengine::interface::event::NewRemoteLocal(uuid));
         });
 
     eventManager.registerCallback<Network::NetClient *>(

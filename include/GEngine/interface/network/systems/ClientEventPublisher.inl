@@ -15,6 +15,7 @@ template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::init(void) {
     this->template subscribeToEvent<gengine::system::event::StartEngine>(&ClientEventPublisher::onStartEngine);
     this->template subscribeToEvent<gengine::system::event::GameLoop>(&ClientEventPublisher::onGameLoop);
+    this->template subscribeToEvent<event::ItsMe>(&ClientEventPublisher::setMe);
     (dynamicSubscribe<Events>(), ...);
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<int>(Network::Event::CT_OnServerReady, [this](int) -> void {
@@ -40,9 +41,13 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onGam
     m_client.pushData(m_msg);
     m_msg.clear();
 
-    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
+}
+
+template <class... Events>
+void gengine::interface::network::system::ClientEventPublisher<Events...>::setMe(event::ItsMe &e) {
+    m_me = e.myUUID;
 }
 
 template <class... Events>
@@ -52,10 +57,13 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::dynam
     this->template subscribeToEvent<T>([this](T &event) -> void {
         if (m_eventCount > m_maxEventToSend)
             return;
-
         m_msg.appendData<std::uint64_t>(m_events.find(std::type_index(typeid(T)))->second);
         m_msg.appendData<T>(event);
         m_eventCount++;
+        if (!m_me.is_nil()) {
+            event::SharedEvent<T> sharedEvent(event, m_me);
+            this->template publishEvent<event::SharedEvent<T>>(sharedEvent);
+        }
     });
     m_id++;
 }

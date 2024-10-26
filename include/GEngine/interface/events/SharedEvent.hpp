@@ -15,8 +15,8 @@ namespace gengine::interface::event {
 template <class T>
 class SharedEvent : public Event {
 public:
-    explicit SharedEvent(T &event, interface::component::RemoteLocal &remote)
-        : remote(remote)
+    explicit SharedEvent(T &event, uuids::uuid &remoteUUID)
+        : remoteUUID(remoteUUID)
         , m_event(event) {
     }
 
@@ -36,7 +36,7 @@ public:
         return m_event;
     }
 
-    interface::component::RemoteLocal remote;
+    uuids::uuid remoteUUID;
 
 private:
     T m_event;

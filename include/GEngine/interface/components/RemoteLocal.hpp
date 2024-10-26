@@ -19,6 +19,8 @@ public:
     // Constructor - Generates a new UUID upon object creation
     RemoteLocal();
 
+    RemoteLocal(const uuids::uuid &uuid);
+
     // Copy constructor
     RemoteLocal(const RemoteLocal &other);
 
@@ -38,7 +40,7 @@ public:
         return false;
     }
 
-    void generateUUID(uuids::uuid &toGenerate);
+    static void generateUUID(uuids::uuid &toGenerate);
 
     void setWhoIAm(const uuids::uuid &toSet) {
         m_whoIAm = toSet;

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
+#include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/events/SharedEvent.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
@@ -67,12 +68,12 @@ public:
     void onStartEngine(gengine::system::event::StartEngine &);
     void onMainLoop(gengine::system::event::MainLoop &);
 
-    std::unordered_map<interface::component::RemoteLocal, ServerClient> &getClients(void) {
+    std::unordered_map<uuids::uuid, ServerClient> &getClients(void) {
         return m_clients;
     }
 
 private:
-    std::unordered_map<interface::component::RemoteLocal, ServerClient> m_clients;
+    std::unordered_map<uuids::uuid, ServerClient> m_clients;
 
     mutable std::mutex m_netMutex;
 };

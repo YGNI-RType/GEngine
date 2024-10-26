@@ -13,21 +13,28 @@ RemoteLocal::RemoteLocal() {
     generateUUID(m_uuid);
 }
 
+RemoteLocal::RemoteLocal(const uuids::uuid &uuid)
+    : m_uuid(uuid) {
+}
+
 // Copy constructor
-RemoteLocal::RemoteLocal(const RemoteLocal &other) {
-    m_uuid = other.getUUIDBytes();
+RemoteLocal::RemoteLocal(const RemoteLocal &other)
+    : m_uuid(other.m_uuid)
+    , m_whoIAm(other.m_whoIAm) {
 }
 
 // Assignment operator
 RemoteLocal &RemoteLocal::operator=(const RemoteLocal &other) {
-    if (this != &other)
-        m_uuid = other.getUUIDBytes();
+    if (this != &other) {
+        m_uuid = other.m_uuid;
+        m_whoIAm = other.m_whoIAm;
+    }
     return *this;
 }
 
 // Overloading the == operator to compare based on UUID
 bool RemoteLocal::operator==(const RemoteLocal &other) const {
-    return m_uuid == other.getUUIDBytes();
+    return m_uuid == other.m_uuid && m_whoIAm == other.m_whoIAm;
 }
 
 // Getter for the UUID as a string (hexadecimal format)

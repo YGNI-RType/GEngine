@@ -12,32 +12,42 @@
 
 namespace gengine::interface::event {
 struct NewRemoteLocal : gengine::Event {
-    component::RemoteLocal remote;
-    NewRemoteLocal(component::RemoteLocal &remote)
-        : remote(remote) {
+    uuids::uuid uuid;
+    NewRemoteLocal(uuids::uuid &uuid)
+        : uuid(uuid) {
     }
-    NewRemoteLocal(const component::RemoteLocal &&remote)
-        : remote(remote) {
+    NewRemoteLocal(const uuids::uuid &&uuid)
+        : uuid(uuid) {
     }
 };
 
 struct DeleteRemoteLocal : gengine::Event {
-    component::RemoteLocal remote;
-    DeleteRemoteLocal(component::RemoteLocal &remote)
-        : remote(remote) {
+    uuids::uuid uuid;
+    DeleteRemoteLocal(uuids::uuid &uuid)
+        : uuid(uuid) {
     }
-    DeleteRemoteLocal(const component::RemoteLocal &remote)
-        : remote(remote) {
+    DeleteRemoteLocal(const uuids::uuid &uuid)
+        : uuid(uuid) {
     }
 };
 
 struct GetRemoteLocalWhoIAm : gengine::Event {
-    component::RemoteLocal remote;
-    GetRemoteLocalWhoIAm(component::RemoteLocal &remote)
-        : remote(remote) {
+    uuids::uuid localUUID;
+    GetRemoteLocalWhoIAm(uuids::uuid &localUUID)
+        : localUUID(localUUID) {
     }
-    GetRemoteLocalWhoIAm(const component::RemoteLocal &remote)
-        : remote(remote) {
+    GetRemoteLocalWhoIAm(const uuids::uuid &localUUID)
+        : localUUID(localUUID) {
+    }
+};
+
+struct ItsMe : gengine::Event {
+    uuids::uuid myUUID;
+    ItsMe(uuids::uuid &myUUID)
+        : myUUID(myUUID) {
+    }
+    ItsMe(const uuids::uuid &myUUID)
+        : myUUID(myUUID) {
     }
 };
 } // namespace gengine::interface::event
