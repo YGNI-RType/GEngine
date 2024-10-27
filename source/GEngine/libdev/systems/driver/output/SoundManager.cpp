@@ -13,13 +13,14 @@ SoundManager::SoundManager(const std::string &folder)
 }
 
 void SoundManager::init(void) {
-    InitAudioDevice();
     subscribeToEvent<gengine::system::event::StartEngine>(&SoundManager::onStartEngine);
     subscribeToEvent<gengine::system::event::StopEngine>(&SoundManager::onStopEngine);
     subscribeToEvent<gengine::system::event::driver::output::Sound>(&SoundManager::onSound);
 }
 
 void SoundManager::onStartEngine(gengine::system::event::StartEngine &e) {
+    SetTraceLogLevel(LOG_WARNING);
+    InitAudioDevice();
     for (const auto &entry : std::filesystem::recursive_directory_iterator(m_folder)) {
         if (entry.is_regular_file()) {
             std::string filePath = entry.path().string();
