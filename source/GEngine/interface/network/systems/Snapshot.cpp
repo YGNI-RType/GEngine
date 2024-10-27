@@ -12,6 +12,8 @@
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/net_client.hpp"
 
+#include "GEngine/time/time.hpp"
+
 namespace gengine::interface::network::system {
 
 Snapshot::Snapshot(const snapshot_t &currentWorld)
@@ -28,6 +30,19 @@ void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
     m_currentSnapshotId++;
     createSnapshots();
     getAndSendDeltaDiff();
+
+    // temp
+    static size_t lastTime = Time::Clock::milliseconds();
+    if (Time::Clock::milliseconds() - lastTime > 1000) {
+        lastTime = Time::Clock::milliseconds();
+
+        auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
+        for (auto &[remote, client] : clientsSys.getClients()) {
+            auto ping = client.getNet()->getPing_TS();
+            std::cout << "Client " << remote.getUUIDString() << " ping: " << ping << std::endl;
+        }
+        // std::cout << "Snapshot: " << m_currentSnapshotId << std::endl;
+    }
 }
 
 void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteLocal &e) {

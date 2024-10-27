@@ -193,6 +193,14 @@ private:
 public:
     bool isTimeout(void) const;
 
+public: /* THREAD SAFE */
+    uint16_t getPing_TS(void) const;
+
+private:
+    static constexpr size_t PING_POOL_SIZE = 30;
+    std::array<uint16_t, PING_POOL_SIZE> m_pingPool;
+    size_t m_pingPoolSize = 0;
+
 private:
     bool m_enabled = false;
     bool m_disconnect = false;
@@ -238,6 +246,8 @@ private:
 
     // TCPManager m_tcpManager;
     SocketTCP m_tcpSocket;
+
+    static std::mutex mg_mutex;
     /* unsent data (mostly rather small data, downloads are another story)*/
     // PacketPoolTcp m_tcpPool;
 

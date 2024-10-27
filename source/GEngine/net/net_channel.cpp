@@ -16,6 +16,8 @@
 
 namespace Network {
 
+std::mutex NetChannel::mg_mutex;
+
 NetChannel::NetChannel(bool isServer, std::unique_ptr<Address> clientAddress, SocketTCP &&socket)
     : m_enabled(true)
     , m_toTCPAddress(std::move(clientAddress))
@@ -130,6 +132,13 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
     if (msg.shouldAck()) { /* only care about reliable packets */
         m_udpACKClientLastACK = header.ack;
         m_droppedPackets = header.sequence - udpInSequence + 1;
+
+        /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */
+
+        {
+            std::lock_guard<std::mutex> lock(mg_mutex);
+            m_pingPool[m_pingPoolSize++ % PING_POOL_SIZE] = m_udpACKOutSequence - m_udpACKClientLastACK;
+        }
     }
 
     /****** At this point, the packet is valid *******/
@@ -212,6 +221,26 @@ bool NetChannel::readStream(TCPMessage &msg) {
 
 bool NetChannel::isTimeout() const {
     return Time::Clock::milliseconds() - m_udplastrecv > CVar::net_kick_timeout.getIntValue();
+}
+
+uint16_t NetChannel::getPing_TS(void) const {
+    std::lock_guard<std::mutex> lock(mg_mutex);
+    size_t sz;
+    if (m_pingPoolSize == 0)
+        return 999;
+
+    sz = m_pingPoolSize < PING_POOL_SIZE ? m_pingPoolSize : m_pingPool.size();
+    if (sz == 0)
+        return 999;
+
+    size_t totalPing = 0;
+    for (size_t i = 0; i < sz; i++)
+        totalPing += m_pingPool[i];
+
+    auto res = totalPing / sz;
+    if (res > 999)
+        return 999;
+    return static_cast<uint16_t>(res);
 }
 
 } // namespace Network

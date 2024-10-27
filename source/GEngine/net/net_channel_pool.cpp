@@ -10,8 +10,6 @@
 
 #include <algorithm>
 
-#include <iostream>
-
 namespace Network {
 bool PacketPoolUdp::addMessage(uint32_t sequence, const UDPMessage &msg) {
     size_t msgSize = msg.getSize() - (msg.hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
@@ -181,8 +179,6 @@ bool PacketPoolUdp::receivedFullSequence(uint32_t sequence) {
 }
 
 void PacketPoolUdp::cleanOldSequences(void) {
-    std::cout << "Cleaning old sequences" << std::endl;
-
     auto now = Time::Clock::milliseconds();
     auto oldest = std::min_element(m_poolSequences.begin(), m_poolSequences.end(), [now](const auto &a, const auto &b) {
         return (now - a.second.receivedLast) > (now - b.second.receivedLast);
