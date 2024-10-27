@@ -16,16 +16,15 @@
 
 namespace Network {
 
-uint16_t NetServer::start(size_t maxClients, uint16_t currentUnusedPort) {
+uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
     // TODO : cloes everything if already initted
     if (m_isRunning)
         return currentUnusedPort;
 
+    /* currentUnusedPort is modified ia side effect */
     m_socketv4 = openSocketTcp(currentUnusedPort, false);
-    currentUnusedPort++;
     if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
-        currentUnusedPort++;
     }
 
     m_maxClients = maxClients;

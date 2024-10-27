@@ -26,7 +26,7 @@ public:
     ~NetServer() = default;
 
     uint16_t start(size_t maxClients, const std::vector<IP> &g_localIPs, uint16_t currentUnusedPort);
-    uint16_t start(size_t maxClients, uint16_t currentUnusedPort);
+    uint16_t start(size_t maxClients, uint16_t &currentUnusedPort);
     void stop(void);
 
     void createSets(NetWaitSet &readSet);

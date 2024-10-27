@@ -184,7 +184,7 @@ private:
 
 SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort);
 SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort);
-SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6);
-SocketUDP openSocketUdp(uint16_t wantedPort, bool ipv6);
+SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6);
+SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6);
 
 } // namespace Network

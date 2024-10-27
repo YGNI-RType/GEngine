@@ -87,10 +87,8 @@ bool NET::init(void) {
     ASocket::initLibs();
 
     mg_socketUdp = openSocketUdp(mg_currentUnusedPort, false);
-    mg_currentUnusedPort++;
     if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
         mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPort, true);
-        mg_currentUnusedPort++;
     }
     return true;
 }
@@ -110,7 +108,7 @@ bool NET::start(void) {
 
     mg_networkThread = std::thread([]() {
         while (mg_aEnable)
-            sleep(30000);
+            sleep(NET_SLEEP_DURATION);
     });
     return true;
 }

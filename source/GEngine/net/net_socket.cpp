@@ -93,6 +93,7 @@ int ASocket::socketClose(void) {
     if (m_handle != INVALID_HANDLE_VALUE)
         status = CloseHandle(m_handle) ? 0 : -1;
 #endif
+    NetWait::removeSocketPool(*this);
 
     return status;
 }
@@ -563,10 +564,10 @@ SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort) {
     throw SocketException("Failed to open UDP socket");
 }
 
-SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6) {
+SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketTCPMaster(wantedPort + i, ipv6));
+            return std::move(SocketTCPMaster(wantedPort++, ipv6));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;
@@ -576,10 +577,10 @@ SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6) {
     throw SocketException("Failed to open TCP socket");
 }
 
-SocketUDP openSocketUdp(uint16_t wantedPort, bool ipv6) {
+SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketUDP(wantedPort + i, ipv6));
+            return std::move(SocketUDP(wantedPort++, ipv6));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;

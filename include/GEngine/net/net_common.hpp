@@ -67,6 +67,9 @@ typedef unsigned short sa_family_t;
 #define MAX_UDP_MSGLEN 16384
 #define MAX_TCP_MSGLEN 32768
 
+/* in milliseconds */
+#define NET_SLEEP_DURATION 1000
+
 #define CF_NET_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CF_NET_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CF_NET_CLAMP(x, a, b) CF_NET_MIN(CF_NET_MAX(x, a), b)
