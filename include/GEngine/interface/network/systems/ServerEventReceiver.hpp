@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEngine/interface/events/SharedEvent.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"

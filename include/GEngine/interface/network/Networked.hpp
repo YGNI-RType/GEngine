@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2024
+** GEngine
+** File description:
+** Networked.hpp
+*/
+
 #pragma once
 
 #include "GEngine/driver/Engine.hpp"
@@ -6,7 +13,10 @@
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 
+#include "GEngine/interface/network/systems/Snapshot.hpp"
 #include "GEngine/interface/network/systems/Updater.hpp"
+#include "GEngine/interface/network/systems/ClientServer.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 
 #include "GEngine/net/events/connection.hpp"
 
@@ -15,7 +25,6 @@
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
-#include "GEngine/interface/network/systems/Snapshot.hpp"
 
 #include <functional>
 #include <iostream>
@@ -30,24 +39,20 @@ namespace gengine::interface::network {
 
 class Networked : public Base {
 public:
-    Networked(BaseEngine &driverEngine, BaseEngine &gameEngine, const std::string &ip = "", uint16_t port = 0,
-              bool block = false)
+    Networked(BaseEngine &driverEngine, BaseEngine &gameEngine, bool block = false)
         : m_remote(gameEngine)
         , m_local(driverEngine)
-        , m_ip(ip)
-        , m_port(port)
         , m_block(block) {
         m_local.setFirstEntity(ENTITY_ID_START_CLIENT);
         Network::NET::init();
-        Network::Event::Manager &em = Network::NET::getEventManager();
 #ifdef GEngine_Server
         Network::NET::initServer();
         m_remote.registerSystem<gengine::interface::network::system::Snapshot>(m_remote.getWorld());
         m_remote.registerSystem<gengine::interface::network::system::ServerClientsHandler>();
 #elif GEngine_Client
         Network::NET::initClient();
-        em.addEvent<Network::Event::ConnectInfo>(Network::Event::CONNECT, Network::Event::ConnectInfo(ip, port));
         m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
+        m_local.registerSystem<gengine::interface::network::system::ClientServer>();
 #endif
         Network::NET::start();
 
@@ -75,8 +80,8 @@ public:
 private:
     BaseEngine &m_remote;
     BaseEngine &m_local;
-    const std::string m_ip;
-    uint16_t m_port;
+    // const std::string m_ip;
+    // uint16_t m_port;
     bool m_block;
 };
 
