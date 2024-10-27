@@ -39,7 +39,7 @@ void NetChannel::createUdpAddress(uint16_t udpport) {
 
 bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence,
                                const std::vector<const Network::PacketPoolUdp::chunk_t *> &fragments) {
-    auto [msgType, flags, maxSize, lastChunkSz, _mask, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
+    auto [msgType, flags, maxSize, lastChunkSz, _mask, _offset, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
     uint8_t i = 0;
 
     /* todo : add rate limit and all, only do it once though */
@@ -161,9 +161,9 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             auto [sequence, _] = m_udpFragmentsOgSequences[fragSequence];
             m_udpFragmentsOgSequences.erase(fragSequence);
             if (sequence < m_udpACKFullInSequence) {
-// #ifdef NET_DEBUG
+                // #ifdef NET_DEBUG
                 std::cout << "RECV DELETED: " << sequence << " Msgsize: " << msg.getSize() << std::endl;
-// #endif
+                // #endif
                 return false; /* on se fait chier pour ça les gars !! */
             }
 

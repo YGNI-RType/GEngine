@@ -49,7 +49,7 @@ void Updater::handleSnapshotMsg(Network::UDPMessage &msg, size_t readCount) {
     int nbComp = m_localWorld.size();
     uint32_t nbEntity;
     msg.readContinuousData(nbEntity, readCount);
-    std::cout << "RECV: " << msg.getSize() << " snap " << nbEntity << std::endl;
+    // std::cout << "RECV: " << msg.getSize() << " snap " << nbEntity << std::endl;
     msg.startCompressingSegment(true);
     for (int i = 0; i < nbEntity; i++) {
         uint32_t entity;
