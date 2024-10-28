@@ -8,11 +8,11 @@
 #pragma once
 
 #include "GEngine/libdev/systems/AutoKiller.hpp"
+#include "GEngine/libdev/systems/CLI.hpp"
 #include "GEngine/libdev/systems/Collisions.hpp"
 #include "GEngine/libdev/systems/Logger.hpp"
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/Motions.hpp"
-#include "GEngine/libdev/systems/CLI.hpp"
 
 namespace geg::system {
 using AutoKiller = gengine::system::AutoKiller;

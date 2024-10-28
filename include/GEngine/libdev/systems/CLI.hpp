@@ -12,19 +12,19 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/CLI.hpp"
+#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
 
-#include <iostream>
-#include <thread>
 #include <atomic>
-#include <string>
 #include <chrono>
+#include <iostream>
+#include <string>
+#include <thread>
 #include <vector>
 
 namespace gengine::system {
-class CLI: public gengine::System<CLI> {
+class CLI : public gengine::System<CLI> {
 public:
     CLI();
     void init(void) override;
@@ -34,10 +34,10 @@ public:
 
 private:
     void getInputs(void);
-    std::vector<std::string> splitInput(const std::string& input);
+    std::vector<std::string> splitInput(const std::string &input);
     std::thread inputThread;
     std::atomic<bool> stopReading;
     std::vector<std::string> userInputHistory;
     std::mutex historyMutex;
 };
-}
+} // namespace gengine::system
