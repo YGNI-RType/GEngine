@@ -74,7 +74,7 @@ void AMessage::startCompressingSegment(bool reading) {
 
     auto data = getDataMember();
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size != 0)
         return;
 
@@ -97,7 +97,7 @@ void AMessage::stopCompressingSegment(bool reading) {
     auto data = getDataMember();
     /* todo: using UDP structs in amessage */
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return;
 
@@ -110,7 +110,7 @@ bool AMessage::getCompressingBuffer(void *&data, size_t &bufferSize) {
 
     auto m_data = getDataMember();
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(m_data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((m_data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return false;
     data = m_data + header->offset;

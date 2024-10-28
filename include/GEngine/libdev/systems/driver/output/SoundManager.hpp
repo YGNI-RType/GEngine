@@ -19,6 +19,7 @@
 #include "module/raylib_safe.h"
 
 #include <filesystem>
+#include <unordered_map>
 
 namespace gengine::system::driver::output {
 class SoundManager : public gengine::System<SoundManager>, public LocalSystem {
