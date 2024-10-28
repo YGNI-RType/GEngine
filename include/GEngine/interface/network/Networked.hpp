@@ -13,10 +13,10 @@
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 
-#include "GEngine/interface/network/systems/Snapshot.hpp"
-#include "GEngine/interface/network/systems/Updater.hpp"
 #include "GEngine/interface/network/systems/ClientServer.hpp"
 #include "GEngine/interface/network/systems/ServerClients.hpp"
+#include "GEngine/interface/network/systems/Snapshot.hpp"
+#include "GEngine/interface/network/systems/Updater.hpp"
 
 #include "GEngine/net/events/connection.hpp"
 
@@ -24,7 +24,6 @@
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
-
 
 #include <functional>
 #include <iostream>

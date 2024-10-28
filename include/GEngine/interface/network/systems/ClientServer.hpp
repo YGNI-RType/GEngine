@@ -33,7 +33,7 @@ public:
 
     // void onPing(gengine::interface::network::event::Ping &);
     // void onBroadcast(gengine::interface::network::event::Ping &);
-    private:
-        bool m_connected = false;
+private:
+    bool m_connected = false;
 };
 } // namespace gengine::interface::network::system
