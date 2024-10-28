@@ -87,9 +87,8 @@ bool NET::init(void) {
     ASocket::initLibs();
 
     mg_socketUdp = openSocketUdp(mg_currentUnusedPort, false);
-    if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
+    if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPort, true);
-    }
     return true;
 }
 
