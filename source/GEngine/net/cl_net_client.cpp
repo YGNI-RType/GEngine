@@ -7,6 +7,9 @@
 
 #include "GEngine/net/cl_net_client.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
+
+#include "GEngine/net/events/ping_result.hpp"
 
 #include <iostream> // todo : remove
 
@@ -91,7 +94,6 @@ bool CLNetClient::handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Addr
     switch (msg.getType()) {
     case SV_BROADCAST_PING:
         getPingResponse(msg, addr);
-        // std::cout << "CL: got ping response !!" << std::endl;
         return true;
     default:
         m_state = CS_ACTIVE;
@@ -193,11 +195,20 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     else if (addr.getType() == AT_IPV6)
         addrPtr = std::make_unique<AddressV6>(static_cast<const AddressV6 &>(addr));
 
+    Event::PingInfo pinginfo = {addrPtr->toString(),
+                                addrPtr->getPort(),
+                                data.currentPlayers,
+                                data.maxPlayers,
+                                data.os,
+                                Time::Clock::milliseconds() - m_pingSendTime};
+    NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
+
     m_pingedServers.push_back({data, std::move(addrPtr)});
 }
 
 void CLNetClient::pingLanServers(void) {
     m_pingedServers.clear();
+    m_pingSendTime = Time::Clock::milliseconds();
 
     for (uint16_t port = DEFAULT_PORT; port < DEFAULT_PORT + MAX_TRY_PORTS; port++) {
         auto message = UDPMessage(0, CL_BROADCAST_PING);

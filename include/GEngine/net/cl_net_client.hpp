@@ -111,7 +111,7 @@ private:
 
     /* todo : change based on average size */
     NetQueue<UDPMessage, 1, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
-    NetQueue<UDPMessage, 32, 1400> m_packInData;     /* voiceip etc.. */
+    NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 
     NetQueueHeap<TCPMessage, 5> m_tcpIn;
@@ -121,7 +121,9 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
+
     std::vector<PingResponse> m_pingedServers;
+    uint64_t m_pingSendTime = 0;
 
     /* in bytes from data (header do not count), can be updated via cvar */
     size_t m_maxRate = 10000;

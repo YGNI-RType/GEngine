@@ -9,6 +9,7 @@
 #include "GEngine/cvar/net.hpp"
 
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
 
 // #ifdef NET_DEBUG
 #include <iostream>
@@ -23,9 +24,8 @@ uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
 
     /* currentUnusedPort is modified ia side effect */
     m_socketv4 = openSocketTcp(currentUnusedPort, false);
-    if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
+    if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
-    }
 
     m_maxClients = maxClients;
     m_isRunning = true;
@@ -59,7 +59,9 @@ void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, 
     UDPSV_PingResponse data = {.tcpv4Port = m_socketv4.getPort(),
                                .tcpv6Port = CVar::net_ipv6.getIntValue() ? m_socketv6.getPort() : (uint16_t)(-1),
                                .maxPlayers = getMaxClients(),
-                               .currentPlayers = getNumClients()};
+                               .currentPlayers = getNumClients(),
+                               .os = static_cast<uint8_t>(OS_TYPE),
+                               .ping = Time::Clock::milliseconds()};
 
     pingReponseMsg.writeData<UDPSV_PingResponse>(data);
     udpsocket.send(pingReponseMsg, addr);
@@ -86,9 +88,9 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     else
         return; /* impossible */
 
-// #ifdef NET_DEBUG
+    // #ifdef NET_DEBUG
     std::cout << "SV: Client connected" << std::endl;
-// #endif
+    // #endif
     m_clients.push_back(cl);
 
     auto msg = TCPMessage(SV_INIT_CONNECTON);
@@ -185,7 +187,7 @@ void NetServer::checkTimeouts(void) {
     }
 }
 
-void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type ) {
+void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type) {
     if (!isRunning())
         return;
 

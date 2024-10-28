@@ -34,6 +34,7 @@ public:
     virtual ~Address() = default;
     virtual void toSockAddr(sockaddr *addr) const = 0;
     virtual bool isLanAddr(void) const = 0;
+    virtual std::string toString(void) const = 0;
 
     AddressType getType() const {
         return m_type;
@@ -81,6 +82,7 @@ public:
 
     void toSockAddr(sockaddr *addr) const override final;
     bool isLanAddr(void) const override final;
+    std::string toString(void) const override final;
 
 private:
     const byte_t *getData() const override final {
@@ -109,6 +111,7 @@ public:
 
     void toSockAddr(sockaddr *addr) const override final;
     bool isLanAddr(void) const override final;
+    std::string toString(void) const override final;
 
 private:
     const byte_t *getData() const override final {

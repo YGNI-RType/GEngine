@@ -66,7 +66,7 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
 
         client.disconnectFromServer(Event::DT_WANTED);
     } break;
-    case PING:
+    case PING_LAN:
         NET::pingServers();
         break;
     default:

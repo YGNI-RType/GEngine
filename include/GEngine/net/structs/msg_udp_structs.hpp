@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "../utils/pack.hpp"
+
 #include <cstdint>
 
 namespace Network {
@@ -19,6 +21,9 @@ struct UDPSV_PingResponse {
 
     uint32_t maxPlayers;
     uint32_t currentPlayers;
+
+    uint8_t os;
+    uint64_t ping;
 };
 
 struct UDPG_NetChannelHeader {
