@@ -7,8 +7,6 @@
 
 #include "GEngine/libdev/systems/CLI.hpp"
 
-#include "GEngine/libdev/systems/CLI.hpp"
-
 namespace gengine::system {
 CLI::CLI()
     : stopReading(false) {

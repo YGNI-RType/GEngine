@@ -22,6 +22,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace gengine::system {
 class CLI : public gengine::System<CLI> {
