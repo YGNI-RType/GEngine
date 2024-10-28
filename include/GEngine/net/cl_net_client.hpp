@@ -96,6 +96,10 @@ public:
         return m_packInData.size(type);
     }
 
+    uint16_t getPing_TS(void) const {
+        return m_netChannel.getPing_TS();
+    }
+
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
     bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
@@ -121,7 +125,9 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
+
     std::vector<PingResponse> m_pingedServers;
+    uint64_t m_pingSendTime = 0;
 
     /* in bytes from data (header do not count), can be updated via cvar */
     size_t m_maxRate = 10000;

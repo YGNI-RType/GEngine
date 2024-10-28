@@ -9,6 +9,7 @@
 #include "GEngine/cvar/net.hpp"
 
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
 
 // #ifdef NET_DEBUG
 #include <iostream>
@@ -16,17 +17,15 @@
 
 namespace Network {
 
-uint16_t NetServer::start(size_t maxClients, uint16_t currentUnusedPort) {
+uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
     // TODO : cloes everything if already initted
     if (m_isRunning)
         return currentUnusedPort;
 
+    /* currentUnusedPort is modified ia side effect */
     m_socketv4 = openSocketTcp(currentUnusedPort, false);
-    currentUnusedPort++;
-    if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
+    if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
-        currentUnusedPort++;
-    }
 
     m_maxClients = maxClients;
     m_isRunning = true;
@@ -60,7 +59,9 @@ void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, 
     UDPSV_PingResponse data = {.tcpv4Port = m_socketv4.getPort(),
                                .tcpv6Port = CVar::net_ipv6.getIntValue() ? m_socketv6.getPort() : (uint16_t)(-1),
                                .maxPlayers = getMaxClients(),
-                               .currentPlayers = getNumClients()};
+                               .currentPlayers = getNumClients(),
+                               .os = static_cast<uint8_t>(OS_TYPE),
+                               .ping = Time::Clock::milliseconds()};
 
     pingReponseMsg.writeData<UDPSV_PingResponse>(data);
     udpsocket.send(pingReponseMsg, addr);

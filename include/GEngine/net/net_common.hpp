@@ -67,6 +67,9 @@ typedef unsigned short sa_family_t;
 #define MAX_UDP_MSGLEN 16384
 #define MAX_TCP_MSGLEN 32768
 
+/* in milliseconds */
+#define NET_SLEEP_DURATION 1000
+
 #define CF_NET_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CF_NET_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CF_NET_CLAMP(x, a, b) CF_NET_MIN(CF_NET_MAX(x, a), b)
@@ -83,4 +86,23 @@ struct IP {
     struct sockaddr_storage addr;
     struct sockaddr_storage netmask;
 };
+
+/********** OS SPECIFIC **********/
+
+enum ServerOS { OS_UNSUPORTED, OS_LINUX, OS_WINDOWS, OS_MACOS };
+
+#if defined(_WIN32)
+constexpr const char *OS_NAME = "Windows";
+constexpr const ServerOS OS_TYPE = ServerOS::OS_WINDOWS;
+#elif defined(__APPLE__)
+constexpr const char *OS_NAME = "macOS";
+constexpr const ServerOS OS_TYPE = ServerOS::OS_MACOS;
+#elif defined(__linux__)
+constexpr const char *OS_NAME = "Linux";
+constexpr const ServerOS OS_TYPE = ServerOS::OS_LINUX;
+#else
+constexpr const char *OS_NAME = "Unknown";
+constexpr const ServerOS OS_TYPE = ServerOS::OS_UNSUPORTED;
+#endif
+
 } // namespace Network

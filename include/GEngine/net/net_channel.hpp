@@ -58,12 +58,34 @@ class PacketPoolUdp {
     static const size_t CHUNK_SIZE =
         MAX_UDP_PACKET_LENGTH - sizeof(UDPG_FragmentHeaderTo) - sizeof(UDPG_NetChannelHeader);
 
+    static constexpr size_t MAX_NB_RECV_FRAG = 5;
+
 public:
     typedef std::array<byte_t, CHUNK_SIZE> chunk_t;
 
 private:
     /* type, flag, numbers of chunk, last chunk size, cur mask, pool offset */
-    using poolSequence_t = std::tuple<uint8_t, uint8_t, uint8_t, uint16_t, uint16_t, size_t>;
+    struct PoolSequence {
+        PoolSequence() = default;
+        PoolSequence(uint8_t type, uint8_t flag, uint8_t size, uint16_t last_size, uint16_t mask, size_t offset)
+            : type(type)
+            , flag(flag)
+            , size(size)
+            , last_size(last_size)
+            , mask(mask)
+            , offset(offset) {
+        }
+        ~PoolSequence() = default;
+
+        uint8_t type;
+        uint8_t flag;
+        uint8_t size;
+        uint16_t last_size;
+        uint16_t mask;
+        size_t offset;
+
+        uint64_t receivedLast = 0;
+    };
 
 public:
     PacketPoolUdp() = default;
@@ -85,17 +107,19 @@ public:
 
     bool deleteSequence(uint32_t sequence);
 
-    poolSequence_t getMsgSequenceInfo(uint32_t sequence) const {
+    PoolSequence getMsgSequenceInfo(uint32_t sequence) const {
         return m_poolSequences.at(sequence);
     }
     bool receivedFullSequence(uint32_t sequence);
+    void cleanOldSequences(void);
     size_t getPoolSize(void) const {
         return m_poolSequences.size();
     }
 
 private:
-    std::unordered_map<uint32_t, poolSequence_t> m_poolSequences;
+    std::unordered_map<uint32_t, PoolSequence> m_poolSequences;
     std::vector<chunk_t> m_pool; /* pool of packet, just send it straight away, no modifications (header are btw)*/
+    size_t m_poolSize = 0;
 };
 
 /*
@@ -169,6 +193,14 @@ private:
 public:
     bool isTimeout(void) const;
 
+public: /* THREAD SAFE */
+    uint16_t getPing_TS(void) const;
+
+private:
+    static constexpr size_t PING_POOL_SIZE = 30;
+    std::array<uint16_t, PING_POOL_SIZE> m_pingPool;
+    size_t m_pingPoolSize = 0;
+
 private:
     bool m_enabled = false;
     bool m_disconnect = false;
@@ -214,6 +246,8 @@ private:
 
     // TCPManager m_tcpManager;
     SocketTCP m_tcpSocket;
+
+    static std::mutex mg_mutex;
     /* unsent data (mostly rather small data, downloads are another story)*/
     // PacketPoolTcp m_tcpPool;
 
