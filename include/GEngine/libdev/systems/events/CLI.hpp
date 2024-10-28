@@ -14,11 +14,11 @@
 #include "GEngine/libdev/System.hpp"
 
 namespace gengine::system::event {
-struct CLINewInput: public gengine::Event {
+struct CLINewInput : public gengine::Event {
     CLINewInput(std::vector<std::string> &&prompt)
-    : prompt(prompt) {
+        : prompt(prompt) {
     }
 
     std::vector<std::string> prompt;
 };
-}
+} // namespace gengine::system::event

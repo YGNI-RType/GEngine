@@ -12,7 +12,7 @@
 namespace gengine::system {
 CLI::CLI()
     : stopReading(false) {
-    }
+}
 
 void CLI::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&CLI::onStartEngine);
@@ -20,21 +20,20 @@ void CLI::init(void) {
     subscribeToEvent<gengine::system::event::MainLoop>(&CLI::onMainLoop);
 }
 
-void CLI::onStartEngine(gengine::system::event::StartEngine &e[[maybe_unused]]) {
+void CLI::onStartEngine(gengine::system::event::StartEngine &e [[maybe_unused]]) {
     inputThread = std::thread(&CLI::getInputs, this);
 }
 
-void CLI::onStopEngine(gengine::system::event::StopEngine &e[[maybe_unused]]) {
+void CLI::onStopEngine(gengine::system::event::StopEngine &e [[maybe_unused]]) {
     stopReading = true;
     if (inputThread.joinable())
         inputThread.join();
 }
 
-void CLI::onMainLoop(gengine::system::event::MainLoop &e[[maybe_unused]]) {
+void CLI::onMainLoop(gengine::system::event::MainLoop &e [[maybe_unused]]) {
     std::lock_guard<std::mutex> lock(historyMutex);
-    for (const auto& entry : userInputHistory) {
+    for (const auto &entry : userInputHistory)
         publishEvent(gengine::system::event::CLINewInput(splitInput(entry)));
-    }
     userInputHistory.clear();
 }
 
@@ -53,7 +52,7 @@ void CLI::getInputs(void) {
     }
 }
 
-std::vector<std::string> CLI::splitInput(const std::string& input) {
+std::vector<std::string> CLI::splitInput(const std::string &input) {
     std::vector<std::string> words;
     std::istringstream stream(input);
     std::string word;
@@ -62,4 +61,4 @@ std::vector<std::string> CLI::splitInput(const std::string& input) {
         words.push_back(word);
     return words;
 }
-}
+} // namespace gengine::system

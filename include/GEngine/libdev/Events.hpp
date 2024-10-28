@@ -7,12 +7,12 @@
 
 #pragma once
 
+#include "GEngine/libdev/systems/events/CLI.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Log.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/game/Collision.hpp"
-#include "GEngine/libdev/systems/events/CLI.hpp"
 
 namespace geg::event {
 using GameLoop = gengine::system::event::GameLoop;
