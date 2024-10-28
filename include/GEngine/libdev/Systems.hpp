@@ -12,6 +12,7 @@
 #include "GEngine/libdev/systems/Logger.hpp"
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/Motions.hpp"
+#include "GEngine/libdev/systems/CLI.hpp"
 
 namespace geg::system {
 using AutoKiller = gengine::system::AutoKiller;
@@ -25,6 +26,8 @@ using AutoMainLoop = gengine::system::AutoMainLoop;
 
 using Motion2D = gengine::system::Motion2D;
 using Motion3D = gengine::system::Motion3D;
+
+using CLI = gengine::system::CLI;
 } // namespace geg::system
 
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
