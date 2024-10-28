@@ -96,6 +96,10 @@ public:
         return m_packInData.size(type);
     }
 
+    uint16_t getPing_TS(void) const {
+        return m_netChannel.getPing_TS();
+    }
+
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
     bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
