@@ -7,6 +7,9 @@
 
 #include "GEngine/net/cl_net_client.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
+
+#include "GEngine/net/events/ping_result.hpp"
 
 #include <iostream> // todo : remove
 
@@ -60,10 +63,10 @@ bool CLNetClient::connectToServer(const std::string &ip, uint16_t port, bool blo
     return true;
 }
 
-void CLNetClient::disconnectFromServer(void) {
+void CLNetClient::disconnectFromServer(Event::DisonnectType disconnectType) {
     m_netChannel.setTcpSocket(SocketTCP());
 
-    NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, 0);
+    NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, disconnectType);
 
     m_state = CS_FREE;
     m_connectionState = CON_DISCONNECTED;
@@ -91,9 +94,9 @@ bool CLNetClient::handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Addr
     switch (msg.getType()) {
     case SV_BROADCAST_PING:
         getPingResponse(msg, addr);
-        // std::cout << "CL: got ping response !!" << std::endl;
         return true;
     default:
+        m_state = CS_ACTIVE;
         return handleServerUDP(socket, msg, addr);
     }
 }
@@ -105,7 +108,7 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
         addr != m_netChannel.getAddressUDP()) // why sending udp packets to the client ? who are you ?
         return false;
 
-    if (!m_netChannel.readDatagram(socket, msg, readOffset, m_packInDataAck.getNbPopped()))
+    if (!m_netChannel.readDatagram(socket, msg, readOffset))
         return true;
 
     switch (msg.getType()) {
@@ -131,7 +134,7 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
             return false;
 
         if (m_netChannel.isDisconnected()) {
-            disconnectFromServer(); /* ensure proper disconnection */
+            disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
             return true;
         }
         return handleServerTCP(msg);
@@ -146,7 +149,6 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         msg.readData<TCPSV_ClientInit>(recvData);
 
         m_netChannel.setChallenge(recvData.challenge);
-        // std::cout << "CL: Client challange: " << recvData.challenge << std::endl;
         m_connectionState = CON_AUTHORIZING;
 
         m_netChannel.createUdpAddress(recvData.udpPort);
@@ -162,13 +164,25 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
 
         return true;
     case SV_YOU_ARE_READY:
-        m_connectionState = CON_CONNECTED;
+        m_state = CS_PRIMED;
+        m_connectionState = CON_ACTIVE;
         NET::getEventManager().invokeCallbacks(Event::CT_OnServerReady, 0);
         return true;
     default:
-        return false;
+        pushIncommingStream(msg, 0);
+        break;
     }
     return true;
+}
+
+void CLNetClient::checkTimeouts(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return;
+
+    if (m_state >= CS_ACTIVE && m_netChannel.isTimeout()) {
+        std::cout << "CL: timeout" << std::endl;
+        disconnectFromServer(Event::DT_TIMEOUT);
+    }
 }
 
 void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
@@ -181,11 +195,20 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     else if (addr.getType() == AT_IPV6)
         addrPtr = std::make_unique<AddressV6>(static_cast<const AddressV6 &>(addr));
 
+    Event::PingInfo pinginfo = {addrPtr->toString(),
+                                addrPtr->getPort(),
+                                data.currentPlayers,
+                                data.maxPlayers,
+                                data.os,
+                                Time::Clock::milliseconds() - m_pingSendTime};
+    NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
+
     m_pingedServers.push_back({data, std::move(addrPtr)});
 }
 
 void CLNetClient::pingLanServers(void) {
     m_pingedServers.clear();
+    m_pingSendTime = Time::Clock::milliseconds();
 
     for (uint16_t port = DEFAULT_PORT; port < DEFAULT_PORT + MAX_TRY_PORTS; port++) {
         auto message = UDPMessage(0, CL_BROADCAST_PING);
@@ -201,14 +224,16 @@ bool CLNetClient::sendDatagram(UDPMessage &msg) {
     if (!m_enabled || !m_netChannel.isEnabled())
         return false;
 
-    // std::cout << m_netChannel.getLastACKPacketId() << " " << m_packInDataAck.getNbPopped() << std::endl;
-    return m_netChannel.sendDatagram(m_socketUdp, msg, m_packInDataAck.getNbPopped());
+    return m_netChannel.sendDatagram(m_socketUdp, msg);
 }
 
 /** Net Queue **/
 
 bool CLNetClient::pushData(const UDPMessage &msg) {
-    return m_packOutData.push(msg, 0);
+    return m_packOutData.fullpush(msg, 0);
+}
+bool CLNetClient::pushStream(const TCPMessage &msg) {
+    return m_tcpOut.push(std::make_unique<TCPMessage>(msg), 0);
 }
 
 bool CLNetClient::popIncommingData(UDPMessage &msg, size_t &readCount, bool shouldAck) {
@@ -217,16 +242,27 @@ bool CLNetClient::popIncommingData(UDPMessage &msg, size_t &readCount, bool shou
     return m_packInData.pop(msg, readCount, msg.getType());
 }
 
+bool CLNetClient::popIncommingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpIn.pop(msg, readCount);
+}
+
 bool CLNetClient::retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount) {
     return m_packOutData.pop(msg, readCount);
 }
+bool CLNetClient::retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount) {
+    return m_tcpOut.pop(msg, readCount);
+}
 
 bool CLNetClient::pushIncommingDataAck(const UDPMessage &msg, size_t readCount) {
-    return m_packInDataAck.fullpush(msg, readCount);
+    return m_packInDataAck.fullpushlast(msg, readCount);
 }
 
 bool CLNetClient::pushIncommingData(const UDPMessage &msg, size_t readCount) {
     return m_packInData.push(msg, readCount);
+}
+
+bool CLNetClient::pushIncommingStream(const TCPMessage &msg, size_t readCount) {
+    return m_tcpIn.push(std::make_unique<TCPMessage>(msg), readCount);
 }
 
 /***************/
@@ -236,7 +272,9 @@ bool CLNetClient::sendPackets(void) {
         return false;
 
     size_t byteSent = 0;
-    while (!m_packOutData.empty() || byteSent < m_maxRate) {
+    size_t outDataSz = m_packOutData.size();
+
+    for (size_t i = 0; i < outDataSz; i++) {
         UDPMessage msg(0, 0);
         size_t readOffset;
         if (!retrieveWantedOutgoingData(msg, readOffset))
@@ -246,6 +284,17 @@ bool CLNetClient::sendPackets(void) {
         if (!sendDatagram(msg))
             return false; /* how */
         byteSent += size;
+    }
+
+    size_t outStreamSz = m_tcpOut.size();
+    for (size_t i = 0; i < outStreamSz; i++) {
+        TCPMessage msg(0);
+        size_t readOffset;
+        if (!retrieveWantedOutgoingStream(msg, readOffset))
+            return false;
+
+        if (!m_netChannel.sendStream(msg))
+            return false;
     }
     return true;
 }

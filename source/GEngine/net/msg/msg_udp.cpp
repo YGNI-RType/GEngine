@@ -7,12 +7,18 @@
 
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net_socket.hpp"
+#include "GEngine/net/structs/msg_all_structs.hpp"
+
+#include <iostream>
 
 namespace Network {
-UDPMessage::UDPMessage(bool hasHeader, uint8_t type)
-    : AMessage(type) {
-    m_curSize = hasHeader ? sizeof(UDPG_NetChannelHeader) : 0;
-    setHeader(hasHeader);
+UDPMessage::UDPMessage(uint8_t flags, uint8_t type)
+    : AMessage(type, flags) {
+    m_curSize = hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0;
+    if (isEndCompress()) {
+        ALL_MessageCompressionHeader cHeader = {.offset = 0, .size = 0};
+        appendData(cHeader);
+    }
 }
 
 UDPMessage &UDPMessage::operator=(const UDPMessage &other) {
@@ -98,11 +104,15 @@ uint64_t UDPMessage::getAckNumber(void) const {
     return header.ack;
 }
 
-void UDPMessage::clear(bool hasHeader) {
-    size_t offset = hasHeader ? sizeof(UDPG_NetChannelHeader) : 0;
-
+void UDPMessage::clear(void) {
+    size_t offset = hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0;
     memset(m_data + offset, 0, m_curSize - offset);
     m_curSize = offset;
+
+    if (isEndCompress()) {
+        ALL_MessageCompressionHeader cHeader = {.offset = 0, .size = 0};
+        appendData(cHeader);
+    }
 }
 
 /*************************************/

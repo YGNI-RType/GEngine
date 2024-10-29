@@ -9,22 +9,23 @@
 #include "GEngine/cvar/net.hpp"
 
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
 
+// #ifdef NET_DEBUG
 #include <iostream>
+// #endif
 
 namespace Network {
 
-uint16_t NetServer::start(size_t maxClients, uint16_t currentUnusedPort) {
+uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
     // TODO : cloes everything if already initted
     if (m_isRunning)
         return currentUnusedPort;
 
+    /* currentUnusedPort is modified ia side effect */
     m_socketv4 = openSocketTcp(currentUnusedPort, false);
-    currentUnusedPort++;
-    if (CVar::net_ipv6.getIntValue()) { // check if ipv6 is supported
+    if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
-        currentUnusedPort++;
-    }
 
     m_maxClients = maxClients;
     m_isRunning = true;
@@ -58,7 +59,9 @@ void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, 
     UDPSV_PingResponse data = {.tcpv4Port = m_socketv4.getPort(),
                                .tcpv6Port = CVar::net_ipv6.getIntValue() ? m_socketv6.getPort() : (uint16_t)(-1),
                                .maxPlayers = getMaxClients(),
-                               .currentPlayers = getNumClients()};
+                               .currentPlayers = getNumClients(),
+                               .os = static_cast<uint8_t>(OS_TYPE),
+                               .ping = Time::Clock::milliseconds()};
 
     pingReponseMsg.writeData<UDPSV_PingResponse>(data);
     udpsocket.send(pingReponseMsg, addr);
@@ -85,7 +88,9 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     else
         return; /* impossible */
 
-    // // std::cout << "SV: New client connected" << std::endl;
+    // #ifdef NET_DEBUG
+    std::cout << "SV: Client connected" << std::endl;
+    // #endif
     m_clients.push_back(cl);
 
     auto msg = TCPMessage(SV_INIT_CONNECTON);
@@ -94,8 +99,6 @@ void NetServer::handleNewClient(SocketTCPMaster &socket) {
     msg.writeData<TCPSV_ClientInit>(
         {.challenge = channel.getChallenge(),
          .udpPort = clientAddrType == AT_IPV6 ? m_socketUdpV6.getPort() : m_socketUdpV4.getPort()});
-
-    // // std::cout << "SV: Client challange: " << channel.getChallenge() << std::endl;
 
     NET::getEventManager().invokeCallbacks(Event::CT_OnClientConnect, cl);
     channel.sendStream(msg);
@@ -142,14 +145,8 @@ bool NetServer::handleTCPEvent(const NetWaitSet &set) {
 
     for (const auto &client : m_clients)
         if (client->handleTCPEvents(set)) {
-            if (client->isDisconnected()) {
-                NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, client.get());
-                m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
-                                               [&client](const std::shared_ptr<NetClient> &cl) {
-                                                   return cl.get() == client.get();
-                                               }),
-                                m_clients.end());
-            }
+            if (client->isDisconnected())
+                disconnectClient(client.get(), Event::DT_WANTED);
             return true;
         }
 
@@ -175,6 +172,31 @@ void NetServer::sendToClient(NetClient &client, UDPMessage &msg) {
         return;
 
     client.sendDatagram(msg);
+}
+
+void NetServer::checkTimeouts(void) {
+    if (!isRunning())
+        return;
+
+    for (const auto &client : m_clients) {
+        if (!client->isTimeout())
+            continue;
+
+        std::cout << "SV: Client timeout" << std::endl;
+        disconnectClient(client.get(), Event::DT_TIMEOUT);
+    }
+}
+
+void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type) {
+    if (!isRunning())
+        return;
+
+    std::cout << "SV: Client disconnected" << std::endl;
+    Network::Event::DisconnectInfo info = {client, type};
+    NET::getEventManager().invokeCallbacks(Event::CT_OnClientDisconnect, info);
+    m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
+                                   [&client](const std::shared_ptr<NetClient> &cl) { return cl.get() == client; }),
+                    m_clients.end());
 }
 
 } // namespace Network

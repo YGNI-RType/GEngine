@@ -93,6 +93,7 @@ int ASocket::socketClose(void) {
     if (m_handle != INVALID_HANDLE_VALUE)
         status = CloseHandle(m_handle) ? 0 : -1;
 #endif
+    NetWait::removeSocketPool(*this);
 
     return status;
 }
@@ -307,27 +308,60 @@ bool SocketTCP::send(const TCPMessage &msg) const {
     TCPSerializedMessage sMsg;
     msg.getSerialize(sMsg);
 
-    return sendReliant(&sMsg, msg.getSize()) != 0; // if it did not block
+    return sendReliant(&sMsg, msg.getSize(), 0) != 0; // if it did not block
 }
 
 void SocketTCP::receive(TCPMessage &msg) const {
     TCPSerializedMessage sMsg;
     auto ptrMsg = reinterpret_cast<char *>(&sMsg);
 
-    size_t recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage));
-    /* WIN : need to use these parenthesis, to skip windows.h macro (todo : find why +1, another problem with packed
-     * structs ?)*/
+    size_t recvSz =
+        receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), 0);
+    if (sMsg.curSize > MAX_TCP_MSGLEN)
+        throw SocketException("Message too big");
     recvSz = receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg + recvSz),
-                            CF_NET_MIN(sMsg.curSize + 1, sizeof(TCPSerializedMessage) - recvSz));
+                            CF_NET_MIN(sMsg.curSize + 1, sizeof(TCPSerializedMessage) - recvSz), 0);
 
     msg.setSerialize(sMsg);
 }
 
-size_t SocketTCP::receiveReliant(TCPSerializedMessage *buffer, size_t size) const {
+bool SocketTCP::sendPartial(const TCPMessage &msg, size_t sizeToSend, size_t &offset) const {
+    TCPSerializedMessage sMsg;
+    msg.getSerialize(sMsg);
+
+    size_t nowOffset = CF_NET_MIN(offset, msg.getSize() + sizeof(TCPSerializedMessage) - MAX_TCP_MSGLEN);
+    sizeToSend = CF_NET_MIN(msg.getSize() + nowOffset, CF_NET_MIN(sizeToSend, MAX_TCP_MSGLEN));
+
+    size_t sent = sendReliant(&sMsg, sizeToSend, offset);
+    offset += sent;
+    return sent != 0;
+}
+
+bool SocketTCP::receivePartial(TCPSerializedMessage &sMsg, size_t size, size_t &offset) const {
+    auto ptrMsg = reinterpret_cast<char *>(&sMsg);
+
+    if (offset < sizeof(HeaderSerializedMessage)) { /* new message */
+        size_t recvSz =
+            receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), offset);
+        offset += recvSz;
+        if (offset < sizeof(HeaderSerializedMessage))
+            return false; /* the message is too small, can't proceed */
+    }
+
+    size_t nowOffset = CF_NET_MIN(offset, sMsg.curSize + sizeof(TCPSerializedMessage) - MAX_TCP_MSGLEN);
+
+    size_t recvSz =
+        receiveReliant(reinterpret_cast<TCPSerializedMessage *>(ptrMsg), sizeof(HeaderSerializedMessage), nowOffset);
+    offset += recvSz;
+    return true;
+}
+
+size_t SocketTCP::receiveReliant(TCPSerializedMessage *buffer, size_t size, size_t offset) const {
     size_t receivedTotal = 0;
 
     while (receivedTotal < size) {
-        auto received = ::recv(m_sock, reinterpret_cast<char *>(buffer + receivedTotal), size - receivedTotal, 0);
+        auto received =
+            ::recv(m_sock, reinterpret_cast<char *>(buffer + offset + receivedTotal), size - receivedTotal, 0);
         if (received == 0)
             throw SocketDisconnected();
         if (received < 0) {
@@ -341,12 +375,13 @@ size_t SocketTCP::receiveReliant(TCPSerializedMessage *buffer, size_t size) cons
 }
 
 /* THIS IS THE ALL MESSAGE, NOT THE JUST DATA */
-size_t SocketTCP::sendReliant(const TCPSerializedMessage *msg, size_t msgDataSize) const {
+size_t SocketTCP::sendReliant(const TCPSerializedMessage *msg, size_t msgDataSize, size_t offset) const {
     size_t sentTotal = 0;
     msgDataSize += sizeof(TCPSerializedMessage) - MAX_TCP_MSGLEN;
 
     while (sentTotal < msgDataSize) {
-        auto sent = ::send(m_sock, reinterpret_cast<const char *>(msg + sentTotal), msgDataSize - sentTotal, 0);
+        auto sent =
+            ::send(m_sock, reinterpret_cast<const char *>(msg + offset + sentTotal), msgDataSize - sentTotal, 0);
         if (sent < 0) {
             int e = socketError;
             if (e == WSAECONNRESET)
@@ -529,10 +564,10 @@ SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort) {
     throw SocketException("Failed to open UDP socket");
 }
 
-SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6) {
+SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketTCPMaster(wantedPort + i, ipv6));
+            return std::move(SocketTCPMaster(wantedPort++, ipv6));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;
@@ -542,10 +577,10 @@ SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6) {
     throw SocketException("Failed to open TCP socket");
 }
 
-SocketUDP openSocketUdp(uint16_t wantedPort, bool ipv6) {
+SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketUDP(wantedPort + i, ipv6));
+            return std::move(SocketUDP(wantedPort++, ipv6));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;

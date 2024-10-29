@@ -5,18 +5,17 @@
 ** ClientEventPublisher.cpp
 */
 
-// #include "GEngine/interface/network/systems/ClientEventPublisher.hpp"
-
 template <class... Events>
 gengine::interface::network::system::ClientEventPublisher<Events...>::ClientEventPublisher()
     : m_client(Network::NET::getClient())
-    , m_msg(true, Network::CL_EVENT) {
+    , m_msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK, Network::CL_EVENT) {
 }
 
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::init(void) {
     this->template subscribeToEvent<gengine::system::event::StartEngine>(&ClientEventPublisher::onStartEngine);
     this->template subscribeToEvent<gengine::system::event::GameLoop>(&ClientEventPublisher::onGameLoop);
+    this->template subscribeToEvent<event::ItsMe>(&ClientEventPublisher::setMe);
     (dynamicSubscribe<Events>(), ...);
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<int>(Network::Event::CT_OnServerReady, [this](int) -> void {
@@ -28,7 +27,6 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::init(
 template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::onStartEngine(
     gengine::system::event::StartEngine &e) {
-    m_msg.setAck(true);
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
 }
@@ -41,11 +39,15 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onGam
 
     m_msg.writeData(m_eventCount, sizeof(Network::UDPG_NetChannelHeader), 0, false);
     m_client.pushData(m_msg);
-    m_msg.clear(true);
+    m_msg.clear();
 
-    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     m_msg.appendData<std::uint64_t>(0);
     m_eventCount = 0;
+}
+
+template <class... Events>
+void gengine::interface::network::system::ClientEventPublisher<Events...>::setMe(event::ItsMe &e) {
+    m_me = e.myUUID;
 }
 
 template <class... Events>
@@ -55,10 +57,13 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::dynam
     this->template subscribeToEvent<T>([this](T &event) -> void {
         if (m_eventCount > m_maxEventToSend)
             return;
-
         m_msg.appendData<std::uint64_t>(m_events.find(std::type_index(typeid(T)))->second);
         m_msg.appendData<T>(event);
         m_eventCount++;
+        if (!m_me.is_nil()) {
+            event::SharedEvent<T> sharedEvent(event, m_me);
+            this->template publishEvent<event::SharedEvent<T>>(sharedEvent);
+        }
     });
     m_id++;
 }

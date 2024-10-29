@@ -19,7 +19,7 @@
 #include <typeindex>
 
 namespace Network::Event {
-enum Type { CONNECT, DISCONNECT, SEND_QUEUED_PACKET, PING };
+enum Type { CONNECT, DISCONNECT, PING_LAN };
 
 enum CallbackType {
     CT_OnClientConnect,
@@ -27,7 +27,8 @@ enum CallbackType {
     CT_OnServerConnect,
     CT_OnServerDisconnect,
     CT_OnClientReady,
-    CT_OnServerReady
+    CT_OnServerReady,
+    CT_OnPingResult,
 };
 
 struct InfoHeader {

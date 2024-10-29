@@ -45,13 +45,7 @@ SocketEvent::SocketEvent() {
 #endif
     NetWait::addSocketPool(*this);
 #else
-    SECURITY_ATTRIBUTES saAttr;
-
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
-
-    m_handle = CreateEvent(NULL, FALSE, FALSE, "net_event_wake");
+    m_handle = CreateEvent(NULL, TRUE, FALSE, NULL);
 #endif
 }
 

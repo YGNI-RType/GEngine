@@ -116,9 +116,7 @@ void NetWait::addSocketPool(ASocket &socket) {
 }
 
 void NetWait::removeSocketPool(const ASocket &socket) {
-#ifdef NET_USE_HANDLE
-    CloseHandle(socket.getHandle());
-#else
+#ifndef NET_USE_HANDLE
     auto sock = socket.getSocket();
     if (sock != m_highFd)
         return;

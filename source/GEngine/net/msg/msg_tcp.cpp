@@ -10,7 +10,7 @@
 namespace Network {
 
 TCPMessage::TCPMessage(uint8_t type)
-    : AMessage(type) {
+    : AMessage(type, 0) {
 }
 
 TCPMessage &TCPMessage::operator=(const TCPMessage &other) {
@@ -21,7 +21,7 @@ TCPMessage &TCPMessage::operator=(const TCPMessage &other) {
     return *this;
 }
 
-void TCPMessage::setSerialize(TCPSerializedMessage &msg) {
+void TCPMessage::setSerialize(const TCPSerializedMessage &msg) {
     m_type = msg.type;
     m_curSize = msg.curSize;
     m_isFinished = msg.isFinished;

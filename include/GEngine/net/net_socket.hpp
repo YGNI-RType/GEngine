@@ -164,6 +164,8 @@ public:
 
     bool send(const TCPMessage &msg) const;
     void receive(TCPMessage &msg) const;
+    bool sendPartial(const TCPMessage &msg, size_t sizeToSend, size_t &offset) const;
+    bool receivePartial(TCPSerializedMessage &msg, size_t size, size_t &offset) const;
 
     const EventType getEventType(void) const {
         return m_eventType;
@@ -173,8 +175,8 @@ public:
     }
 
 private:
-    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size) const;
-    std::size_t sendReliant(const TCPSerializedMessage *msg, std::size_t msgDataSize) const;
+    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size, size_t offset) const;
+    std::size_t sendReliant(const TCPSerializedMessage *msg, std::size_t msgDataSize, size_t offset) const;
 
     EventType m_eventType = READ;
     bool m_notReady = true;
@@ -182,7 +184,7 @@ private:
 
 SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort);
 SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort);
-SocketTCPMaster openSocketTcp(uint16_t wantedPort, bool ipv6);
-SocketUDP openSocketUdp(uint16_t wantedPort, bool ipv6);
+SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6);
+SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6);
 
 } // namespace Network

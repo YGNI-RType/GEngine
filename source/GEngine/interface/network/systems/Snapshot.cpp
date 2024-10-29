@@ -7,6 +7,7 @@
 
 #include "GEngine/interface/network/systems/Snapshot.hpp"
 
+#include "GEngine/libdev/Components.hpp"
 #include "GEngine/net/msg.hpp"
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/net_client.hpp"
@@ -20,50 +21,35 @@ Snapshot::Snapshot(const snapshot_t &currentWorld)
 
 void Snapshot::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&Snapshot::onGameLoop);
-    subscribeToEvent<gengine::interface::event::NewRemoteDriver>(&Snapshot::registerSnapshot);
+    subscribeToEvent<gengine::interface::event::NewRemoteLocal>(&Snapshot::registerSnapshot);
 }
 
 void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
-    {
-        std::lock_guard<std::mutex> lock(m_netMutex);
-
-        m_currentSnapshotId++;
-        createSnapshots();
-    }
+    m_currentSnapshotId++;
     getAndSendDeltaDiff();
 }
 
-/* todo warning : mutex please */
-void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteDriver &e) {
-    component::RemoteDriver r(e.remote);
-    m_clientSnapshots.insert(std::make_pair(r, std::make_pair(m_currentSnapshotId, snapshots_t())));
-    m_clientSnapshots[r].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
+void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteLocal &e) {
+    m_clientSnapshots.insert(std::make_pair(e.uuid, std::make_pair(m_currentSnapshotId, snapshots_t())));
+    m_clientSnapshots[e.uuid].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
 }
 
-void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteDriver &e) {
-    m_clientSnapshots.erase(e.remote);
-}
-
-void Snapshot::createSnapshots(void) {
-    auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
-    for (auto &[remote, client] : clientsSys.getClients()) {
-        if (client.shouldDelete())
-            continue;
-        auto it = m_clientSnapshots.find(remote);
-        if (it == m_clientSnapshots.end())
-            continue;
-        it->second.second[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld;
-    }
+void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e) {
+    m_clientSnapshots.erase(e.uuid);
 }
 
 void Snapshot::getAndSendDeltaDiff(void) {
+    auto &currentNetSends = getComponents<component::NetSend>();
+    auto &remotes = getComponents<interface::component::RemoteLocal>();
+    for (auto [e, r, netsend] : Zip(remotes, currentNetSends))
+        netsend.update();
+
     auto &server = Network::NET::getServer();
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
-
-    for (auto &[remote, client] : clientsSys.getClients()) {
+    for (auto &[uuid, client] : clientsSys.getClients()) {
         if (client.shouldDelete() || !client.isReady())
             continue;
-        auto it = m_clientSnapshots.find(remote);
+        auto it = m_clientSnapshots.find(uuid);
         if (it == m_clientSnapshots.end())
             continue;
 
@@ -71,45 +57,80 @@ void Snapshot::getAndSendDeltaDiff(void) {
         auto lastReceived = client.getLastAck();
         auto lastId = firstSnapshotId + lastReceived;
         auto diff = m_currentSnapshotId - lastId;
-        // std::cout << "diff: " << diff << " | m_currentSnapshotId: " << m_currentSnapshotId << " last id: " << lastId
+
+        if (diff % MAX_SNAPSHOT)
+            snapshots[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld; // does not erase lastsnapshot received
+        // std::cout << "client : " << remote.getUUIDString() << " | diff: " << diff << " | m_currentSnapshotId: " <<
+        // m_currentSnapshotId << " last id: " << lastId
         // << " UDP Last ACK: " << lastReceived << std::endl;
 
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
-        auto &last = diff > MAX_SNAPSHOT ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
+        auto &last = snapshots[lastId % MAX_SNAPSHOT];
 
-        std::vector<ecs::component::component_info_t> deltaDiff = getDeltaDiff(current, last);
+        auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
+            last[std::type_index(typeid(component::NetSend))]);
 
-        Network::UDPMessage msg(true, Network::SV_SNAPSHOT);
-        msg.setAck(true);
-        uint64_t nb_component = deltaDiff.size();
-        msg.appendData(nb_component);
-        for (auto &[entity, type, set, any] : deltaDiff) {
-            ecs::component::ComponentTools::component_size_t size = set ? getComponentSize(type) : 0;
-            NetworkComponent c(entity, getComponentId(type), size);
-            msg.appendData(c);
-            if (set)
-                msg.appendData(toVoid(type, any), c.size);
+        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                    Network::UDPMessage::COMPRESSED,
+                                Network::SV_SNAPSHOT);
+        uint32_t nbEntity = 0;
+        msg.appendData(nbEntity);
+        msg.startCompressingSegment(false);
+        for (auto [entity, currentNetSend] : currentNetSends) {
+            if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
+                auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                msg.appendData(uint32_t(entity));
+                for (auto &byte : bytes)
+                    msg.appendData(byte);
+                for (auto &[typeId, comp] : comps) {
+                    auto &type = getTypeindex(typeId);
+                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+                }
+                nbEntity++;
+            }
         }
+        for (auto [entity, lastNetSend] : lastNetSends) {
+            if (!currentNetSends.contains(entity)) {
+                auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                msg.appendData(uint32_t(entity));
+                for (auto &byte : bytes)
+                    msg.appendData(byte);
+                for (auto &[typeId, comp] : comps) {
+                    auto &type = getTypeindex(typeId);
+                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+                }
+                nbEntity++;
+            }
+        } // TODO cleaner
+        msg.stopCompressingSegment(false);
+        msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
-        // std::cout << "SEND: "<< msg.getSize() << " snap " << nb_component << std::endl;
         if (!server.isRunning())
             continue;
         client.getNet()->pushData(msg, true);
     }
 }
 
-std::vector<ecs::component::component_info_t> Snapshot::getDeltaDiff(const snapshot_t &snap1,
-                                                                     const snapshot_t &snap2) const {
-    std::vector<ecs::component::component_info_t> diff;
+std::pair<std::vector<uint8_t>, std::map<ecs::component::ComponentTools::component_id_t, const std::any>>
+Snapshot::getDeltaDiff(ecs::entity::Entity entity, const snapshot_t &snap1, const snapshot_t &snap2) const {
+    std::map<ecs::component::ComponentTools::component_id_t, const std::any> comps;
+    int nbComp = snap2.size();
+    std::vector<uint8_t> bits(nbComp * 2 / 8 + (nbComp * 2 % 8 ? 1 : 0), 0);
 
-    for (auto &[type, any] : snap1) {
-        if (!snap2.contains(type))
-            THROW_ERROR(
-                "the 2 world do not contain the same component - verify your component registry order"); // big error
-
-        for (auto [e, t, s, c] : compareComponents(type, any, snap2.find(type)->second))
-            diff.emplace_back(e, t, s, c);
+    for (auto &[type, anySparse] : snap1) {
+        if (type == std::type_index(typeid(component::NetSend)) || !snap2.contains(type))
+            continue;
+        auto opt = compareComponentsEntity(entity, type, anySparse, snap2.find(type)->second);
+        if (!opt.has_value())
+            continue;
+        auto &[e, t, set, any] = opt.value();
+        auto id = getComponentId(type);
+        if (set) {
+            bits[id / 8] |= (1 << id % 8);
+            comps.emplace(id, any);
+        } else
+            bits[(id + nbComp) / 8] |= (1 << (id + nbComp) % 8);
     }
-    return diff;
+    return std::make_pair(bits, comps);
 }
 } // namespace gengine::interface::network::system

@@ -7,11 +7,13 @@
 
 #pragma once
 
+#include "../utils/pack.hpp"
+
 #include <cstdint>
 
 namespace Network {
 
-enum { CL_BROADCAST_PING, SV_BROADCAST_PING, CL_SENDCMD, SV_SNAPSHOT, CL_EVENT, CL_SV_FRAGMENT };
+enum MsgType { CL_BROADCAST_PING, SV_BROADCAST_PING, CL_SENDCMD, SV_SNAPSHOT, CL_EVENT, CL_SV_FRAGMENT };
 
 struct UDPSV_PingResponse {
     uint16_t tcpv4Port;
@@ -19,6 +21,9 @@ struct UDPSV_PingResponse {
 
     uint32_t maxPlayers;
     uint32_t currentPlayers;
+
+    uint8_t os;
+    uint64_t ping;
 };
 
 struct UDPG_NetChannelHeader {

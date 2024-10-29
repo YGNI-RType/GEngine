@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "events/disconnection.hpp"
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
@@ -31,7 +32,9 @@ public:
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
-        , m_packInDataAck(socketEvent) {};
+        , m_packInDataAck(socketEvent)
+        , m_tcpIn(socketEvent)
+        , m_tcpOut(socketEvent) {};
     ~CLNetClient() = default;
 
     void init(void);
@@ -40,7 +43,7 @@ public:
     /* index of the pinged servers */
     bool connectToServer(size_t index);
     bool connectToServer(const std::string &ip, uint16_t port, bool block = false);
-    void disconnectFromServer(void);
+    void disconnectFromServer(Event::DisonnectType disconnectType);
 
     void createSets(NetWaitSet &readSet);
 
@@ -49,6 +52,8 @@ public:
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
     bool handleServerTCP(const TCPMessage &msg);
+
+    void checkTimeouts(void);
 
     void setChallenge(int challenge) {
         m_challenge = challenge;
@@ -77,7 +82,9 @@ public:
     /** Net Queue **/
 
     bool pushData(const UDPMessage &msg);
+    bool pushStream(const TCPMessage &msg);
     bool popIncommingData(UDPMessage &msg, size_t &readCount, bool shouldAck);
+    bool popIncommingStream(TCPMessage &msg, size_t &readCount);
     size_t getSizeIncommingData(bool ack) const {
         if (ack)
             return m_packInDataAck.size();
@@ -89,10 +96,16 @@ public:
         return m_packInData.size(type);
     }
 
+    uint16_t getPing_TS(void) const {
+        return m_netChannel.getPing_TS();
+    }
+
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
+    bool retrieveWantedOutgoingStream(TCPMessage &msg, size_t &readCount);
     bool pushIncommingData(const UDPMessage &msg, size_t readCount);
     bool pushIncommingDataAck(const UDPMessage &msg, size_t readCount);
+    bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
     int m_challenge = -1;
 
@@ -101,15 +114,20 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<24, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
-    NetQueue<32, 1400> m_packInData;     /* voiceip etc.. */
-    NetQueue<20, 17000> m_packInDataAck; /* snapshot */
+    NetQueue<UDPMessage, 1, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
+    NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
+
+    NetQueueHeap<TCPMessage, 5> m_tcpIn;
+    NetQueueHeap<TCPMessage, 5> m_tcpOut;
 
     SocketUDP &m_socketUdp;
     AddressType m_addrType;
 
     NetChannel m_netChannel;
+
     std::vector<PingResponse> m_pingedServers;
+    uint64_t m_pingSendTime = 0;
 
     /* in bytes from data (header do not count), can be updated via cvar */
     size_t m_maxRate = 10000;

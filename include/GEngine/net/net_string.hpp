@@ -63,6 +63,10 @@ public:
         return reinterpret_cast<const char *>(m_array.data());
     }
 
+    char *data() {
+        return reinterpret_cast<char *>(m_array.data());
+    }
+
     char operator[](size_t index) {
         if (index >= Size)
             throw std::out_of_range("Index out of range");

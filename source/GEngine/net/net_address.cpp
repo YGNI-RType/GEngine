@@ -49,19 +49,19 @@ bool Address::isEqual(const byte_t *addr1, const byte_t *addr2, uint32_t mask) c
 /**********************************************/
 
 AddressV4::AddressV4(AddressType type, uint16_t port, const ipv4_t &address)
-    : Address(type, port)
+    : Address(type, port, 32)
     , m_address(address) {
 }
 AddressV4::AddressV4(AddressType type, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 32) {
 }
 
 AddressV4::AddressV4(AddressType type, uint16_t port, in_addr_t ip)
-    : Address(type, port) {
+    : Address(type, port, 32) {
     m_address = *(ipv4_t *)&ip;
 }
 AddressV4::AddressV4(AddressType type, const std::string &ip, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 32) {
     in_addr_t addr = inet_addr(ip.c_str());
 
     if (addr == INADDR_NONE)
@@ -110,25 +110,34 @@ bool AddressV4::isLanAddr(void) const {
     return false;
 }
 
+std::string AddressV4::toString(void) const {
+    char buffer[INET_ADDRSTRLEN];
+    in_addr addr;
+    addr.s_addr = htonl(*(int *)&m_address);
+
+    inet_ntop(AF_INET, &addr, buffer, INET_ADDRSTRLEN);
+    return std::string(buffer);
+}
+
 /**********************************************/
 
 AddressV6::AddressV6(AddressType type, uint16_t port, const ipv6_t &address, uint64_t scopeId)
-    : Address(type, port)
+    : Address(type, port, 128)
     , m_address(address)
     , m_scopeId(scopeId) {
 }
 AddressV6::AddressV6(AddressType type, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 128) {
 }
 
 AddressV6::AddressV6(AddressType type, uint16_t port, in6_addr ip, uint32_t scopeId)
-    : Address(type, port)
+    : Address(type, port, 128)
     , m_scopeId(scopeId) {
     m_address = *(ipv6_t *)&ip;
     m_scopeId = scopeId;
 }
 AddressV6::AddressV6(AddressType type, const std::string &ip, uint16_t port)
-    : Address(type, port) {
+    : Address(type, port, 128) {
     in6_addr addr;
 
     if (inet_pton(AF_INET6, ip.c_str(), &addr) != 1)
@@ -169,6 +178,13 @@ bool AddressV6::isLanAddr(void) const {
     if ((m_address[0] & 0xfe) == 0xfc)
         return true;
     return false;
+}
+
+std::string AddressV6::toString(void) const {
+    char buffer[INET6_ADDRSTRLEN];
+
+    inet_ntop(AF_INET6, &m_address, buffer, INET6_ADDRSTRLEN);
+    return std::string(buffer);
 }
 
 /************************************************************/

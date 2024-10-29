@@ -34,6 +34,7 @@ public:
     virtual ~Address() = default;
     virtual void toSockAddr(sockaddr *addr) const = 0;
     virtual bool isLanAddr(void) const = 0;
+    virtual std::string toString(void) const = 0;
 
     AddressType getType() const {
         return m_type;
@@ -53,16 +54,17 @@ public:
 
 protected:
     virtual const byte_t *getData() const = 0;
-    Address(AddressType type, uint16_t port)
+    Address(AddressType type, uint16_t port, uint32_t mask = 0)
         : m_type(type)
-        , m_port(port) {
+        , m_port(port)
+        , m_mask(mask) {
     }
 
     bool isEqual(const byte_t *addr1, const byte_t *addr2, uint32_t mask) const;
 
     AddressType m_type;
     uint16_t m_port;
-    uint32_t m_mask = 0;
+    uint32_t m_mask;
 };
 
 class AddressV4 : public Address {
@@ -80,6 +82,7 @@ public:
 
     void toSockAddr(sockaddr *addr) const override final;
     bool isLanAddr(void) const override final;
+    std::string toString(void) const override final;
 
 private:
     const byte_t *getData() const override final {
@@ -108,6 +111,7 @@ public:
 
     void toSockAddr(sockaddr *addr) const override final;
     bool isLanAddr(void) const override final;
+    std::string toString(void) const override final;
 
 private:
     const byte_t *getData() const override final {

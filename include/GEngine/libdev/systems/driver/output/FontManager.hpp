@@ -20,7 +20,7 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 namespace gengine::system::driver::output {
-class FontManager : public gengine::System<FontManager> {
+class FontManager : public gengine::System<FontManager>, public LocalSystem {
 public:
     FontManager(const std::string &folder);
     void init(void) override;

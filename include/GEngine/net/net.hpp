@@ -65,6 +65,7 @@ public:
     static bool sleep(uint32_t ms);
     static bool handleEvents(const NetWaitSet &set);
     static bool handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    static void handleTimeouts(void);
 
 private:
     static void createSets(NetWaitSet &readSet);

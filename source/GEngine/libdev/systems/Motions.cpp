@@ -30,9 +30,23 @@ void Motion3D::onGameLoop(event::GameLoop &e) {
     auto &velocities = getComponents<component::Velocity3D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += (vel.x * e.deltaTime);
-        tr.pos.y += (vel.y * e.deltaTime);
-        tr.pos.z += (vel.z * e.deltaTime);
+        tr.pos.x += vel.x;
+        tr.pos.y += vel.y;
+        tr.pos.z += vel.z;
+    }
+}
+
+void MotionAcceleration2D::init(void) {
+    subscribeToEvent<event::GameLoop>(&MotionAcceleration2D::onGameLoop);
+}
+
+void MotionAcceleration2D::onGameLoop(event::GameLoop &e) {
+    auto &velocities = getComponents<component::Velocity2D>();
+    auto &accelerations = getComponents<component::Acceleration2D>();
+
+    for (auto [entity, velocity, acceleration] : Zip(velocities, accelerations)) {
+        velocity.x += acceleration.x;
+        velocity.y += acceleration.y;
     }
 }
 } // namespace gengine::system

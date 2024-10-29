@@ -11,6 +11,7 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <typeindex>
@@ -51,12 +52,25 @@ public:
     typedef std::function<void(entity::Entity, const std::any &)> setter_t;
 
     /**
-     * @brief Type alias for a function that compares two components and returns a list of component differences.
-     * @param comp1 First component to compare (as std::any).
-     * @param comp2 Second component to compare (as std::any).
-     * @return A vector of `component_info_t` representing differences between the two components.
+     * @brief Type alias for a function that compares two SparseArrays of components and returns a list of component
+     * differences.
+     * @param sparse1 First SparseArray to compare (as std::any).
+     * @param sparse2 Second SparseArray to compare (as std::any).
+     * @return A vector of `component_info_t` representing differences between the two SparseArrays.
      */
     typedef std::function<std::vector<component_info_t>(const std::any &, const std::any &)> comparer_t;
+
+    /**
+     * @brief Type alias for a function that compares two components of an entity in SparseArrays and returns a list of
+     * component differences.
+     * @param entity The entity.
+     * @param sparse1 First SparseArray to compare (as std::any).
+     * @param sparse2 Second SparseArray to compare (as std::any).
+     * @return an optional `component_info_t` representing differences between the two components if there is a
+     * component for this entity.
+     */
+    typedef std::function<std::optional<component_info_t>(entity::Entity, const std::any &, const std::any &)>
+        comparer_entity_t;
 
     /**
      * @brief Type alias for a function that retrieves a raw pointer to the data held in a `std::any` object.
@@ -83,7 +97,7 @@ public:
      * @param anyer Function responsible for wrapping raw pointers in `std::any`.
      */
     ComponentTools(component_id_t id, component_size_t size, destroyer_t destroyer, setter_t setter,
-                   comparer_t comparer, voider_t voider, anyer_t anyer);
+                   comparer_t comparer, comparer_entity_t comparerEntity, voider_t voider, anyer_t anyer);
 
     /// @return The unique ID of the component.
     const component_id_t &id(void) const;
@@ -97,8 +111,11 @@ public:
     /// @return The setter function for the component.
     const setter_t &setter(void);
 
-    /// @return The comparer function for comparing two components.
+    /// @return The comparer function for comparing two SparseArrays of components.
     const comparer_t &comparer(void) const;
+
+    /// @return The comparer function for comparing two components of an entity.
+    const comparer_entity_t &comparerEntity(void) const;
 
     /// @return The voider function that retrieves a raw pointer from a component.
     const voider_t &voider(void) const;
@@ -110,11 +127,12 @@ private:
     component_id_t m_componentId; ///< The unique ID of the component.
     component_size_t m_size;      ///< The size of the component in bytes.
 
-    destroyer_t m_destroyer; ///< Function responsible for destroying the component.
-    setter_t m_setter;       ///< Function responsible for setting the component.
-    comparer_t m_comparer;   ///< Function responsible for comparing two components.
-    voider_t m_voider;       ///< Function to get a raw pointer from a component.
-    anyer_t m_anyer;         ///< Function to wrap a raw pointer in `std::any`.
+    destroyer_t m_destroyer;            ///< Function responsible for destroying the component.
+    setter_t m_setter;                  ///< Function responsible for setting the component.
+    comparer_t m_comparer;              ///< Function responsible for comparing two SparseArrays of components.
+    comparer_entity_t m_comparerEntity; ///< Function responsible for comparing two components of an entity.
+    voider_t m_voider;                  ///< Function to get a raw pointer from a component.
+    anyer_t m_anyer;                    ///< Function to wrap a raw pointer in `std::any`.
 };
 
 /**
@@ -256,6 +274,19 @@ public:
                                                     const std::any &any2) const;
 
     /**
+     * @brief Compares two component of a given type for an entity and returns the differences.
+     *
+     * The difference will be the new components or the ones that changed from the any2 to any1.
+     * @param type The type of the components (as `std::type_index`).
+     * @param entity The entity to compare.
+     * @param any1 The first sparse array to compare (as `std::any`).
+     * @param any2 The second sparse array to compare (as `std::any`).
+     * @return A vector of `component_info_t` representing the differences between the two sparse array.
+     */
+    std::optional<component_info_t> compareComponentsEntity(entity::Entity entity, const std::type_index &type,
+                                                            const std::any &any1, const std::any &any2) const;
+
+    /**
      * @brief Converts a component into a raw pointer.
      * @param type The type of the component (as `std::type_index`).
      * @param any The component data (as `std::any`).
@@ -293,6 +324,10 @@ private:
     template <class Component>
     std::vector<component_info_t> deltaDiffSparse(const SparseArray<Component> &sparse1,
                                                   const SparseArray<Component> &sparse2) const;
+
+    template <class Component>
+    std::optional<component_info_t> deltaDiffSparseEntity(entity::Entity entity, const SparseArray<Component> &sparse1,
+                                                          const SparseArray<Component> &sparse2) const;
 };
 } // namespace ecs::component
 
