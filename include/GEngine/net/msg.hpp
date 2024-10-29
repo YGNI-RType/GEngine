@@ -14,10 +14,11 @@
 #include "structs/msg_udp_structs.hpp"
 #include "utils/pack.hpp"
 
+#include "msg_error.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <stdexcept>
 #include <vector>
 
 namespace Network {
@@ -109,21 +110,27 @@ public:
     /******** WRITE DATA ********/
 
     template <typename T>
-    void appendData(const T &data, size_t offset = 0) {
+    size_t appendData(const T &data, size_t *sizeCompressWatcher = nullptr, size_t offset = 0) {
         if (m_compressNow) {
             if (m_curSize + offset > getMaxMsgSize())
-                return;
+                throw MsgError("Message offset is too big");
             m_huffman.compressContinuous(*this, m_curSize + offset, (const byte_t *)&data, sizeof(T));
-            return;
+            if (sizeCompressWatcher) {
+                *sizeCompressWatcher += sizeof(T);
+                if (*sizeCompressWatcher > getMaxMsgSize())
+                    throw MsgError("Message is too big to compress");
+            }
+            return sizeof(T);
         }
 
         byte_t *myData = getDataMember();
         uint64_t maxSz = getMaxMsgSize();
         if (m_curSize + offset + sizeof(T) > maxSz)
-            return;
+            return sizeof(T);
 
         std::memcpy(myData + m_curSize + offset, &data, sizeof(T));
         m_curSize += sizeof(T);
+        return sizeof(T);
     }
 
     template <typename T>
@@ -147,7 +154,7 @@ public:
             return -1; /* todo : raise the fact that you can't */
 
         if (sizeof(T) > m_curSize)
-            throw std::runtime_error("Message is too small to read data");
+            throw MsgError("Message is too small to read data");
 
         const byte_t *myData = getData();
         std::memcpy(&data, myData, sizeof(T));
@@ -157,7 +164,7 @@ public:
     template <typename T>
     size_t readContinuousData(T &data, size_t &readOffset) const {
         if (sizeof(T) + readOffset > CF_NET_MIN(m_curSize, getMaxMsgSize()))
-            throw std::runtime_error("Message is too small to read data");
+            throw MsgError("Message is too small to read data");
 
         const byte_t *myData = getData();
         std::memcpy(&data, myData + readOffset, sizeof(T));
@@ -168,14 +175,14 @@ public:
     template <typename T>
     size_t readContinuousCompressed(T &data, size_t &offset) {
         if (!isCompressed())
-            throw std::runtime_error("Message is not compressed");
+            throw MsgError("Message is not compressed");
 
         if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize())
-            throw std::runtime_error("Message overflow when reading");
+            throw MsgError("Message overflow when reading");
         return m_huffman.decompressContinuous(*this, offset, (byte_t *)&data, sizeof(T));
     }
 
-    void appendData(const void *data, std::size_t size);
+    size_t appendData(const void *data, std::size_t size, size_t *sizeCompressWatcher = nullptr);
     void writeData(const void *data, std::size_t size, bool updateSize = true);
     void readData(void *data, std::size_t &offset, std::size_t size) const;
     void readDataCompressed(void *data, std::size_t &offsetBits, std::size_t size);

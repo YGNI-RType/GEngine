@@ -80,44 +80,52 @@ void Snapshot::getAndSendDeltaDiff(void) {
         for (auto [e, r, netsend] : Zip(remotes, currentNetSends))
             netsend.update();
 
-        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
-                                    Network::UDPMessage::COMPRESSED,
-                                Network::SV_SNAPSHOT);
-        uint32_t nbEntity = 0;
-        msg.appendData(nbEntity);
-        msg.startCompressingSegment(false);
-        for (auto [entity, currentNetSend] : currentNetSends) {
-            if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
-                auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes)
-                    msg.appendData(byte);
-                for (auto &[typeId, comp] : comps) {
-                    auto &type = getTypeindex(typeId);
-                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+        try {
+            Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                        Network::UDPMessage::COMPRESSED,
+                                    Network::SV_SNAPSHOT);
+            uint32_t nbEntity = 0;
+            msg.appendData(nbEntity);
+            size_t realSize = msg.getSize();
+            msg.startCompressingSegment(false);
+            for (auto [entity, currentNetSend] : currentNetSends) {
+                if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
+                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                    msg.appendData(uint32_t(entity), &realSize);
+                    for (auto &byte : bytes)
+                        msg.appendData(byte, &realSize);
+                    for (auto &[typeId, comp] : comps) {
+                        auto &type = getTypeindex(typeId);
+                        msg.appendData(toVoid(type, comp), getComponentSize(type), &realSize);
+                    }
+                    nbEntity++;
                 }
-                nbEntity++;
             }
-        }
-        for (auto [entity, lastNetSend] : lastNetSends) {
-            if (!currentNetSends.contains(entity)) {
-                auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes)
-                    msg.appendData(byte);
-                for (auto &[typeId, comp] : comps) {
-                    auto &type = getTypeindex(typeId);
-                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+            for (auto [entity, lastNetSend] : lastNetSends) {
+                if (!currentNetSends.contains(entity)) {
+                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                    msg.appendData(uint32_t(entity), &realSize);
+                    for (auto &byte : bytes)
+                        msg.appendData(byte, &realSize);
+                    for (auto &[typeId, comp] : comps) {
+                        auto &type = getTypeindex(typeId);
+                        msg.appendData(toVoid(type, comp), getComponentSize(type), &realSize);
+                    }
+                    nbEntity++;
                 }
-                nbEntity++;
-            }
-        } // TODO cleaner
-        msg.stopCompressingSegment(false);
-        msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
+            } // TODO cleaner
+            msg.stopCompressingSegment(false);
+            msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
-        if (!server.isRunning())
-            continue;
-        client.getNet()->pushData(msg, true);
+            if (!server.isRunning())
+                continue;
+            client.getNet()->pushData(msg, true);
+        } catch (const Network::MsgError &e) {
+            std::cerr << e.what() << std::endl;
+
+            /* TODO : do something when something happens... */
+        }
+
     }
 }
 
