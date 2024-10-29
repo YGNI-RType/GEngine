@@ -3,6 +3,7 @@
 !/build/.gitkeep
 /r-type/build/*
 !/r-type/build/.gitkeep
+build
 
 ## Binaries
 test_dev/
