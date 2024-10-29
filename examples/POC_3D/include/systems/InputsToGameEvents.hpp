@@ -12,6 +12,7 @@
 #include "GEngine/libdev/Systems.hpp"
 
 #include "events/Movement.hpp"
+#include "events/Rotation.hpp"
 
 namespace rtype::system {
 class InputsToGameEvents

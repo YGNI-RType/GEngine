@@ -30,7 +30,5 @@ public:
     void onGameLoop(gengine::system::event::GameLoop &);
     void movePlayer(gengine::interface::event::SharedEvent<event::Movement> &e);
     void rotatePlayer(gengine::interface::event::SharedEvent<event::Rotation> &e);
-private:
-    // Camera camera = 
 };
 } // namespace rtype::system

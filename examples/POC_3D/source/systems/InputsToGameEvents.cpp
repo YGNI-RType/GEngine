@@ -6,6 +6,7 @@
 */
 
 #include "systems/InputsToGameEvents.hpp"
+#include "Constants.hpp"
 
 namespace rtype::system {
 void InputsToGameEvents::init(void) {
@@ -18,6 +19,15 @@ void InputsToGameEvents::init(void) {
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
     publishEvent<event::Movement>(getMovementState());
+
+    // Player Direction
+    const Vector2 mouseDelta = GetMouseDelta();
+    // DisableCursor();
+    // SetMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+    gengine::Vect3 rotation = {0, 0, 0};
+    if (mouseDelta.x != 0.0f)
+        rotation.z += MOUSE_SENSITIVITY * mouseDelta.x;
+    publishEvent<event::Rotation>(rotation);
 }
 
 void InputsToGameEvents::moveFwd(geg::event::io::KeyWEvent &e) {

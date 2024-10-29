@@ -42,11 +42,11 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
                 gengine::component::driver::output::Sprite("background.png", Rectangle{0, 0, 1120, 207}, WHITE), geg::component::network::NetSend());
 
     spawnEntity(gengine::component::driver::output::Model("gmApart.glb"),
-                gengine::component::driver::output::Drawable(1), gengine::component::Transform3D({0.0f, 2.0f, 4.0f}), geg::component::network::NetSend());
+                gengine::component::driver::output::Drawable(1), gengine::component::Transform3D({0.0f, 0.0f, 0.0f}, {1, 1, 1}, {-90.f, 0.f, 90.f}), geg::component::network::NetSend());
 }
 
 void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &e) {
-    spawnEntity(component::Player(), gengine::component::Transform3D({0.0f, 2.0f, 4.0f}),
+    spawnEntity(component::Player(), gengine::component::Transform3D({2.0f, 2.0f, 0.0f}, {1, 1, 1}, {-90, 0, 180}),
                 gengine::component::Velocity3D(0, 0, 0), gengine::component::driver::output::Drawable(2),
                 gengine::component::driver::output::Model("coraline.glb"),
                 gengine::interface::component::RemoteLocal(e.uuid), geg::component::network::NetSend());

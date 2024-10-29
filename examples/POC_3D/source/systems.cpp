@@ -58,9 +58,9 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        rtype::event::Movement, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        rtype::event::Movement, rtype::event::Rotation, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        rtype::event::Movement, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        rtype::event::Movement, rtype::event::Rotation, gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓
 }

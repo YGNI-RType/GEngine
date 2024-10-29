@@ -10,20 +10,14 @@
 #include "GEngine/libdev/Component.hpp"
 #include <string>
 
-#define DEFAULT_SPEED 0.01
-#define DEFAULT_ATTACK_SPEED 3 // Shoot per second
+#define DEFAULT_SPEED 0.06
 
 namespace rtype::component {
 struct Player : public gengine::Component<Player> {
     float speed;
-    float attackSpeed;
-    int life = 3;
 
-    // static void setScore(int score, )
-
-    Player(float newSpeed = DEFAULT_SPEED, float newAttackSpeed = DEFAULT_ATTACK_SPEED)
-        : speed(newSpeed)
-        , attackSpeed(newAttackSpeed) {
+    Player(float newSpeed = DEFAULT_SPEED)
+        : speed(newSpeed) {
     }
 };
 
