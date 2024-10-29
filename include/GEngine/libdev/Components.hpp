@@ -7,11 +7,11 @@
 
 #pragma once
 
+#include "GEngine/libdev/components/Accelerations.hpp"
 #include "GEngine/libdev/components/HitBoxs.hpp"
 #include "GEngine/libdev/components/SpanLife.hpp"
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/Velocities.hpp"
-#include "GEngine/libdev/components/Accelerations.hpp"
 
 namespace geg::component {
 using HitBoxSquare2D = gengine::component::HitBoxSquare2D;

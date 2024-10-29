@@ -15,6 +15,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
+#include "GEngine/libdev/components/Accelerations.hpp"
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/Velocities.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
@@ -36,5 +37,5 @@ class MotionAcceleration2D : public System<MotionAcceleration2D, component::Velo
 public:
     void init(void);
     void onGameLoop(event::GameLoop &);
-}
+};
 } // namespace gengine::system
