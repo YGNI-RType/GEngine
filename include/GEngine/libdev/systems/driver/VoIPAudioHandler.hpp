@@ -18,15 +18,11 @@
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
+#include <thread>
 #include <atomic>
 #include <vector>
 
 namespace gengine::system::driver::input {
-
-struct RecorderBuffer {
-    std::vector<uint8_t> buffer;
-    size_t offset;
-};
 
 class VoIPAudioHandler : public gengine::System<VoIPAudioHandler>, public LocalSystem {
 public:
@@ -39,19 +35,18 @@ public:
     bool isCapturing(void) {
         return m_capturing;
     }
-    RecorderBuffer &getRecorderBuffer(void) {
-        return m_recorderBuffer;
-    }
-    RecorderBuffer &getRecorderBufferOutput(void) {
-        return m_recorderBufferOutput;
+    auto &getRecorderBuffer(void) {
+        return m_captureBuffer;
     }
 
 private:
     void processSoundInput(void);
 
-    RecorderBuffer m_recorderBuffer;
-    RecorderBuffer m_recorderBufferOutput;
     std::atomic_bool m_capturing = false;
+    std::atomic_bool m_running = false;
+    std::thread m_soundThread;
+
+    std::vector<float> m_captureBuffer;
 };
 
 } // namespace gengine::system::driver::input

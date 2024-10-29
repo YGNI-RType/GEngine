@@ -5,7 +5,7 @@ include(GNUInstallDirs)
 
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
-vcpkg_install_packages(raylib stduuid nlohmann-json)
+vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus)
 
 file(GLOB_RECURSE SOURCES source/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/deprecated/.*")
@@ -52,9 +52,11 @@ set_target_properties(GEngine_static PROPERTIES
 
 find_package(raylib CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED) #TODO a supp
+find_package(portaudio CONFIG REQUIRED)
+find_package(Opus REQUIRED)
 
-target_link_libraries(GEngine raylib glfw) #TODO suppr glfw
-target_link_libraries(GEngine_static raylib glfw) #TODO suppr glfw
+target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} raylib glfw) #TODO suppr glfw
+target_link_libraries(GEngine_static) #TODO suppr glfw
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)
 target_compile_definitions(GEngine_static PRIVATE GENGINE_BUILD)
@@ -74,6 +76,8 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/GEngineConfig.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(raylib CONFIG REQUIRED)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
+"find_dependency(portaudio REQUIRED)\n"
+"find_dependency(Opus REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/GEngineTargets.cmake\")\n"
 )
 

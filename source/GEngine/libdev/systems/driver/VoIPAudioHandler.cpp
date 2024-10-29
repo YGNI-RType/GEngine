@@ -7,125 +7,50 @@
 
 #include "GEngine/libdev/systems/driver/VoIPAudioHandler.hpp"
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
-
-/**********************************************************************************************/
-/*
-    Since "raylib" already defines miniaudio (in the worst way for voip), we define minilib again but statically.
-    This mean this file will be the only compile file using miniaudio for the gengine, can't split it.
-    You can thank raylib for this
-*/
-/**********************************************************************************************/
-
-#define MA_API static
-#define MA_NO_JACK
-#define MA_NO_FLAC
-#define MA_NO_MP3
-#define MINIAUDIO_IMPLEMENTATION
-#include <miniaudio.h>
+#include <opus/opus.h>
+#include <portaudio.h>
 
 namespace gengine::system::driver::input {
 
-static ma_encoder g_encoder;
-static ma_decoder g_decoder;
-static ma_device g_recordDevice;
+constexpr size_t SAMPLE_RATE = 48000;
+constexpr size_t FRAME_SIZE = 960;
 
-static void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount) {
-    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(pDevice->pUserData);
-    if (!voipHandler->isCapturing())
-        return;
+// Opus encoder and decoder
+OpusEncoder *encoder;
+OpusDecoder *decoder;
+PaStream *captureStream;
+PaStream *playbackStream;
+std::vector<float> playbackBuffer;
 
-    ma_encoder_write_pcm_frames(&g_encoder, pInput, frameCount, NULL);
+static int captureCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+                           const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
+                           void *userData) {
+    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(userData);
 
-    // temp temp temp
-
-    auto recorderBuffer = voipHandler->getRecorderBufferOutput();
-    recorderBuffer = voipHandler->getRecorderBuffer();
-
-    ma_decoder_read_pcm_frames(&g_decoder, pOutput, frameCount, NULL);
-
-    std::cout << "data_callback" << std::endl;
+    const float *input = static_cast<const float *>(inputBuffer);
+    auto &buffer = voipHandler->getRecorderBuffer();
+    buffer.insert(buffer.end(), input, input + framesPerBuffer);
+    return paContinue;
 }
 
-static ma_result encoderOnWrite(ma_encoder *encoder, const void *data, const size_t data_size,
-                                size_t *out_written_data_size) {
-    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(encoder->pUserData);
-    if (!voipHandler->isCapturing())
-        return MA_SUCCESS;
+int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+                     const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData) {
+    float *output = static_cast<float *>(outputBuffer);
+    std::vector<float> &buffer = *static_cast<std::vector<float> *>(userData);
 
-    RecorderBuffer *rc = &voipHandler->getRecorderBuffer();
-    const size_t min_target_size = rc->offset + data_size;
-
-    /* todo: maybe just append may be as fast, but beware of encoderOnSeek */
-
-    if (rc->offset + min_target_size > rc->buffer.size())
-        rc->buffer.resize(rc->offset + min_target_size);
-
-    std::copy(reinterpret_cast<const uint8_t *>(data), reinterpret_cast<const uint8_t *>(data) + data_size,
-              rc->buffer.begin() + rc->offset);
-
-    rc->offset += data_size;
-    return *out_written_data_size = data_size, MA_SUCCESS;
-}
-
-static ma_result encoderOnSeek(ma_encoder *encoder, ma_int64 off_from_origin, ma_seek_origin origin) {
-    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(encoder->pUserData);
-    if (!voipHandler->isCapturing())
-        return MA_SUCCESS;
-
-    RecorderBuffer *rc = &voipHandler->getRecorderBuffer();
-    size_t off = 0;
-    switch (origin) {
-    case ma_seek_origin_start:
-        off = off_from_origin;
-        break;
-    case ma_seek_origin_current:
-        off = rc->offset + off_from_origin;
-        break;
-    case ma_seek_origin_end:
-        off = rc->buffer.size() - 1 - off_from_origin;
-        break;
+    /* reduces the volume */
+    for (size_t i = 0; i < std::min(buffer.size(), framesPerBuffer); ++i) {
+        buffer[i] *= 0.3f;
     }
 
-    if (off >= rc->buffer.size())
-        return MA_OUT_OF_RANGE;
-    rc->offset = off;
-    return MA_SUCCESS;
-}
-
-static ma_result decoderOnRead(ma_decoder *decoder, void *buffer, size_t bytesToRead, size_t *bytesRead) {
-    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(decoder->pUserData);
-
-    auto output = voipHandler->getRecorderBufferOutput();
-    ma_uint64 ubytesRead = 0;
-    if (ma_decoder_read_pcm_frames(&g_decoder, static_cast<uint16_t *>(buffer), bytesToRead / 2, &ubytesRead) != MA_SUCCESS)
-        return MA_ERROR;
-
-    *bytesRead = ubytesRead * 2;
-    return MA_SUCCESS;
-}
-
-
-static ma_result decoderOnSeek(ma_decoder *decoder, ma_int64 byteOffset, ma_seek_origin origin) {
-    VoIPAudioHandler *voipHandler = static_cast<VoIPAudioHandler *>(decoder->pUserData);
-
-    RecorderBuffer *rc = &voipHandler->getRecorderBufferOutput();
-    size_t off = 0;
-    switch (origin) {
-    case ma_seek_origin_start:
-        off = byteOffset;
-        break;
-    case ma_seek_origin_current:
-        off = rc->offset + byteOffset;
-        break;
-    case ma_seek_origin_end:
-        off = rc->buffer.size() - 1 - byteOffset;
-        break;
+    if (buffer.size() < framesPerBuffer) {
+        std::fill(output, output + framesPerBuffer, 0.0f);
+        return paContinue;
     }
 
-    if (off >= rc->buffer.size())
-        return MA_OUT_OF_RANGE;
-    rc->offset = off;
-    return MA_SUCCESS;
+    std::copy(buffer.begin(), buffer.begin() + framesPerBuffer, output);
+    buffer.erase(buffer.begin(), buffer.begin() + framesPerBuffer);
+    return paContinue;
 }
 
 //////////////
@@ -133,51 +58,64 @@ static ma_result decoderOnSeek(ma_decoder *decoder, ma_int64 byteOffset, ma_seek
 void VoIPAudioHandler::init(void) {
     subscribeToEvent<gengine::system::driver::input::KeyVEvent>(&VoIPAudioHandler::onCapture);
 
-    /** Miniaudio **/
+    /** Port Audio + Opus **/
 
-    ma_encoder_config encoderConfig;
-    ma_device_config deviceConfig;
+    PaError paErr = Pa_Initialize();
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio error: " + std::string(Pa_GetErrorText(paErr)));
 
-    encoderConfig = ma_encoder_config_init(ma_encoding_format_wav, ma_format_s16, 2, 44100);
+    // Initialize Opus encoder and decoder
+    int iErr;
+    encoder = opus_encoder_create(SAMPLE_RATE, 1, OPUS_APPLICATION_AUDIO, &iErr);
+    if (iErr != OPUS_OK)
+        throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(iErr)));
 
-    auto res = ma_encoder_init(encoderOnWrite, encoderOnSeek, static_cast<void *>(this), &encoderConfig, &g_encoder);
-    if (res != MA_SUCCESS)
-        throw std::runtime_error("Failed to initialize output file.");
+    decoder = opus_decoder_create(SAMPLE_RATE, 1, &iErr);
+    if (iErr != OPUS_OK)
+        throw std::runtime_error("Failed to create Opus decoder: " + std::string(opus_strerror(iErr)));
 
-    deviceConfig = ma_device_config_init(ma_device_type_capture);
-    deviceConfig.capture.format = g_encoder.config.format;
-    deviceConfig.capture.channels = g_encoder.config.channels;
-    deviceConfig.sampleRate = g_encoder.config.sampleRate;
-    deviceConfig.dataCallback = data_callback;
-    deviceConfig.pUserData = this;
+    // Open capture stream
 
-    if (ma_device_init(NULL, &deviceConfig, &g_recordDevice) != MA_SUCCESS)
-        throw std::runtime_error("Failed to initialize capture device.\n");
+    auto index = Pa_GetDefaultInputDevice();
+    auto deviceconut = Pa_GetDeviceCount();
+    auto apicount = Pa_GetHostApiCount();
+    const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(index);
+    if (deviceInfo == nullptr)
+        throw std::runtime_error("No default input device available");
 
-    // if (ma_device_start(&g_recordDevice) != MA_SUCCESS) {
-    //     ma_device_uninit(&g_recordDevice);
-    //     throw std::runtime_error("Failed to start device.\n");
-    // }
+    paErr = Pa_OpenDefaultStream(&captureStream, 1, 0, paFloat32, SAMPLE_RATE, FRAME_SIZE, captureCallback, this);
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio Open stream error: " + std::string(Pa_GetErrorText(paErr)));
 
-    //////////////
+    // Open playback stream
+    paErr = Pa_OpenDefaultStream(&playbackStream, 0, 1, paFloat32, SAMPLE_RATE, FRAME_SIZE, playbackCallback, &playbackBuffer);
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio Open stream error: " + std::string(Pa_GetErrorText(paErr)));
 
-    ma_decoder_config decoderConfig;
-    // decoderConfig = ma_decoder_config_init(ma_format_s16, 2, 44100);
-    decoderConfig = ma_decoder_config_init_default();
-    decoderConfig.format = ma_format_s16;
-    decoderConfig.encodingFormat = ma_encoding_format_wav;
-
-    res = ma_decoder_init(decoderOnRead, decoderOnSeek, static_cast<void *>(this), &decoderConfig, &g_decoder);
-    if (res != MA_SUCCESS)
-        throw std::runtime_error("Failed to initialize output file.");
+    m_running = true;
+    m_soundThread = std::thread([this]() { processSoundInput(); });
 }
 
 void VoIPAudioHandler::onCapture(gengine::system::driver::input::KeyVEvent &e) {
+    PaError paErr;
+
     switch (e.state) {
     case gengine::system::driver::input::InputState::PRESSED:
+        paErr = Pa_StartStream(captureStream);
+        if (paErr != paNoError)
+            throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
+        paErr = Pa_StartStream(playbackStream);
+        if (paErr != paNoError)
+            throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
         m_capturing = true;
         break;
     case gengine::system::driver::input::InputState::RELEASE:
+        paErr = Pa_StopStream(captureStream);
+        if (paErr != paNoError)
+            throw std::runtime_error("PortAudio STOP stream error: " + std::string(Pa_GetErrorText(paErr)));
+        paErr = Pa_StopStream(playbackStream);
+        if (paErr != paNoError)
+            throw std::runtime_error("PortAudio STOP stream error: " + std::string(Pa_GetErrorText(paErr)));
         m_capturing = false;
         break;
     default:
@@ -185,12 +123,63 @@ void VoIPAudioHandler::onCapture(gengine::system::driver::input::KeyVEvent &e) {
     }
 }
 
-VoIPAudioHandler::~VoIPAudioHandler() {
-    ma_device_uninit(&g_recordDevice);
-    ma_encoder_uninit(&g_encoder);
+/* This code is only run by the sound thread */
+void VoIPAudioHandler::processSoundInput(void) {
+    std::vector<unsigned char> encodedData(4000); // Allocate enough space for encoded data
+    std::vector<float> decodedBuffer(FRAME_SIZE);
 
-    // temp temptet tmp
-    ma_decoder_uninit(&g_decoder);
+    while (m_running) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Sleep briefly to reduce CPU usage
+
+        if (!m_capturing) // temp temp temp, we need to hear in the future !!!!
+            continue;
+
+        if (m_captureBuffer.size() >= FRAME_SIZE) {
+            // Encode captured audio using Opus
+            int encodedSize = opus_encode_float(encoder, m_captureBuffer.data(), FRAME_SIZE, encodedData.data(), encodedData.size());
+            if (encodedSize < 0) {
+                std::cerr << "Opus encoding error: " << opus_strerror(encodedSize) << std::endl;
+                continue;
+            }
+
+            // Decode encoded audio using Opus
+            int decodedSize = opus_decode_float(decoder, encodedData.data(), encodedSize, decodedBuffer.data(), FRAME_SIZE, 0);
+            if (decodedSize < 0) {
+                std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
+                continue;
+            }
+
+            // Add decoded audio to playback buffer
+            playbackBuffer.insert(playbackBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+
+            // Remove processed audio from capture buffer
+            m_captureBuffer.erase(m_captureBuffer.begin(), m_captureBuffer.begin() + FRAME_SIZE);
+        }
+
+    }
+}
+
+VoIPAudioHandler::~VoIPAudioHandler() {
+    m_running = false;
+    m_soundThread.join();
+
+    auto err = Pa_StopStream(playbackStream);
+    if (err != paNoError)
+        throw std::runtime_error("PortAudio error: " + std::string(Pa_GetErrorText(err)));
+    err = Pa_StopStream(captureStream);
+    if (err != paNoError)
+        throw std::runtime_error("PortAudio error: " + std::string(Pa_GetErrorText(err)));
+
+    err = Pa_CloseStream(playbackStream);
+    if (err != paNoError)
+        throw std::runtime_error("PortAudio error: " + std::string(Pa_GetErrorText(err)));
+    err = Pa_CloseStream(captureStream);
+    if (err != paNoError)
+        throw std::runtime_error("PortAudio error: " + std::string(Pa_GetErrorText(err)));
+
+    opus_encoder_destroy(encoder);
+    opus_decoder_destroy(decoder);
+    Pa_Terminate();
 }
 
 } // namespace gengine::system::driver::input
