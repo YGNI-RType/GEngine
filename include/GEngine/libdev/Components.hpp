@@ -22,7 +22,7 @@ using HitBoxCircle3D = gengine::component::HitBoxCircle2D;
 using SpanLife = gengine::component::SpanLife;
 
 using Transform2D = gengine::component::Transform2D;
-using Transform2D = gengine::component::Transform2D;
+using Transform3D = gengine::component::Transform3D;
 
 using Velocity2D = gengine::component::Velocity2D;
 using Velocity3D = gengine::component::Velocity3D;
@@ -35,6 +35,7 @@ using Acceleration2D = gengine::component::Acceleration2D;
 #include "GEngine/libdev/components/driver/output/Shape.hpp"
 #include "GEngine/libdev/components/driver/output/Sprite.hpp"
 #include "GEngine/libdev/components/driver/output/Text.hpp"
+#include "GEngine/libdev/components/driver/output/Model.hpp"
 
 namespace geg::component::io {
 using AnimationTrack = gengine::component::driver::output::AnimationTrack;
@@ -47,6 +48,7 @@ using Circle = gengine::component::driver::output::Circle;
 using Rectangle = gengine::component::driver::output::Rectangle;
 
 using Sprite = gengine::component::driver::output::Sprite;
+using Model = gengine::component::driver::output::Model;
 
 using Text = gengine::component::driver::output::Text;
 } // namespace geg::component::io

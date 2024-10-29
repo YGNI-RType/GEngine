@@ -21,7 +21,7 @@ void RenderWindow::init(void) {
 }
 
 void RenderWindow::onStartEngine(gengine::system::event::StartEngine &e) {
-    SetTraceLogLevel(LOG_WARNING);
+    SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT); // TODO FLAG_WINDOW_RESIZABLE
     InitWindow(m_width, m_height, m_title.c_str());
     SetWindowMonitor(0);

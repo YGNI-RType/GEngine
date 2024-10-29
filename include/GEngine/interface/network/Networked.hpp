@@ -52,6 +52,9 @@ public:
         Network::NET::initClient();
         m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
         m_local.registerSystem<gengine::interface::network::system::ClientServer>();
+        auto &em = Network::NET::getEventManager();
+        em.addEvent(Network::Event::CONNECT, Network::Event::ConnectInfo("127.0.0.1", 4243));
+
 #endif
         Network::NET::start();
 

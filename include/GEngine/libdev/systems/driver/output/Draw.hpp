@@ -31,7 +31,7 @@
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
 
 namespace gengine::system::driver::output {
-class Draw2D : public gengine::System<Draw2D, component::driver::output::Drawable>, public LocalSystem {
+class Draw : public gengine::System<Draw, component::driver::output::Drawable>, public LocalSystem {
 public:
     Draw(const Color &clear = WHITE);
 
@@ -81,7 +81,7 @@ public:
     void onDraw(gengine::system::event::Draw &e);
 };
 
-class DrawModel : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D, ModelManager> {
+class DrawModel : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D, ModelManager>, public LocalSystem {
 public:
     void init(void) override;
 

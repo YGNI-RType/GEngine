@@ -20,7 +20,7 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 namespace gengine::system::driver::output {
-class ModelManager : public gengine::System<ModelManager> {
+class ModelManager : public gengine::System<ModelManager>, public LocalSystem {
 public:
     ModelManager(const std::string &folder);
     void init(void) override;
