@@ -41,11 +41,6 @@ void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
         size_t bufferSize = msg.getSize() - readCount;
         msg.readData(buffer.data(), readCount, bufferSize);
 
-        // Compute the hash of the buffer content
-        std::hash<std::string> hasher;
-        size_t bufferHash = hasher(std::string(buffer.begin(), buffer.begin() + bufferSize));
-        std::cout << "encoded hash: " << bufferHash << std::endl;
-
         if (msgSend.getSize() + sizeof(Network::UDPG_VoIPSegment) + bufferSize > 1400) { /* this shit is too big, sending the actual n=message now */
             udpMsgs.push_back(msgSend);
             msgSend = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);

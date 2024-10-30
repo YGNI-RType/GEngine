@@ -44,8 +44,8 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
     auto volumeMultiplier = voipHandler->getVolume();
 
     /* reduces the volume */
-    // for (size_t i = 0; i < std::min(buffer.size(), framesPerBuffer); ++i)
-    //     buffer[i] *= volumeMultiplier;
+    for (size_t i = 0; i < std::min(buffer.size(), static_cast<size_t>(framesPerBuffer)); ++i)
+        buffer[i] *= volumeMultiplier;
 
     if (buffer.size() < framesPerBuffer) {
         std::fill(output, output + framesPerBuffer, 0.0f);
@@ -53,9 +53,7 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
     }
 
     std::copy(buffer.begin(), buffer.begin() + framesPerBuffer, output);
-    std::cout << "old buffersize: " << buffer.size() << std::endl;
     buffer.erase(buffer.begin(), buffer.begin() + framesPerBuffer);
-    std::cout << "buffersize: " << buffer.size() << std::endl;
     return paContinue;
 }
 
@@ -110,19 +108,6 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
         if (!client.popIncommingData(msg, readCount, false))
             break;
 
-        /*
-        Todo, the sv_voip shyuld have segments with:
-        uint16_t index of player (tbd the size, max is 4 lol)
-        uint16_t size of the data
-        .... data
-
-        the size is not more than 1400 bytes
-        tbd : should the data be a full opus frame or having some fragments is good ?
-        Will opus know where a frame starts and don't advance ?
-        appparently it's ok, just keep the rest inside the buffer, the decoded goes directly to the port audio output
-        buffer
-        */
-
         do {
             Network::UDPG_VoIPSegment segment;
             msg.readContinuousData(segment, readCount);
@@ -147,20 +132,9 @@ void VoIPAudio::processSoundInput(void) {
 
     while (m_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (!m_enabled || m_inputBuffer.empty()) {
-            // if (Pa_IsStreamActive(playbackStream)) {
-            //     auto paErr = Pa_StopStream(playbackStream);
-            //     if (paErr != paNoError)
-            //         throw std::runtime_error("PortAudio Stop stream error: " + std::string(Pa_GetErrorText(paErr)));
-            // }
+        if (!m_enabled || m_inputBuffer.empty())
             continue;
-        }
 
-        // if (!Pa_IsStreamActive(playbackStream)) {
-        //     auto paErr = Pa_StartStream(playbackStream);
-        //     if (paErr != paNoError)
-        //         throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
-        // }
         std::vector<uint8_t> encodedData;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -175,11 +149,6 @@ void VoIPAudio::processSoundInput(void) {
             std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
             continue;
         }
-
-        // Hash the decodedBuffer data
-        // std::hash<std::string> hasher;
-        // size_t hashValue = hasher(std::string(reinterpret_cast<char*>(decodedBuffer.data()), decodedBuffer.size() * sizeof(float)));
-        // std::cout << "Hash of decoded buffer: " << hashValue << std::endl;
 
         // Add decoded audio to playback buffer
         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
