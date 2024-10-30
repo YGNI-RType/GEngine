@@ -205,7 +205,7 @@ void VoIPAudio::setVolume(float wantedVolume, bool relative) {
         volume += volume;
         volume = CF_NET_CLAMP(volume, 0.0f, 1.0f);
     } else
-        volume = volume;
+        volume = wantedVolume;
 }
 
 } // namespace gengine::system::driver::output
