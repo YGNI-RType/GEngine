@@ -122,7 +122,7 @@ public:
         if (m_curSize + offset + sizeof(T) > maxSz)
             return;
 
-        std::memcpy(myData + m_curSize + offset, &data, sizeof(T));
+        std::memcpy(myData + m_curSize + offset, (void *)&data, sizeof(T));
         m_curSize += sizeof(T);
     }
 

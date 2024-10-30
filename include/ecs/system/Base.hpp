@@ -44,6 +44,9 @@ public:
     T &getSystem(void);
 
     template <typename T>
+    bool hasSystem(void);
+
+    template <typename T>
     component::SparseArray<T> &getComponents(void);
 
     template <typename T>
