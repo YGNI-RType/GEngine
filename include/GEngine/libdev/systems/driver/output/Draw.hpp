@@ -81,7 +81,6 @@ public:
     void onDraw(gengine::system::event::Draw &e);
 };
 
-
 class DrawModel
     : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D, ModelManager>,
       public LocalSystem {
