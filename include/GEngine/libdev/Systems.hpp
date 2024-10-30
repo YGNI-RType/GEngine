@@ -28,6 +28,9 @@ using Motion2D = gengine::system::Motion2D;
 using Motion3D = gengine::system::Motion3D;
 
 using CLI = gengine::system::CLI;
+
+using MotionAcceleration2D = gengine::system::MotionAcceleration2D;
+using MotionAcceleration3D = gengine::system::MotionAcceleration3D;
 } // namespace geg::system
 
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
@@ -47,7 +50,7 @@ using MouseCatcher = gengine::system::driver::input::MouseCatcher;
 using AnimationManager = gengine::system::driver::output::AnimationManager;
 using Animate = gengine::system::driver::output::Animate;
 
-using Draw2D = gengine::system::driver::output::Draw2D;
+using Draw = gengine::system::driver::output::Draw;
 using DrawSprite = gengine::system::driver::output::DrawSprite;
 using DrawText = gengine::system::driver::output::DrawText;
 using DrawRectangle = gengine::system::driver::output::DrawRectangle;

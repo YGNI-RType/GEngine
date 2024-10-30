@@ -16,12 +16,14 @@
 
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/driver/output/Drawable.hpp"
+#include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "GEngine/libdev/components/driver/output/Shape.hpp"
 #include "GEngine/libdev/components/driver/output/Sprite.hpp"
 #include "GEngine/libdev/components/driver/output/Text.hpp"
 
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/driver/output/FontManager.hpp"
+#include "GEngine/libdev/systems/driver/output/ModelManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
 #include "GEngine/libdev/systems/events/Native.hpp"
@@ -29,9 +31,9 @@
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
 
 namespace gengine::system::driver::output {
-class Draw2D : public gengine::System<Draw2D, component::driver::output::Drawable>, public LocalSystem {
+class Draw : public gengine::System<Draw, component::driver::output::Drawable>, public LocalSystem {
 public:
-    Draw2D(const Color &clear = WHITE);
+    Draw(const Color &clear = WHITE);
 
     void init(void) override;
 
@@ -77,5 +79,17 @@ public:
     void init(void) override;
 
     void onDraw(gengine::system::event::Draw &e);
+};
+
+class DrawModel
+    : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D, ModelManager>,
+      public LocalSystem {
+public:
+    void init(void) override;
+
+    void onDraw(gengine::system::event::Draw &e);
+    // Camera camera = {
+    //     (Vector3){-2.12, 5.90, 3.29}, (Vector3){0.93, 3.71, 1.94}, {0.0f, 1.0f, 0.0f}, 75.f, CAMERA_PERSPECTIVE};
+    Camera camera = {{0, 1.7, 0}, {0, 0, 0}, {0.0f, 1.0f, 0.0f}, 75.f, CAMERA_PERSPECTIVE};
 };
 } // namespace gengine::system::driver::output
