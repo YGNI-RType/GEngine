@@ -38,4 +38,10 @@ public:
     void init(void);
     void onGameLoop(event::GameLoop &);
 };
+
+class MotionAcceleration3D : public System<MotionAcceleration3D, component::Velocity3D, component::Acceleration3D> {
+public:
+    void init(void);
+    void onGameLoop(event::GameLoop &);
+};
 } // namespace gengine::system

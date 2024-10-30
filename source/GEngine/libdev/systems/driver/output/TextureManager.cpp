@@ -42,7 +42,7 @@ void TextureManager::onStopEngine(gengine::system::event::StopEngine &e) {
 const Texture &TextureManager::get(const std::string &path) {
     const auto &texture = m_textureTable.find(path);
     if (texture == m_textureTable.cend())
-        THROW_ERROR("Out of range: This texture does not exist.");
+        THROW_ERROR("Out of range: This texture does not exist. PATH: " + path);
 
     return texture->second;
 }

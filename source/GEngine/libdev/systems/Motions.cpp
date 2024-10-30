@@ -49,4 +49,19 @@ void MotionAcceleration2D::onGameLoop(event::GameLoop &e) {
         velocity.y += acceleration.y;
     }
 }
+
+void MotionAcceleration3D::init(void) {
+    subscribeToEvent<event::GameLoop>(&MotionAcceleration3D::onGameLoop);
+}
+
+void MotionAcceleration3D::onGameLoop(event::GameLoop &e) {
+    auto &velocities = getComponents<component::Velocity3D>();
+    auto &accelerations = getComponents<component::Acceleration3D>();
+
+    for (auto [entity, velocity, acceleration] : Zip(velocities, accelerations)) {
+        velocity.x += acceleration.x;
+        velocity.y += acceleration.y;
+        velocity.z += acceleration.z;
+    }
+}
 } // namespace gengine::system
