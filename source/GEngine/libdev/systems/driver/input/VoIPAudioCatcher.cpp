@@ -8,8 +8,8 @@
 #include "GEngine/libdev/systems/driver/input/VoIPAudioCatcher.hpp"
 
 #include "GEngine/net/msg.hpp"
-#include "GEngine/net/structs/msg_udp_structs.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/net/structs/msg_udp_structs.hpp"
 
 #include <opus/opus.h>
 #include <portaudio.h>
@@ -69,10 +69,10 @@ void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
     if (m_captureBuffer.empty())
         return;
 
-    Network::UDPMessage msg(Network::UDPMessage::COMPRESSED, Network::CL_VOIP);
-    msg.startCompressingSegment(false);
+    Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_VOIP);
+    // msg.startCompressingSegment(false);
     msg.appendData((const void *)m_captureBuffer.data(), CF_NET_MIN(1400, m_captureBuffer.size()));
-    msg.stopCompressingSegment(false);
+    // msg.stopCompressingSegment(false);
 
     Network::NET::getClient().pushData(msg);
 

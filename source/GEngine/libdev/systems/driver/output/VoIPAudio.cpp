@@ -11,6 +11,7 @@
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
+#include <algorithm>
 #include <opus/opus.h>
 #include <portaudio.h>
 
@@ -94,7 +95,7 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
         size_t readCount = 0;
 
         /* todo : not compressedsince segmented is hard */
-        auto msg = Network::UDPMessage(0, Network::SV_VOIP);
+        auto msg = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);
         if (!client.popIncommingData(msg, readCount, false))
             break;
 
@@ -188,4 +189,4 @@ void VoIPAudio::setVolume(float wantedVolume, bool relative) {
         volume = volume;
 }
 
-} // namespace gengine::system::driver::input
+} // namespace gengine::system::driver::output

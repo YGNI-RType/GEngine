@@ -27,10 +27,6 @@
 
 #define MAX_SNAPSHOT 60
 
-namespace Network {
-class NetClient;
-} // namespace Network
-
 namespace gengine::interface::network::system {
 
 class Snapshot : public System<Snapshot, component::NetSend, interface::component::RemoteLocal,

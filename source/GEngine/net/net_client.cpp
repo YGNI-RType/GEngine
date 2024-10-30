@@ -83,13 +83,11 @@ bool NetClient::handleClientDatagram(SocketUDP &socket, UDPMessage &msg) {
     if (!m_channel.isUDPEnabled() || !m_channel.readDatagram(socket, msg, readOffset))
         return false;
 
-    if (msg.shouldAck())
-        // std::cout << "SV: client just sent UDP specific message" << std::endl;
-        switch (msg.getType()) {
-        default:
-            m_state = CS_ACTIVE;
-            return pushIncommingData(msg, readOffset);
-        }
+    switch (msg.getType()) {
+    default:
+        m_state = CS_ACTIVE;
+        return pushIncommingData(msg, readOffset);
+    }
     return false;
 }
 
