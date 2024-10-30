@@ -13,6 +13,11 @@
 #define DEFAULT_SPEED 0.06
 
 namespace rtype::component {
+enum class PlayerState {
+    WALKING,
+    RUNNING,
+    IDLING,
+};
 struct Player : public gengine::Component<Player> {
     float speed;
 

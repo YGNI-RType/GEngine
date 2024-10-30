@@ -22,11 +22,11 @@ void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
 
     // Player Direction
     const Vector2 mouseDelta = GetMouseDelta();
-    // DisableCursor();
+    // DisableCursor(); //TODO Debug this (trying to hide the cursor)
     // SetMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gengine::Vect3 rotation = {0, 0, 0};
     if (mouseDelta.x != 0.0f)
-        rotation.z += MOUSE_SENSITIVITY * mouseDelta.x;
+        rotation.y += MOUSE_SENSITIVITY * mouseDelta.x;
     publishEvent<event::Rotation>(rotation);
 }
 

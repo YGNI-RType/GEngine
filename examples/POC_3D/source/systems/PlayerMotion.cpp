@@ -22,7 +22,6 @@ void PlayerMotion::init(void) {
 }
 
 void PlayerMotion::onGameLoop(gengine::system::event::GameLoop &e) {
-
 }
 
 void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Movement> &e) {
@@ -30,52 +29,56 @@ void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Move
     auto &transforms = getComponents<gengine::component::Transform3D>();
     auto &players = getComponents<component::Player>();
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
+    auto &models = getComponents<gengine::component::driver::output::Model>();
 
     for (auto [entity, remote, player, velocity, transform] : gengine::Zip(remotes, players, velocities, transforms)) {
         if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
             continue;
-        // Calculate the direction based on the player's rotation (assuming yaw affects forward/backward movement)
-        float yawRadians = (transform.rotation.z - 90) * 3.14f / 180.f;  // Convert to radians
-        gengine::Vect3 forward = {cos(yawRadians), 0, -sin(yawRadians)}; // Forward direction
-        gengine::Vect3 right = {sin(yawRadians), 0, cos(yawRadians)};    // Right direction
+        float yawRadians = (transform.rotation.y + 90) * 3.14f / 180.f;
+        gengine::Vect3 forward = {cos(yawRadians), 0, -sin(yawRadians)};
+        gengine::Vect3 right = {sin(yawRadians), 0, cos(yawRadians)};
 
         // Handle movement input
         switch (e->state) {
         case event::Movement::LEFT:
-            velocity = {-player.speed * right.x, 0.f, -player.speed * right.z}; // Move left
+            velocity = {-player.speed * right.x, 0.f, -player.speed * right.z};
             break;
         case event::Movement::RIGHT:
-            velocity = {player.speed * right.x, 0, player.speed * right.z}; // Move right
+            velocity = {player.speed * right.x, 0, player.speed * right.z};
             break;
         case event::Movement::FWD:
-            velocity = {player.speed * forward.x, 0.f, player.speed * forward.z}; // Move forward
-            std::cout << "Velocity: " << velocity.x << " " << velocity.y << " " << velocity.z << std::endl;
+            velocity = {player.speed * forward.x, 0.f, player.speed * forward.z};
             break;
         case event::Movement::BCK:
-            velocity = {-player.speed * forward.x, 0, -player.speed * forward.z}; // Move backward
+            velocity = {-player.speed * forward.x, 0, -player.speed * forward.z};
             break;
         case event::Movement::FWD_RIGHT:
             velocity = {player.speed * (forward.x + right.x) / sqrt(2.f), 0,
-                        player.speed * (forward.z + right.z) / sqrt(2.f)}; // Move forward-right
+                        player.speed * (forward.z + right.z) / sqrt(2.f)};
             break;
         case event::Movement::FWD_LEFT:
             velocity = {player.speed * (forward.x - right.x) / sqrt(2.f), 0,
-                        player.speed * (forward.z - right.z) / sqrt(2.f)}; // Move forward-left
+                        player.speed * (forward.z - right.z) / sqrt(2.f)};
             break;
         case event::Movement::BCK_RIGHT:
             velocity = {-player.speed * (forward.x - right.x) / sqrt(2.f), 0,
-                        -player.speed * (forward.z - right.z) / sqrt(2.f)}; // Move backward-right
+                        -player.speed * (forward.z - right.z) / sqrt(2.f)};
             break;
         case event::Movement::BCK_LEFT:
             velocity = {-player.speed * (forward.x + right.x) / sqrt(2.f), 0,
-                        -player.speed * (forward.z + right.z) / sqrt(2.f)}; // Move backward-left
+                        -player.speed * (forward.z + right.z) / sqrt(2.f)};
             break;
         case event::Movement::STANDING:
-            velocity = {0, 0, 0}; // Stop moving
+            velocity = {0, 0, 0};
             break;
         }
-
-        
+        if (hasSystem<gengine::system::driver::output::DrawModel>()) {
+            auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
+            draw.camera.position.x = transform.pos.x - forward.x * 2;
+            draw.camera.position.z = transform.pos.z - forward.z * 2;
+            draw.camera.target.x = transform.pos.x + forward.x * 3;
+            draw.camera.target.z = transform.pos.z + forward.z * 3;
+        }
     }
 }
 

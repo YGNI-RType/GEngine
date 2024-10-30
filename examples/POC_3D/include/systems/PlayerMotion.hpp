@@ -13,6 +13,7 @@
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/Velocities.hpp"
 #include "GEngine/libdev/components/driver/output/Animation.hpp"
+#include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "components/Player.hpp"
 
 #include "GEngine/libdev/System.hpp"
@@ -21,16 +22,17 @@
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
 
+#include "GEngine/libdev/systems/driver/output/Draw.hpp"
+
 namespace rtype::system {
 class PlayerMotion
     : public gengine::System<PlayerMotion, gengine::interface::component::RemoteLocal, gengine::component::Velocity3D,
-                             gengine::component::Transform3D, component::Player> {
+                             gengine::component::driver::output::Model, gengine::component::Transform3D,
+                             component::Player, gengine::system::driver::output::DrawModel> {
 public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
     void movePlayer(gengine::interface::event::SharedEvent<event::Movement> &e);
     void rotatePlayer(gengine::interface::event::SharedEvent<event::Rotation> &e);
-private:
-    // Camera camera = 
 };
 } // namespace rtype::system
