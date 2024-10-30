@@ -115,7 +115,7 @@ public:
      * It also registers the necessary game engine elements by calling the registerElements method.
      */
     static void init(int size, const char **argv) {
-        std::call_once(initFlag, [size, argv] () {
+        std::call_once(initFlag, [size, argv]() {
             instance.reset(new GEngine());
             instance->getLocal().setParams(argv, size);
             instance->getRemote().setParams(argv, size);

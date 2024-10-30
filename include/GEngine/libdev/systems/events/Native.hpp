@@ -13,13 +13,13 @@
 
 #include "GEngine/libdev/System.hpp"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace gengine::system::event {
 struct StartEngine : public Event {
     StartEngine(std::vector<std::string> &params)
-    : params(params) {
+        : params(params) {
     }
     std::vector<std::string> params;
 };
