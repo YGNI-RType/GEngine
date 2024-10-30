@@ -8,6 +8,7 @@
 #pragma once
 
 #include "GEngine/libdev/systems/AutoKiller.hpp"
+#include "GEngine/libdev/systems/CLI.hpp"
 #include "GEngine/libdev/systems/Collisions.hpp"
 #include "GEngine/libdev/systems/Logger.hpp"
 #include "GEngine/libdev/systems/MainLoop.hpp"
@@ -25,6 +26,9 @@ using AutoMainLoop = gengine::system::AutoMainLoop;
 
 using Motion2D = gengine::system::Motion2D;
 using Motion3D = gengine::system::Motion3D;
+
+using CLI = gengine::system::CLI;
+
 using MotionAcceleration2D = gengine::system::MotionAcceleration2D;
 using MotionAcceleration3D = gengine::system::MotionAcceleration3D;
 } // namespace geg::system

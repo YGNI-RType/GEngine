@@ -24,7 +24,7 @@ void BaseEngine::compute(void) {
 }
 
 void BaseEngine::start(void) {
-    m_ecs.publishEvent(system::event::StartEngine());
+    m_ecs.publishEvent(system::event::StartEngine(params));
 }
 
 const BaseEngine::world_t &BaseEngine::getWorld(void) {
@@ -33,5 +33,12 @@ const BaseEngine::world_t &BaseEngine::getWorld(void) {
 
 void BaseEngine::setFirstEntity(ecs::entity::Entity start) {
     m_ecs.setFirstEntity(start);
+}
+
+void BaseEngine::setParams(const char **argv, int size) {
+    if (!argv)
+        return;
+    for (int i = 0; i < size; i++)
+        params.emplace_back(argv[i]);
 }
 } // namespace gengine

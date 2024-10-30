@@ -2,10 +2,10 @@
 ** ════════════════════════════════════════════════════════════════════════════
 **                           GEngine (libdev) Event
 ** ════════════════════════════════════════════════════════════════════════════
-**  File        : Native.hpp
-**  Create at   : 2024-10-15 05:22
-**  Author      : AUTHOR
-**  Description : These events are published natively by the engine itself.
+**  File        : CLI.hpp
+**  Create at   : 2024-10-28 16:52
+**  Author      : b3w
+**  Description : DESCRIPTION
 ** ════════════════════════════════════════════════════════════════════════════
 */
 
@@ -13,15 +13,12 @@
 
 #include "GEngine/libdev/System.hpp"
 
-#include <string>
-#include <vector>
-
 namespace gengine::system::event {
-struct StartEngine : public Event {
-    StartEngine(std::vector<std::string> &params)
-        : params(params) {
+struct CLINewInput : public gengine::Event {
+    CLINewInput(std::vector<std::string> &&prompt)
+        : prompt(prompt) {
     }
-    std::vector<std::string> params;
+
+    std::vector<std::string> prompt;
 };
-struct StopEngine : public Event {};
 } // namespace gengine::system::event

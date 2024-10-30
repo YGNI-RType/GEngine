@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "GEngine/libdev/systems/events/CLI.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Log.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
@@ -23,6 +24,8 @@ using MainLoop = gengine::system::event::MainLoop;
 using Log = gengine::system::event::Log;
 
 using Collision = gengine::system::event::Collision;
+
+using CLINewInput = gengine::system::event::CLINewInput;
 } // namespace geg::event
 
 #include "GEngine/libdev/systems/events/driver/input/Keyboard.hpp"
