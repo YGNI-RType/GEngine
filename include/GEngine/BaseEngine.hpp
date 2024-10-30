@@ -37,8 +37,11 @@ public:
 
     void setFirstEntity(ecs::entity::Entity start);
 
+    void setParams(const char **argv, int size);
+
 private:
     ecs::ECS m_ecs;
+    std::vector<std::string> params;
 };
 } // namespace gengine
 
