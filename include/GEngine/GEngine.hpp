@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "GEngine/libdev/System.hpp"
+#include "GEngine/BaseEngine.hpp"
 
 /**
  * @brief Registry class for managing components and systems registration.
@@ -98,6 +99,8 @@ void GEngineDeclareSystems(Registry *r);
  * @param r Pointer to the Registry instance for registering components and systems.
  */
 void GEngineDeclareEvents(Registry *r);
+
+char *GEngineDeclareGameSignature(void);
 }
 
 /**
@@ -212,3 +215,11 @@ private:
 // Initialize static members
 // std::unique_ptr<GEngine> GEngine::instance = nullptr;
 // std::once_flag GEngine::initFlag;
+
+#include <cstdlib>
+#include <cstring>
+
+#define GENGINE_DECLARE_GAME(game_name)     \
+    char *GEngineDeclareGameSignature(void) {  \
+        return strdup(game_name);           \
+    }
