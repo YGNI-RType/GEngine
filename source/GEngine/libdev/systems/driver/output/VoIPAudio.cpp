@@ -100,6 +100,7 @@ void VoIPAudio::init(void) {
 void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
     auto &client = Network::NET::getClient();
     size_t nbPackets = client.getSizeIncommingData(Network::SV_VOIP, false);
+    std::vector<std::vector<uint8_t>> tempbuffer;
     for (size_t i = 0; i < nbPackets; i++) {
         size_t readCount = 0;
 
@@ -118,40 +119,56 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
             std::vector<uint8_t> encodedData(dataSize);
             msg.readData(encodedData.data(), readCount, dataSize);
 
-            {
-                std::lock_guard<std::mutex> lock(m_mutex);
-                m_inputBuffer.push(encodedData);
-            }
+            tempbuffer.push_back(encodedData);
         } while (readCount != msg.getSize());
+
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_inputBuffer.push(tempbuffer);
+            tempbuffer.clear();
+        }
     }
 }
 
 /* This code is only run by the sound thread */
 void VoIPAudio::processSoundInput(void) {
-    std::vector<float> decodedBuffer(FRAME_SIZE);
-
     while (m_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         if (!m_enabled || m_inputBuffer.empty())
             continue;
 
-        std::vector<uint8_t> encodedData;
+        std::vector<std::vector<uint8_t>> vecs;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            encodedData = m_inputBuffer.front();
+            vecs = m_inputBuffer.front();
             m_inputBuffer.pop();
         }
 
-        // Encode captured audio using Opus
-        int decodedSize =
-            opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
-        if (decodedSize < 0) {
-            std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
-            continue;
+
+        std::vector<float> finalBuffer;
+        for (auto &encodedData : vecs) {
+            std::vector<float> decodedBuffer(FRAME_SIZE);
+            int decodedSize =
+                opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
+            if (decodedSize < 0) {
+                std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
+                continue;
+            }
+
+            if (finalBuffer.empty())
+                finalBuffer.insert(finalBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+            else {
+                std::transform(decodedBuffer.begin(), decodedBuffer.end(), finalBuffer.begin(), finalBuffer.begin(), [](float a, float b) {
+                    return (a + b) / 2.0f;
+                });
+                if (decodedBuffer.size() > finalBuffer.size())
+                    finalBuffer.insert(finalBuffer.end(), decodedBuffer.begin() + finalBuffer.size(), decodedBuffer.end());
+            }
         }
+        // Encode captured audio using Opus
 
         // Add decoded audio to playback buffer
-        m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+        m_outputBuffer.insert(m_outputBuffer.end(), finalBuffer.begin(), finalBuffer.end());
     }
 }
 

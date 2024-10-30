@@ -62,7 +62,7 @@ private:
 
     float volume = 0.8f; /* in % */
     std::vector<float> m_outputBuffer; /* otherpeoplebuffer for port sound */
-    std::queue<std::vector<uint8_t>> m_inputBuffer;
+    std::queue<std::vector<std::vector<uint8_t>>> m_inputBuffer;
 
     mutable std::mutex m_mutex;
 };
