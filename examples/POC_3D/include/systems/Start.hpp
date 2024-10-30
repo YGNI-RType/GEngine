@@ -12,9 +12,10 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
 
-namespace rtype::system {
+namespace poc3d::system {
 class Start : public gengine::System<Start, gengine::system::driver::output::TextureManager,
-                                     gengine::interface::component::RemoteLocal>, public gengine::RemoteSystem {
+                                     gengine::interface::component::RemoteLocal>,
+              public gengine::RemoteSystem {
 public:
     void init(void) override;
     void onStartEngine(gengine::system::event::StartEngine &);
@@ -24,4 +25,4 @@ public:
 private:
     size_t m_nbPlayer = 0;
 };
-} // namespace rtype::system
+} // namespace poc3d::system

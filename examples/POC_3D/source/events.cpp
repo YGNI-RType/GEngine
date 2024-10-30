@@ -15,14 +15,14 @@
 void GEngineDeclareEvents(Registry *r) {
     // r->registerSystem<
     //     gengine::interface::network::system::ClientEventPublisher<
-    //         rtype::event::Movement,
-    //         rtype::event::Shoot
+    //         poc3d::event::Movement,
+    //         poc3d::event::Shoot
     //     >
     // >();
     // r->registerSystem<
     //     gengine::interface::network::system::ServerEventReceiver<
-    //         rtype::event::Movement,
-    //         rtype::event::Shoot
+    //         poc3d::event::Movement,
+    //         poc3d::event::Shoot
     //     >
     // >();
 }

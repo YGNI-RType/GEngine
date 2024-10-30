@@ -9,7 +9,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
-namespace rtype::event {
+namespace poc3d::event {
 struct Movement : public gengine::Event {
     enum State { STANDING = 0, FWD, RIGHT, BCK, LEFT, FWD_RIGHT, FWD_LEFT, BCK_RIGHT, BCK_LEFT };
 
@@ -19,4 +19,4 @@ struct Movement : public gengine::Event {
         : state(state) {
     }
 };
-} // namespace rtype::event
+} // namespace poc3d::event

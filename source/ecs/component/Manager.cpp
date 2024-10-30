@@ -86,7 +86,7 @@ const std::type_index &component::Manager::getTypeindex(ComponentTools::componen
     for (auto &[type, tool] : m_componentToolsMap)
         if (tool.id() == id)
             return type;
-    THROW_ERROR("component id does not exist");
+    THROW_ERROR("component id {" + std::to_string(id) + "} does not exist");
 }
 component::ComponentTools::component_size_t component::Manager::getComponentSize(const std::type_index &type) const {
     return m_componentToolsMap.find(type)->second.size();

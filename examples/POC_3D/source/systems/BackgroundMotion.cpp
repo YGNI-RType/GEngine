@@ -7,7 +7,7 @@
 
 #include "systems/BackgroundMotion.hpp"
 
-namespace rtype::system {
+namespace poc3d::system {
 void BackgroundMotion::init(void) {
     // TODO replace by an other event
     // This is for update speed for simulate an hyper speed for example
@@ -35,4 +35,4 @@ void BackgroundMotion::updateBackgroundSpeed(void) {
     for (auto [entity, motion, background] : gengine::Zip(motions, backgrounds))
         motion.x = background.speed;
 }
-} // namespace rtype::system
+} // namespace poc3d::system

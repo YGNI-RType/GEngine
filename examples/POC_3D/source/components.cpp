@@ -30,8 +30,8 @@ void GEngineDeclareComponents(Registry *r) {
     r->registerComponent<geg::component::io::Text>();
     r->registerComponent<geg::component::io::Rectangle>();
 
-    r->registerComponent<rtype::component::Player>();
-    r->registerComponent<rtype::component::Background>();
+    r->registerComponent<poc3d::component::Player>();
+    r->registerComponent<poc3d::component::Background>();
 
     r->registerComponent<gengine::interface::component::RemoteLocal>();
     r->registerComponent<geg::component::network::NetSend>();

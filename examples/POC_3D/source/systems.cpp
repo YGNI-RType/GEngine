@@ -18,6 +18,7 @@
 
 #include "Constants.hpp"
 #include "systems/BackgroundMotion.hpp"
+#include "systems/Init.hpp"
 #include "systems/InputsToGameEvents.hpp"
 #include "systems/PlayerMotion.hpp"
 #include "systems/Start.hpp"
@@ -50,19 +51,20 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::Collision2D>();
     r->registerSystem<gengine::system::AutoKiller>();
 
-    r->registerSystem<rtype::system::InputsToGameEvents>();
-    r->registerSystem<rtype::system::Start>();
-    r->registerSystem<rtype::system::BackgroundMotion>();
-    r->registerSystem<rtype::system::PlayerMotion>();
+    r->registerSystem<poc3d::system::InputsToGameEvents>();
+    r->registerSystem<poc3d::system::Start>();
+    r->registerSystem<poc3d::system::BackgroundMotion>();
+    r->registerSystem<poc3d::system::PlayerMotion>();
+    r->registerSystem<poc3d::system::Init>();
 
     r->registerSystem<gengine::interface::system::HandleRemoteLocal>();
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        rtype::event::Movement, rtype::event::Rotation, rtype::event::Jump,
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
         gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        rtype::event::Movement, rtype::event::Rotation, rtype::event::Jump,
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
         gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓

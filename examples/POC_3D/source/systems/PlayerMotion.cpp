@@ -14,7 +14,7 @@
 
 #include <random>
 
-namespace rtype::system {
+namespace poc3d::system {
 void PlayerMotion::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&PlayerMotion::onGameLoop);
     subscribeToEvent<gengine::interface::event::SharedEvent<event::Movement>>(&PlayerMotion::movePlayer);
@@ -143,4 +143,4 @@ void PlayerMotion::moveCamera(geg::component::Transform3D &transform, gengine::V
         draw.camera.target.z = transform.pos.z + forward.z * 3;
     }
 }
-} // namespace rtype::system
+} // namespace poc3d::system

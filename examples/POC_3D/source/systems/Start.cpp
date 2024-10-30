@@ -23,7 +23,7 @@
 
 #include <random>
 
-namespace rtype {
+namespace poc3d {
 void system::Start::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&Start::onStartEngine);
     subscribeToEvent<gengine::interface::event::NewRemoteLocal>(&Start::onNewRemoteLocal);

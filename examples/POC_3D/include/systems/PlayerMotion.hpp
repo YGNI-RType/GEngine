@@ -26,11 +26,11 @@
 
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 
-namespace rtype::system {
-class PlayerMotion
-    : public gengine::System<PlayerMotion, gengine::interface::component::RemoteLocal, gengine::component::Velocity3D,
-                             gengine::component::driver::output::Model, geg::component::Transform3D, geg::component::Acceleration3D,
-                             component::Player, gengine::system::driver::output::DrawModel> {
+namespace poc3d::system {
+class PlayerMotion : public gengine::System<PlayerMotion, gengine::interface::component::RemoteLocal,
+                                            gengine::component::Velocity3D, gengine::component::driver::output::Model,
+                                            geg::component::Transform3D, geg::component::Acceleration3D,
+                                            component::Player, gengine::system::driver::output::DrawModel> {
 public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
@@ -41,4 +41,4 @@ public:
 private:
     void moveCamera(geg::component::Transform3D &transform, gengine::Vect3 &forward);
 };
-} // namespace rtype::system
+} // namespace poc3d::system

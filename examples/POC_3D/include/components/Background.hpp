@@ -11,7 +11,7 @@
 
 #define DEFAULT_BACKGROUND_SPEED 3
 
-namespace rtype::component {
+namespace poc3d::component {
 struct Background : public gengine::Component<Background> {
     float speed;
 
@@ -19,4 +19,4 @@ struct Background : public gengine::Component<Background> {
         : speed(newSpeed) {
     }
 };
-} // namespace rtype::component
+} // namespace poc3d::component

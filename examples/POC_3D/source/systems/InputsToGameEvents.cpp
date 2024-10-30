@@ -8,7 +8,7 @@
 #include "systems/InputsToGameEvents.hpp"
 #include "Constants.hpp"
 
-namespace rtype::system {
+namespace poc3d::system {
 void InputsToGameEvents::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);
     subscribeToEvent<geg::event::io::KeyWEvent>(&InputsToGameEvents::moveFwd);
@@ -134,4 +134,4 @@ void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED)
         publishEvent(event::Jump(0.12));
 }
-} // namespace rtype::system
+} // namespace poc3d::system

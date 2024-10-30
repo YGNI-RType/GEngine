@@ -9,7 +9,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
-namespace rtype::event {
+namespace poc3d::event {
 struct Rotation : public gengine::Event {
     gengine::Vect3 move = {0, 0, 0};
 
@@ -17,4 +17,4 @@ struct Rotation : public gengine::Event {
         : move(move) {
     }
 };
-} // namespace rtype::event
+} // namespace poc3d::event

@@ -24,9 +24,9 @@ void ModelManager::onStartEngine(gengine::system::event::StartEngine &e) {
 
             // Check if the file has a valid image extension
             // if (isValidImageFile(filePath)) {
-            std:: cout << "begin" << std::endl;
+            std::cout << "begin" << std::endl;
             Model model = LoadModel(filePath.c_str());
-            std:: cout << "end" << std::endl;
+            std::cout << "end" << std::endl;
             std::string path = std::filesystem::relative(entry.path(), m_folder).string();
             m_modelTable.emplace(path, model);
             // }
@@ -35,15 +35,14 @@ void ModelManager::onStartEngine(gengine::system::event::StartEngine &e) {
 }
 
 void ModelManager::onStopEngine(gengine::system::event::StopEngine &e) {
-    for (auto &[path, model] : m_modelTable) {
+    for (auto &[path, model] : m_modelTable)
         UnloadModel(model);
-    }
 }
 
 const Model &ModelManager::get(const std::string &path) {
     const auto &model = m_modelTable.find(path);
     if (model == m_modelTable.cend())
-        THROW_ERROR("Out of range: This model does not exist.");
+        THROW_ERROR("Out of range: This model does not exist. PATH: " + path);
 
     return model->second;
 }

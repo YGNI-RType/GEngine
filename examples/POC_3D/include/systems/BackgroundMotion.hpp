@@ -14,7 +14,7 @@
 
 #include "components/Background.hpp"
 
-namespace rtype::system {
+namespace poc3d::system {
 class BackgroundMotion : public gengine::System<BackgroundMotion, gengine::component::Velocity2D,
                                                 gengine::component::Transform2D, component::Background> {
 public:
@@ -22,4 +22,4 @@ public:
     void onGameLoop(gengine::system::event::GameLoop &);
     void updateBackgroundSpeed(void);
 };
-} // namespace rtype::system
+} // namespace poc3d::system

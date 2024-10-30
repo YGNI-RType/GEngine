@@ -9,7 +9,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
-namespace rtype::event {
+namespace poc3d::event {
 struct Jump : public gengine::Event {
     float strength;
 
@@ -17,4 +17,4 @@ struct Jump : public gengine::Event {
         : strength(strength) {
     }
 };
-} // namespace rtype::event
+} // namespace poc3d::event

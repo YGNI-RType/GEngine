@@ -32,11 +32,11 @@ using Acceleration3D = gengine::component::Acceleration3D;
 
 #include "GEngine/libdev/components/driver/output/Animation.hpp"
 #include "GEngine/libdev/components/driver/output/Drawable.hpp"
+#include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
 #include "GEngine/libdev/components/driver/output/Shape.hpp"
 #include "GEngine/libdev/components/driver/output/Sprite.hpp"
 #include "GEngine/libdev/components/driver/output/Text.hpp"
-#include "GEngine/libdev/components/driver/output/Model.hpp"
 
 namespace geg::component::io {
 using AnimationTrack = gengine::component::driver::output::AnimationTrack;

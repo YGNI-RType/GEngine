@@ -12,7 +12,7 @@
 
 #define DEFAULT_SPEED 0.06
 
-namespace rtype::component {
+namespace poc3d::component {
 enum class PlayerState {
     WALKING,
     RUNNING,
@@ -26,4 +26,4 @@ struct Player : public gengine::Component<Player> {
     }
 };
 
-} // namespace rtype::component
+} // namespace poc3d::component

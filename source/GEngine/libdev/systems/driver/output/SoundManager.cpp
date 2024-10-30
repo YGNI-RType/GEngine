@@ -45,7 +45,7 @@ void SoundManager::onStopEngine(gengine::system::event::StopEngine &e) {
 const Sound &SoundManager::get(const std::string &path) {
     const auto &sound = m_soundTable.find(path);
     if (sound == m_soundTable.cend())
-        THROW_ERROR("Out of range: This sound does not exist.");
+        THROW_ERROR("Out of range: This sound does not exist. PATH: " + path);
 
     return sound->second;
 }
