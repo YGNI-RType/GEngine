@@ -49,10 +49,15 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
 
         auto it = m_msgs.find(msg.getType());
-        if (it == m_msgs.end() || !full())
+        if (!full())
             return pushUnsafe(msg, readcount);
 
+        if (full() && it == m_msgs.end())
+            return false; /* can't do shit, test it anyway */
+
         auto &[_, queueSegment] = *it;
+        if (queueSegment.empty())
+            return false;
 
         auto segment = queueSegment.front();
         segment.readCount = readcount;
