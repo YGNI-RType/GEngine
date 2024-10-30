@@ -21,6 +21,8 @@
 #include "components/Background.hpp"
 #include "components/Player.hpp"
 
+#include "Constants.hpp"
+
 #include <random>
 
 namespace poc3d {
@@ -31,18 +33,19 @@ void system::Start::init(void) {
 }
 
 void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
+    // Background
     spawnEntity(component::Background(), gengine::component::Transform2D({0, 0}, {3.48, 3.48}),
                 gengine::component::Velocity2D(-DEFAULT_BACKGROUND_SPEED, 0),
                 gengine::component::driver::output::Drawable(0),
                 gengine::component::driver::output::Sprite("background.png", Rectangle{0, 0, 1120, 207}, WHITE),
                 geg::component::network::NetSend());
-
     spawnEntity(component::Background(), gengine::component::Transform2D({1119 * 3.48, 0}, {3.48, 3.48}),
                 gengine::component::Velocity2D(-DEFAULT_BACKGROUND_SPEED, 0),
                 gengine::component::driver::output::Drawable(0),
                 gengine::component::driver::output::Sprite("background.png", Rectangle{0, 0, 1120, 207}, WHITE),
                 geg::component::network::NetSend());
 
+    // 3D Scene
     spawnEntity(gengine::component::driver::output::Model("gmApart.glb"),
                 gengine::component::driver::output::Drawable(1),
                 gengine::component::Transform3D({0.0f, 0.0f, 0.0f}, {1, 1, 1}, {-90.f, 0.f, 90.f}),

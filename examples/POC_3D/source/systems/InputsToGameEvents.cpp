@@ -10,14 +10,19 @@
 
 namespace poc3d::system {
 void InputsToGameEvents::init(void) {
+    // Send movements + rotation
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);
+    subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
+    // Movements
     subscribeToEvent<geg::event::io::KeyWEvent>(&InputsToGameEvents::moveFwd);
     subscribeToEvent<geg::event::io::KeyAEvent>(&InputsToGameEvents::moveLeft);
     subscribeToEvent<geg::event::io::KeySEvent>(&InputsToGameEvents::moveBck);
     subscribeToEvent<geg::event::io::KeyDEvent>(&InputsToGameEvents::moveRight);
     subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
-    subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
     subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::sprint);
+
+    subscribeToEvent<geg::event::io::KeyEEvent>(&InputsToGameEvents::guess);
+
     subscribeToEvent<geg::event::io::KeyOneEvent>(&InputsToGameEvents::setPlayerModelCoraline);
     subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelHunter);
     subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
@@ -38,6 +43,11 @@ void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
         rotation.z -= MOUSE_SENSITIVITY * mouseDelta.y;
         publishEvent<event::Rotation>(rotation);
     }
+}
+
+void InputsToGameEvents::changeCameraMode(geg::event::io::KeyF5Event &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangeCameraMode());
 }
 
 void InputsToGameEvents::moveFwd(geg::event::io::KeyWEvent &e) {
@@ -143,16 +153,16 @@ void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
         publishEvent(event::Jump(0.12));
 }
 
-void InputsToGameEvents::changeCameraMode(geg::event::io::KeyF5Event &e) {
-    if (e.state == geg::event::io::InputState::PRESSED)
-        publishEvent(event::ChangeCameraMode());
-}
-
 void InputsToGameEvents::sprint(geg::event::io::KeyLeftShiftEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED || e.state == geg::event::io::InputState::DOWN)
         publishEvent(event::Sprint(true));
     else
         publishEvent(event::Sprint(false));
+}
+
+void InputsToGameEvents::guess(geg::event::io::KeyEEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::GuessEvent());
 }
 
 void InputsToGameEvents::setPlayerModelCoraline(geg::event::io::KeyOneEvent &e) {

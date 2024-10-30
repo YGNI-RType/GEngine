@@ -13,6 +13,7 @@
 
 #include "events/ChangeCameraMode.hpp"
 #include "events/ChangePlayerModelEvent.hpp"
+#include "events/GuessEvent.hpp"
 #include "events/Jump.hpp"
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
@@ -25,14 +26,17 @@ public:
     void init(void) override;
     void sendEvents(geg::event::GameLoop &e);
 
+    void changeCameraMode(geg::event::io::KeyF5Event &e);
+
     void moveFwd(geg::event::io::KeyWEvent &e);
     void moveLeft(geg::event::io::KeyAEvent &e);
     void moveBck(geg::event::io::KeySEvent &e);
     void moveRight(geg::event::io::KeyDEvent &e);
-
     void jump(geg::event::io::KeySpaceEvent &e);
     void sprint(geg::event::io::KeyLeftShiftEvent &e);
-    void changeCameraMode(geg::event::io::KeyF5Event &e);
+
+    void guess(geg::event::io::KeyEEvent &e);
+
     void setPlayerModelCoraline(geg::event::io::KeyOneEvent &e);
     void setPlayerModelHunter(geg::event::io::KeyTwoEvent &e);
     void setPlayerModelChair(geg::event::io::KeyThreeEvent &e);
