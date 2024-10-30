@@ -107,6 +107,7 @@ private:
     bool pushIncommingDataAck(const UDPMessage &msg, size_t readCount);
     bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
+private:
     int m_challenge = -1;
 
     bool m_enabled = false;
@@ -114,7 +115,7 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 1, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 24, 1400> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 

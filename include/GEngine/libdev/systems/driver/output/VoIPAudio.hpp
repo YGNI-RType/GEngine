@@ -2,51 +2,62 @@
 ** ════════════════════════════════════════════════════════════════════════════
 **                           GEngine (libdev) System
 ** ════════════════════════════════════════════════════════════════════════════
-**  File        : VoIPAudioHandler.hpp
+**  File        : VoIPAudio.hpp
 **  Create at   : 2024-10-29 12:10
 **  Author      : AUTHOR
-**  Description : This system is dedicated to the DriverEngine, it captures the sound
-                    from the system, likely the microphone.
+**  Description : This system is dedicated to the DriverEngine, it output the sound
+                    from the system, likely the microphone of the other users.
 ** ═══════════════════════════════════════════════════════════════════════════
 */
 
 #pragma once
 
-#include "module/raylib_safe.h"
-
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
+#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include <thread>
+#include <mutex>
 #include <atomic>
 #include <vector>
 
-namespace gengine::system::driver::input {
+namespace gengine::system::driver::output {
 
-class VoIPAudioHandler : public gengine::System<VoIPAudioHandler>, public LocalSystem {
+class VoIPAudio : public gengine::System<VoIPAudio>, public LocalSystem {
 public:
-    ~VoIPAudioHandler() override;
+    ~VoIPAudio() override;
+
+    void onMainLoop(gengine::system::event::MainLoop &e);
 
     void init(void) override;
 
-    void onCapture(gengine::system::driver::input::KeyVEvent &e);
+    bool isEnabled(void) const {
+        return m_enabled;
+    }
 
-    bool isCapturing(void) {
-        return m_capturing;
+    auto &getBuffer(void) {
+        return m_outputBuffer;
     }
-    auto &getRecorderBuffer(void) {
-        return m_captureBuffer;
+
+
+    float getVolume(void) const {
+        return volume;
     }
+    void setVolume(float volume, bool relative = false);
+
 
 private:
     void processSoundInput(void);
 
-    std::atomic_bool m_capturing = false;
     std::atomic_bool m_running = false;
+    std::atomic_bool m_enabled = true;
     std::thread m_soundThread;
 
-    std::vector<float> m_captureBuffer;
+    float volume = 0.3f; /* in % */
+    std::vector<float> m_outputBuffer; /* otherpeoplebuffer for port sound */
+    std::queue<std::vector<uint8_t>> m_inputBuffer;
+
+    mutable std::mutex m_mutex;
 };
 
 } // namespace gengine::system::driver::input

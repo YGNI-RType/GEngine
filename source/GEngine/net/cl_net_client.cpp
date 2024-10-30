@@ -114,12 +114,11 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
     switch (msg.getType()) {
     case SV_SNAPSHOT:
         pushIncommingDataAck(msg, readOffset);
-        /* todo : add warning if queue il full ? */
         break;
     default:
+        pushIncommingData(msg, readOffset);
         break;
     }
-    /* todo : add things here */
     return true;
 }
 

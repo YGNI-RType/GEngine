@@ -1,0 +1,46 @@
+/*
+** ════════════════════════════════════════════════════════════════════════════
+**                           GEngine (libdev) System
+** ════════════════════════════════════════════════════════════════════════════
+**  File        : VoIPAudioHandler.hpp
+**  Create at   : 2024-10-29 12:10
+**  Author      : AUTHOR
+**  Description : This system is dedicated to the DriverEngine, it captures the sound
+                    from the system, likely the microphone.
+** ═══════════════════════════════════════════════════════════════════════════
+*/
+
+#pragma once
+
+#include "GEngine/libdev/System.hpp"
+#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
+
+#include <vector>
+
+namespace gengine::system::driver::input {
+
+class VoIPAudioCatcher : public gengine::System<VoIPAudioCatcher>, public LocalSystem {
+public:
+    ~VoIPAudioCatcher() override;
+
+    void init(void) override;
+
+    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onCapture(gengine::system::driver::input::KeyVEvent &e);
+
+    bool isCapturing(void) {
+        return m_capturing;
+    }
+    auto &getRecorderBuffer(void) {
+        return m_captureBuffer;
+    }
+
+private:
+    bool m_capturing = false;
+
+    std::vector<float> m_captureBuffer; /* your buffer */
+};
+
+} // namespace gengine::system::driver::input
