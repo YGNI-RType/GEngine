@@ -66,7 +66,7 @@ PACK(struct UDPG_FragmentHeaderTo {
 
 /* -1 is the end ! */
 PACK(struct UDPG_VoIPSegment {
-    uint16_t playerIndex;
+    __uint128_t playerIndex;
     uint16_t size;
 });
 

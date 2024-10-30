@@ -22,25 +22,30 @@ constexpr size_t FRAME_SIZE = 960;
 
 // Opus encoder and decoder
 OpusDecoder *decoder;
-PaStream *playbackStream;
+PaStream *playbackStream = nullptr;
 
 static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
                             void *userData) {
     float *output = static_cast<float *>(outputBuffer);
     VoIPAudio *voipHandler = static_cast<VoIPAudio *>(userData);
-    if (!voipHandler->isEnabled())
-        return paContinue;
 
-    auto buffer = voipHandler->getBuffer();
-    if (buffer.empty())
+    if (!voipHandler->isEnabled()) {
+        std::fill(output, output + framesPerBuffer, 0.0f);
         return paContinue;
+    }
+
+    auto &buffer = voipHandler->getBuffer();
+    if (buffer.empty()) {
+        std::fill(output, output + framesPerBuffer, 0.0f);
+        return paContinue;
+    }
 
     auto volumeMultiplier = voipHandler->getVolume();
 
     /* reduces the volume */
-    for (size_t i = 0; i < std::min(buffer.size(), framesPerBuffer); ++i)
-        buffer[i] *= volumeMultiplier;
+    // for (size_t i = 0; i < std::min(buffer.size(), framesPerBuffer); ++i)
+    //     buffer[i] *= volumeMultiplier;
 
     if (buffer.size() < framesPerBuffer) {
         std::fill(output, output + framesPerBuffer, 0.0f);
@@ -48,7 +53,9 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
     }
 
     std::copy(buffer.begin(), buffer.begin() + framesPerBuffer, output);
+    std::cout << "old buffersize: " << buffer.size() << std::endl;
     buffer.erase(buffer.begin(), buffer.begin() + framesPerBuffer);
+    std::cout << "buffersize: " << buffer.size() << std::endl;
     return paContinue;
 }
 
@@ -84,6 +91,10 @@ void VoIPAudio::init(void) {
     if (paErr != paNoError)
         throw std::runtime_error("PortAudio Open stream error: " + std::string(Pa_GetErrorText(paErr)));
 
+    paErr = Pa_StartStream(playbackStream);
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
+
     m_running = true;
     m_soundThread = std::thread([this]() { processSoundInput(); });
 }
@@ -112,16 +123,11 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
         buffer
         */
 
-        uint8_t eof = 0;
         do {
-            msg.readContinuousData(eof, readCount);
-            if (eof == -1)
-                break;
-            readCount--;
             Network::UDPG_VoIPSegment segment;
             msg.readContinuousData(segment, readCount);
 
-            size_t playerIndex = segment.playerIndex;
+            /*todo:  playerid is a array<16>, uuid some sort */
             size_t dataSize = segment.size;
 
             std::vector<uint8_t> encodedData(dataSize);
@@ -131,10 +137,7 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
                 std::lock_guard<std::mutex> lock(m_mutex);
                 m_inputBuffer.push(encodedData);
             }
-        } while (readCount == msg.getSize());
-
-        std::vector<uint8_t> encodedData(msg.getSize());
-        msg.readDataCompressed(encodedData.data(), readCount, msg.getSize());
+        } while (readCount != msg.getSize());
     }
 }
 
@@ -144,9 +147,20 @@ void VoIPAudio::processSoundInput(void) {
 
     while (m_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (!m_enabled || m_inputBuffer.empty())
+        if (!m_enabled || m_inputBuffer.empty()) {
+            // if (Pa_IsStreamActive(playbackStream)) {
+            //     auto paErr = Pa_StopStream(playbackStream);
+            //     if (paErr != paNoError)
+            //         throw std::runtime_error("PortAudio Stop stream error: " + std::string(Pa_GetErrorText(paErr)));
+            // }
             continue;
+        }
 
+        // if (!Pa_IsStreamActive(playbackStream)) {
+        //     auto paErr = Pa_StartStream(playbackStream);
+        //     if (paErr != paNoError)
+        //         throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
+        // }
         std::vector<uint8_t> encodedData;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -161,6 +175,11 @@ void VoIPAudio::processSoundInput(void) {
             std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
             continue;
         }
+
+        // Hash the decodedBuffer data
+        // std::hash<std::string> hasher;
+        // size_t hashValue = hasher(std::string(reinterpret_cast<char*>(decodedBuffer.data()), decodedBuffer.size() * sizeof(float)));
+        // std::cout << "Hash of decoded buffer: " << hashValue << std::endl;
 
         // Add decoded audio to playback buffer
         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());

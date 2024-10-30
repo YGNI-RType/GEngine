@@ -40,7 +40,7 @@ public:
 private:
     bool m_capturing = false;
 
-    std::vector<float> m_captureBuffer; /* your buffer */
+    std::vector<uint8_t> m_captureBuffer; /* your buffer */
 };
 
 } // namespace gengine::system::driver::input

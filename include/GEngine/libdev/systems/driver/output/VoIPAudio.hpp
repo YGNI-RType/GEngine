@@ -43,6 +43,12 @@ public:
     float getVolume(void) const {
         return volume;
     }
+    bool isStreaming(void) const {
+        return m_streaming;
+    }
+    void setStreaming(bool streaming) {
+        m_streaming = streaming;
+    }
     void setVolume(float volume, bool relative = false);
 
 
@@ -51,6 +57,7 @@ private:
 
     std::atomic_bool m_running = false;
     std::atomic_bool m_enabled = true;
+    std::atomic_bool m_streaming = false;
     std::thread m_soundThread;
 
     float volume = 0.3f; /* in % */

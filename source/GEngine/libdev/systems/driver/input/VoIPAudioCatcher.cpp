@@ -34,7 +34,7 @@ static int captureCallback(const void *inputBuffer, void *outputBuffer, unsigned
     std::vector<float> buffer;
     buffer.insert(buffer.end(), input, input + framesPerBuffer);
 
-    std::vector<unsigned char> encodedData(4000); // Allocate enough space for encoded data
+    std::vector<uint8_t> encodedData(4000); // Allocate enough space for encoded data
     int encodedSize = opus_encode_float(encoder, buffer.data(), FRAME_SIZE, encodedData.data(), encodedData.size());
     if (encodedSize < 0) {
         std::cerr << "Opus encoding error: " << opus_strerror(encodedSize) << std::endl;
@@ -42,7 +42,7 @@ static int captureCallback(const void *inputBuffer, void *outputBuffer, unsigned
     }
 
     voipHandler->getRecorderBuffer().insert(voipHandler->getRecorderBuffer().end(), encodedData.begin(),
-                                            encodedData.end());
+                                            encodedData.begin() + encodedSize);
     return paContinue;
 }
 
@@ -71,7 +71,7 @@ void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
 
     Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_VOIP);
     // msg.startCompressingSegment(false);
-    msg.appendData((const void *)m_captureBuffer.data(), CF_NET_MIN(1400, m_captureBuffer.size()));
+    msg.appendData((const void *)m_captureBuffer.data(), CF_NET_MIN(1400 - sizeof(Network::UDPG_NetChannelHeader), m_captureBuffer.size()));
     // msg.stopCompressingSegment(false);
 
     Network::NET::getClient().pushData(msg);
