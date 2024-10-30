@@ -7,6 +7,7 @@
 
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include <iostream>
+#include <raymath.h>
 #include <rlgl.h>
 
 namespace gengine::system::driver::output {
@@ -127,17 +128,50 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
         auto &[path, color] = models.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
         // LoadMaterials();
-        // camera.position = (Vector3){ 0.0f, 2.0f, 0.0f };    // Camera position
-        // camera.target = (Vector3){ 0.0f, 2.0f, 4.0f };      // Camera looking at point
+        // camera.position = (Vector3){0.0f, 0.0f, 0.0f}; // Camera position
+        // camera.target = (Vector3){0.0f, 0.0f, 1.0f};   // Camera looking at point
         // camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
         // camera.fovy = 60.0f;                                // Camera field-of-view Y
         // camera.projection = CAMERA_PERSPECTIVE;
         // ::Matrix
-        UpdateCamera(&camera, CAMERA_THIRD_PERSON);            // Camera projection type
+
+        //* Camera Movement
+        // UpdateCamera(&camera, CAMERA_FIRST_PERSON); // Camera projection type
+        float moveSpeedVertical = 0.05f;
+        if (IsKeyDown(KEY_SPACE)) {
+            camera.position.y += moveSpeedVertical;
+            camera.target.y += moveSpeedVertical;
+        }
+        if (IsKeyDown(KEY_LEFT_SHIFT)) {
+            camera.position.y -= moveSpeedVertical;
+            camera.target.y -= moveSpeedVertical;
+        }
+
+        ::DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
+                               std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
+                       .c_str(),
+                   10, 10, 20, WHITE);
+        ::DrawText(std::string("Camera target: " + std::to_string(camera.target.x) + " " +
+                               std::to_string(camera.target.y) + " " + std::to_string(camera.target.z))
+                       .c_str(),
+                   10, 30, 20, WHITE);
+        ::DrawText(std::string("Camera up: " + std::to_string(camera.up.x) + " " + std::to_string(camera.up.y) + " " +
+                               std::to_string(camera.up.z))
+                       .c_str(),
+                   10, 50, 20, WHITE);
+        ::DrawText(std::string("Camera fovy: " + std::to_string(camera.fovy)).c_str(), 10, 70, 20, WHITE);
+        ::DrawText(std::string("Camera projection: " + std::to_string(camera.projection)).c_str(), 10, 90, 20, WHITE);
+
         BeginMode3D(camera);
-        ::DrawModel(modelMan.get(path.c_str()), {pos.x, pos.y, pos.z}, scale.x, color);
-        // std::cout << camera.position.x << " " << camera.position.y << " " << camera.position.z << std::endl;
-        // ::DrawCircle3D({pos.x, pos.y, pos.z}, 5, {0, 0, 0}, 0.f, color);
+
+        Model model = modelMan.get(path.c_str());
+        model.transform = MatrixIdentity();
+        model.transform = MatrixMultiply(model.transform, MatrixScale(scale.x, scale.y, scale.z));
+        model.transform = MatrixMultiply(
+            model.transform, MatrixRotateXYZ({rotation.x * DEG2RAD, rotation.y * DEG2RAD, rotation.z * DEG2RAD}));
+        model.transform = MatrixMultiply(model.transform, MatrixTranslate(pos.x, pos.y, pos.z));
+
+        ::DrawModel(model, {0, 0, 0}, 1, color);
         EndMode3D();
     }
 }
