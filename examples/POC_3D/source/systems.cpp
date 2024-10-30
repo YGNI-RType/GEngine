@@ -46,6 +46,7 @@ void GEngineDeclareSystems(Registry *r) {
 
     r->registerSystem<gengine::system::Motion2D>();
     r->registerSystem<gengine::system::Motion3D>();
+    r->registerSystem<gengine::system::MotionAcceleration3D>();
     r->registerSystem<gengine::system::Collision2D>();
     r->registerSystem<gengine::system::AutoKiller>();
 
@@ -58,9 +59,11 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        rtype::event::Movement, rtype::event::Rotation, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        rtype::event::Movement, rtype::event::Rotation, rtype::event::Jump,
+        gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        rtype::event::Movement, rtype::event::Rotation, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        rtype::event::Movement, rtype::event::Rotation, rtype::event::Jump,
+        gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓
 }

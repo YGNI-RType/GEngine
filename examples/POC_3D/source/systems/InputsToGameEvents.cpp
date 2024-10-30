@@ -15,6 +15,7 @@ void InputsToGameEvents::init(void) {
     subscribeToEvent<geg::event::io::KeyAEvent>(&InputsToGameEvents::moveLeft);
     subscribeToEvent<geg::event::io::KeySEvent>(&InputsToGameEvents::moveBck);
     subscribeToEvent<geg::event::io::KeyDEvent>(&InputsToGameEvents::moveRight);
+    subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
@@ -25,9 +26,10 @@ void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
     // DisableCursor(); //TODO Debug this (trying to hide the cursor)
     // SetMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gengine::Vect3 rotation = {0, 0, 0};
-    if (mouseDelta.x != 0.0f)
-        rotation.y += MOUSE_SENSITIVITY * mouseDelta.x;
-    publishEvent<event::Rotation>(rotation);
+    if (mouseDelta.x != 0.0f) {
+        rotation.y -= MOUSE_SENSITIVITY * mouseDelta.x;
+        publishEvent<event::Rotation>(rotation);
+    }
 }
 
 void InputsToGameEvents::moveFwd(geg::event::io::KeyWEvent &e) {
@@ -126,5 +128,10 @@ event::Movement::State InputsToGameEvents::getMovementState(void) {
     default:
         return event::Movement::STANDING;
     }
+}
+
+void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::Jump(0.12));
 }
 } // namespace rtype::system

@@ -26,6 +26,7 @@ using AutoMainLoop = gengine::system::AutoMainLoop;
 using Motion2D = gengine::system::Motion2D;
 using Motion3D = gengine::system::Motion3D;
 using MotionAcceleration2D = gengine::system::MotionAcceleration2D;
+using MotionAcceleration3D = gengine::system::MotionAcceleration3D;
 } // namespace geg::system
 
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"

@@ -23,6 +23,7 @@ void GEngineDeclareComponents(Registry *r) {
     r->registerComponent<geg::component::Velocity3D>();
     r->registerComponent<geg::component::Transform2D>();
     r->registerComponent<geg::component::Transform3D>();
+    r->registerComponent<geg::component::Acceleration3D>();
     r->registerComponent<geg::component::io::Drawable>();
     r->registerComponent<geg::component::io::Sprite>();
     r->registerComponent<geg::component::io::Model>();

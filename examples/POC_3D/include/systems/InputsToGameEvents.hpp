@@ -13,6 +13,7 @@
 
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
+#include "events/Jump.hpp"
 
 namespace rtype::system {
 class InputsToGameEvents
@@ -25,6 +26,8 @@ public:
     void moveLeft(geg::event::io::KeyAEvent &e);
     void moveBck(geg::event::io::KeySEvent &e);
     void moveRight(geg::event::io::KeyDEvent &e);
+
+    void jump(geg::event::io::KeySpaceEvent &e);
 
 private:
     char m_directionBitmask = 0;

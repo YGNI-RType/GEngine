@@ -137,15 +137,15 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
 
         //* Camera Movement
         // UpdateCamera(&camera, CAMERA_FIRST_PERSON); // Camera projection type
-        float moveSpeedVertical = 0.05f;
-        if (IsKeyDown(KEY_SPACE)) {
-            camera.position.y += moveSpeedVertical;
-            camera.target.y += moveSpeedVertical;
-        }
-        if (IsKeyDown(KEY_LEFT_SHIFT)) {
-            camera.position.y -= moveSpeedVertical;
-            camera.target.y -= moveSpeedVertical;
-        }
+        // float moveSpeedVertical = 0.05f;
+        // if (IsKeyDown(KEY_SPACE)) {
+        //     camera.position.y += moveSpeedVertical;
+        //     camera.target.y += moveSpeedVertical;
+        // }
+        // if (IsKeyDown(KEY_LEFT_SHIFT)) {
+        //     camera.position.y -= moveSpeedVertical;
+        //     camera.target.y -= moveSpeedVertical;
+        // }
 
         ::DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
                                std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))

@@ -19,4 +19,15 @@ struct Acceleration2D : public Component<Acceleration2D> {
 
     bool operator==(const Acceleration2D &) const = default;
 };
+
+struct Acceleration3D : public Component<Acceleration3D> {
+    float x, y, z;
+    Acceleration3D(float x, float y, float z)
+        : x(x)
+        , y(y)
+        , z(z) {
+    }
+
+    bool operator==(const Acceleration3D &) const = default;
+};
 } // namespace gengine::component

@@ -27,6 +27,7 @@ using Transform3D = gengine::component::Transform3D;
 using Velocity2D = gengine::component::Velocity2D;
 using Velocity3D = gengine::component::Velocity3D;
 using Acceleration2D = gengine::component::Acceleration2D;
+using Acceleration3D = gengine::component::Acceleration3D;
 } // namespace geg::component
 
 #include "GEngine/libdev/components/driver/output/Animation.hpp"
