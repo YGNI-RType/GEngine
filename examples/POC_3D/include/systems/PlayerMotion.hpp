@@ -20,9 +20,12 @@
 #include "GEngine/libdev/System.hpp"
 
 #include "GEngine/interface/events/SharedEvent.hpp"
+
+#include "events/ChangeCameraMode.hpp"
 #include "events/Jump.hpp"
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
+#include "events/Sprint.hpp"
 
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 
@@ -37,6 +40,8 @@ public:
     void movePlayer(gengine::interface::event::SharedEvent<event::Movement> &e);
     void rotatePlayer(gengine::interface::event::SharedEvent<event::Rotation> &e);
     void jumpPlayer(gengine::interface::event::SharedEvent<event::Jump> &e);
+    void changeCameraModePlayer(gengine::interface::event::SharedEvent<event::ChangeCameraMode> &e);
+    void sprintPlayer(gengine::interface::event::SharedEvent<event::Sprint> &e);
 
 private:
     void moveCamera(geg::component::Transform3D &transform, gengine::Vect3 &forward);

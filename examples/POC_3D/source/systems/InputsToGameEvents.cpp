@@ -16,18 +16,21 @@ void InputsToGameEvents::init(void) {
     subscribeToEvent<geg::event::io::KeySEvent>(&InputsToGameEvents::moveBck);
     subscribeToEvent<geg::event::io::KeyDEvent>(&InputsToGameEvents::moveRight);
     subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
+    subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
+    subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::sprint);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
-    publishEvent<event::Movement>(getMovementState());
+    publishEvent(event::Movement(getMovementState()));
 
     // Player Direction
     const Vector2 mouseDelta = GetMouseDelta();
-    // DisableCursor(); //TODO Debug this (trying to hide the cursor)
+    DisableCursor();
     // SetMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gengine::Vect3 rotation = {0, 0, 0};
-    if (mouseDelta.x != 0.0f) {
+    if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
         rotation.y -= MOUSE_SENSITIVITY * mouseDelta.x;
+        rotation.z -= MOUSE_SENSITIVITY * mouseDelta.y;
         publishEvent<event::Rotation>(rotation);
     }
 }
@@ -133,5 +136,17 @@ event::Movement::State InputsToGameEvents::getMovementState(void) {
 void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED)
         publishEvent(event::Jump(0.12));
+}
+
+void InputsToGameEvents::changeCameraMode(geg::event::io::KeyF5Event &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangeCameraMode());
+}
+
+void InputsToGameEvents::sprint(geg::event::io::KeyLeftShiftEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED || e.state == geg::event::io::InputState::DOWN)
+        publishEvent(event::Sprint(true));
+    else
+        publishEvent(event::Sprint(false));
 }
 } // namespace poc3d::system

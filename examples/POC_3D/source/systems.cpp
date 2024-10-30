@@ -61,11 +61,11 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓
 }

@@ -136,7 +136,8 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
         // ::Matrix
 
         //* Camera Movement
-        // UpdateCamera(&camera, CAMERA_FIRST_PERSON); // Camera projection type
+        // if (cameraMode == CAMERA_THIRD_PERSON)
+        //     UpdateCamera(&camera, CAMERA_THIRD_PERSON); // Camera projection type
         // float moveSpeedVertical = 0.05f;
         // if (IsKeyDown(KEY_SPACE)) {
         //     camera.position.y += moveSpeedVertical;

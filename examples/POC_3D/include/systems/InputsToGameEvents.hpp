@@ -11,9 +11,11 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
 
+#include "events/ChangeCameraMode.hpp"
 #include "events/Jump.hpp"
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
+#include "events/Sprint.hpp"
 
 namespace poc3d::system {
 class InputsToGameEvents : public gengine::System<InputsToGameEvents, gengine::system::driver::input::KeyboardCatcher>,
@@ -28,6 +30,8 @@ public:
     void moveRight(geg::event::io::KeyDEvent &e);
 
     void jump(geg::event::io::KeySpaceEvent &e);
+    void changeCameraMode(geg::event::io::KeyF5Event &e);
+    void sprint(geg::event::io::KeyLeftShiftEvent &e);
 
 private:
     char m_directionBitmask = 0;
