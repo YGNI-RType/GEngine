@@ -5,7 +5,7 @@ include(GNUInstallDirs)
 
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
-vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus)
+vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
 
 file(GLOB_RECURSE SOURCES source/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/deprecated/.*")
@@ -54,8 +54,9 @@ find_package(raylib CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED) #TODO a supp
 find_package(portaudio CONFIG REQUIRED)
 find_package(Opus REQUIRED)
+find_package(BZip2 REQUIRED)
 
-target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} raylib glfw) #TODO suppr glfw
+target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw) #TODO suppr glfw
 target_link_libraries(GEngine_static) #TODO suppr glfw
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)

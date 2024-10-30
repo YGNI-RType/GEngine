@@ -16,6 +16,7 @@
 #include "net_server.hpp"
 #include "net_socket.hpp"
 #include "net_wait.hpp"
+#include "net_record.hpp"
 
 #include <thread>
 #include <vector>
@@ -30,6 +31,8 @@ private:
     static SocketTCPMaster mg_socketListenTcp;
     static SocketUDP mg_socketUdpV6;
     static SocketTCPMaster mg_socketListenTcpV6;
+
+    static NetRecord mg_record;
 
     static NetServer mg_server;
     static CLNetClient mg_client;

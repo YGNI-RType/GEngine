@@ -12,6 +12,7 @@
 #include "net_common.hpp"
 #include "net_queue.hpp"
 #include "net_wait.hpp"
+#include "net_record.hpp"
 
 #include <memory>
 #include <vector>
@@ -26,10 +27,11 @@ struct PingResponse {
 class CLNetClient {
 
 public:
-    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent)
+    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent, NetRecord &record)
         : m_socketUdp(socketUdp)
         , m_addrType(type)
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
+        , m_netRecord(record)
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
         , m_packInDataAck(socketEvent)
@@ -126,6 +128,7 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
+    NetRecord &m_netRecord;
 
     std::vector<PingResponse> m_pingedServers;
     uint64_t m_pingSendTime = 0;

@@ -106,6 +106,7 @@ public:
     void reconstructMessage(uint32_t sequence, UDPMessage &msg);
 
     bool deleteSequence(uint32_t sequence);
+    void clear(void);
 
     PoolSequence getMsgSequenceInfo(uint32_t sequence) const {
         return m_poolSequences.at(sequence);
@@ -178,6 +179,11 @@ public:
     }
 
     void createUdpAddress(uint16_t udpport);
+
+public:
+    void reloadAck(void);
+private:
+    bool m_reloadingAck = false;
 
 public:
     bool readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset);

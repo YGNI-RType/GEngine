@@ -71,6 +71,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
 
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
         auto &last = diff > MAX_SNAPSHOT ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
+        bool fullSnapshot = diff > MAX_SNAPSHOT;
 
         auto &currentNetSends = getComponents<component::NetSend>();
         auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
@@ -84,6 +85,8 @@ void Snapshot::getAndSendDeltaDiff(void) {
             Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
                                         Network::UDPMessage::COMPRESSED,
                                     Network::SV_SNAPSHOT);
+            msg.setFullAck(fullSnapshot);
+
             uint32_t nbEntity = 0;
             msg.appendData(nbEntity);
             size_t realSize = msg.getSize();

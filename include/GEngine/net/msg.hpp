@@ -48,7 +48,7 @@ public:
         COMPRESSED = 1,
         HEADER = 2,
         FRAGMENTED = 4,
-        ENCRYPTED = 8,
+        FULL_ACK = 8,
         ACK = 16,
         WAS_FRAGMENTED = 32,
         END_COMPRESS = 64,
@@ -88,8 +88,8 @@ public:
     bool wasFragmented(void) const {
         return m_flags & WAS_FRAGMENTED;
     }
-    bool isEncrypted(void) const {
-        return m_flags & ENCRYPTED;
+    bool isFullAck(void) const {
+        return m_flags & FULL_ACK;
     }
     bool shouldAck(void) const {
         return m_flags & ACK;
@@ -285,7 +285,7 @@ public:
     void setHeader(bool header);
     void setFragmented(bool fragmented);
     void setWasFragmented(bool fragmented);
-    void setEncrypted(bool encrypted);
+    void setFullAck(bool fullack);
     void setAck(bool ack);
 
     void writeHeader(const UDPG_NetChannelHeader &header);

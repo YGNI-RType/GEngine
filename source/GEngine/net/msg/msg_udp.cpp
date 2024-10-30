@@ -81,11 +81,11 @@ void UDPMessage::setWasFragmented(bool fragmented) {
         m_flags &= ~WAS_FRAGMENTED;
 }
 
-void UDPMessage::setEncrypted(bool encrypted) {
-    if (encrypted)
-        m_flags |= ENCRYPTED;
+void UDPMessage::setFullAck(bool fullack) {
+    if (fullack)
+        m_flags |= FULL_ACK;
     else
-        m_flags &= ~ENCRYPTED;
+        m_flags &= ~FULL_ACK;;
 }
 
 void UDPMessage::setAck(bool ack) {
