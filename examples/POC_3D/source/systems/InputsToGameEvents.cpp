@@ -18,6 +18,11 @@ void InputsToGameEvents::init(void) {
     subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
     subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
     subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::sprint);
+    subscribeToEvent<geg::event::io::KeyOneEvent>(&InputsToGameEvents::setPlayerModelCoraline);
+    subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelHunter);
+    subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
+    subscribeToEvent<geg::event::io::KeyFourEvent>(&InputsToGameEvents::setPlayerModelLamp);
+    subscribeToEvent<geg::event::io::KeyFiveEvent>(&InputsToGameEvents::setPlayerModelStick);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
@@ -149,4 +154,45 @@ void InputsToGameEvents::sprint(geg::event::io::KeyLeftShiftEvent &e) {
     else
         publishEvent(event::Sprint(false));
 }
+
+void InputsToGameEvents::setPlayerModelCoraline(geg::event::io::KeyOneEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("coraline.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelHunter(geg::event::io::KeyTwoEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/incendie.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelChair(geg::event::io::KeyThreeEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/wooden_cabinet.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelLamp(geg::event::io::KeyFourEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/desk_lamp.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelStick(geg::event::io::KeyFiveEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/stick.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelTv(geg::event::io::KeySixEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/tv_stand.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelTable(geg::event::io::KeySevenEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/nintendo_switch_diorama.glb"));
+}
+
+void InputsToGameEvents::setPlayerModelCouch(geg::event::io::KeyEightEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::ChangePlayerModelEvent("props/lowpoly_people.glb"));
+}
+
 } // namespace poc3d::system

@@ -19,6 +19,7 @@ void ModelManager::init(void) {
 
 void ModelManager::onStartEngine(gengine::system::event::StartEngine &e) {
     for (const auto &entry : std::filesystem::recursive_directory_iterator(m_folder)) {
+        std::cout << "entry: " << entry.path() << std::endl;
         if (entry.is_regular_file()) {
             std::string filePath = entry.path().string();
 

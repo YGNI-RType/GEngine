@@ -12,6 +12,7 @@
 #include "GEngine/libdev/Systems.hpp"
 
 #include "events/ChangeCameraMode.hpp"
+#include "events/ChangePlayerModelEvent.hpp"
 #include "events/Jump.hpp"
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
@@ -30,8 +31,16 @@ public:
     void moveRight(geg::event::io::KeyDEvent &e);
 
     void jump(geg::event::io::KeySpaceEvent &e);
-    void changeCameraMode(geg::event::io::KeyF5Event &e);
     void sprint(geg::event::io::KeyLeftShiftEvent &e);
+    void changeCameraMode(geg::event::io::KeyF5Event &e);
+    void setPlayerModelCoraline(geg::event::io::KeyOneEvent &e);
+    void setPlayerModelHunter(geg::event::io::KeyTwoEvent &e);
+    void setPlayerModelChair(geg::event::io::KeyThreeEvent &e);
+    void setPlayerModelLamp(geg::event::io::KeyFourEvent &e);
+    void setPlayerModelStick(geg::event::io::KeyFiveEvent &e);
+    void setPlayerModelTv(geg::event::io::KeySixEvent &e);
+    void setPlayerModelTable(geg::event::io::KeySevenEvent &e);
+    void setPlayerModelCouch(geg::event::io::KeyEightEvent &e);
 
 private:
     char m_directionBitmask = 0;

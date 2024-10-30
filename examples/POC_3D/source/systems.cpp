@@ -18,6 +18,7 @@
 
 #include "Constants.hpp"
 #include "systems/BackgroundMotion.hpp"
+#include "systems/ChangePlayerModel.hpp"
 #include "systems/Init.hpp"
 #include "systems/InputsToGameEvents.hpp"
 #include "systems/PlayerMotion.hpp"
@@ -55,6 +56,7 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<poc3d::system::Start>();
     r->registerSystem<poc3d::system::BackgroundMotion>();
     r->registerSystem<poc3d::system::PlayerMotion>();
+    r->registerSystem<poc3d::system::ChangePlayerModel>();
     r->registerSystem<poc3d::system::Init>();
 
     r->registerSystem<gengine::interface::system::HandleRemoteLocal>();
@@ -62,10 +64,10 @@ void GEngineDeclareSystems(Registry *r) {
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
-        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
-        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓
 }
