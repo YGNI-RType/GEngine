@@ -17,8 +17,8 @@
 #include <utility> // For std::forward
 #include <vector>
 
-#include "GEngine/libdev/System.hpp"
 #include "GEngine/BaseEngine.hpp"
+#include "GEngine/libdev/System.hpp"
 
 /**
  * @brief Registry class for managing components and systems registration.
@@ -220,7 +220,7 @@ private:
 #include <cstdlib>
 #include <cstring>
 
-#define GENGINE_DECLARE_GAME(game_name)     \
-    char *GEngineDeclareGameSignature(void) {  \
-        return strdup(game_name);           \
+#define GENGINE_DECLARE_GAME(game_name)                                                                                \
+    char *GEngineDeclareGameSignature(void) {                                                                          \
+        return strdup(game_name);                                                                                      \
     }
