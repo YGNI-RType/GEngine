@@ -13,10 +13,17 @@
 namespace gengine::system::driver::input {
 void MouseCatcher::init(void) {
     subscribeToEvent<gengine::system::event::RenderLoop>(&MouseCatcher::onRenderLoop);
+    subscribeToEvent<gengine::system::event::WindowResized>(&MouseCatcher::onWindowResized);
+}
+
+void MouseCatcher::onWindowResized(gengine::system::event::WindowResized &e) {
+    m_ratio = e.ratio;
 }
 
 void MouseCatcher::onRenderLoop(gengine::system::event::RenderLoop &e) {
     Vect2 mousePos = gengine::component::driver::output::toVect2(GetMousePosition());
+    mousePos.x /= m_ratio.x;
+    mousePos.y /= m_ratio.y;
     MouseButton button = MOUSE_BUTTON_LEFT;
     do {
         if (IsMouseButtonReleased(button))

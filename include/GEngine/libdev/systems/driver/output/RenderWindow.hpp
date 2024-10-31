@@ -18,6 +18,7 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
+#include "GEngine/libdev/systems/events/driver/output/Window.hpp"
 
 namespace gengine::system::driver::output {
 class RenderWindow : public gengine::System<RenderWindow>, public LocalSystem {
@@ -38,8 +39,10 @@ public:
     void setTitle(const std::string &title);
 
 private:
-    int m_width;
-    int m_height;
+    const int m_baseWidth;
+    const int m_baseHeight;
+    float m_width;
+    float m_height;
     std::string m_title;
 };
 } // namespace gengine::system::driver::output

@@ -13,29 +13,14 @@
 
 #include "GEngine/libdev/Entity.hpp"
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
+#include "GEngine/libdev/tools/Math.hpp"
 
 namespace gengine::system::event {
-class BeginDraw : public Event {
+class WindowResized : public Event {
 public:
-    component::driver::output::Clr clear;
-    BeginDraw(component::driver::output::Clr &&clear)
-        : clear(clear) {
-    }
-    BeginDraw(component::driver::output::Clr &clear)
-        : clear(clear) {
-    }
-};
-class Draw : public Event {
-public:
-    Entity entity;
     Vect2 ratio;
-    Draw(Entity &&entity, const Vect2 &&ratio)
-        : entity(entity), ratio(ratio) {
-    }
-    Draw(Entity entity, const Vect2 &ratio)
-        : entity(entity), ratio(ratio) {
+    WindowResized(const Vect2 &ratio)
+        : ratio(ratio) {
     }
 };
-class EndDraw : public Event {};
 } // namespace gengine::system::event
