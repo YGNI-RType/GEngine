@@ -20,6 +20,7 @@
 #include <mutex>
 #include <atomic>
 #include <vector>
+#include <unordered_map>
 
 namespace gengine::system::driver::output {
 
@@ -35,8 +36,8 @@ public:
         return m_enabled;
     }
 
-    auto &getBuffer(void) {
-        return m_outputBuffer;
+    auto &getBuffers(void) {
+        return m_outputBuffers;
     }
 
 
@@ -51,6 +52,10 @@ public:
     }
     void setVolume(float volume, bool relative = false);
 
+    std::mutex &getSndMutex(void) {
+        return m_sndmutex;
+    }
+
 
 private:
     void processSoundInput(void);
@@ -64,10 +69,12 @@ private:
     size_t m_numChannel = 1;
 
     float volume = 0.8f; /* in % */
-    std::vector<float> m_outputBuffer; /* otherpeoplebuffer for port sound */
-    std::queue<std::vector<std::vector<uint8_t>>> m_inputBuffer;
+    // std::vector<float> m_outputBuffer; /* otherpeoplebuffer for port sound */
+    std::unordered_map<uint64_t, std::vector<float>> m_outputBuffers; /* people id, their buffer */
+    std::queue<std::unordered_map<uint64_t, std::vector<std::vector<uint8_t>>>> m_inputBuffer;
 
     mutable std::mutex m_mutex;
+    mutable std::mutex m_sndmutex;
 };
 
 } // namespace gengine::system::driver::input

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <opus/opus.h>
 #include <portaudio.h>
+#include <math.h>
 
 namespace gengine::system::driver::output {
 
@@ -23,6 +24,14 @@ constexpr size_t FRAME_SIZE = 960;
 // Opus encoder and decoder
 OpusDecoder *decoder;
 PaStream *playbackStream = nullptr;
+
+void applyHannWindow(std::vector<float>& buffer, int windowLength) {
+    for (int i = 0; i < windowLength && i < buffer.size(); ++i) {
+        float window = 0.5 * (1 - std::cos(2 * M_PI * i / (windowLength - 1)));
+        buffer[i] *= window;
+        buffer[buffer.size() - 1 - i] *= window;
+    }
+}
 
 static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
@@ -35,28 +44,41 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
         return paContinue;
     }
 
-    auto &buffer = voipHandler->getBuffer();
-    if (buffer.empty()) {
-        std::fill(output, output + framesPerBuffer, 0.0f);
+    {
+        std::lock_guard<std::mutex> lock(voipHandler->getSndMutex());
+        std::vector<float> buffer;
+        auto &bufferMap = voipHandler->getBuffers();
+        if (bufferMap.empty()) {
+            std::fill(output, output + framesPerBuffer, 0.0f);
+            return paContinue;
+        }
+
+        for (auto &[_, playerBuffer] : bufferMap) {
+            if (playerBuffer.empty())
+                continue;
+
+            if (buffer.empty())
+                buffer = playerBuffer;
+            else {
+                std::transform(playerBuffer.begin(), playerBuffer.begin() + FRAME_SIZE, buffer.begin(), buffer.begin(),
+                               [](float a, float b) { return (a + b) / 2.f; });
+            }
+
+            playerBuffer.erase(playerBuffer.begin(), playerBuffer.begin() + FRAME_SIZE);
+        }
+        if (buffer.empty()) {
+            std::fill(output, output + framesPerBuffer, 0.0f);
+            return paContinue;
+        }
+
+        /* reduces the volume */
+        auto volumeMultiplier = voipHandler->getVolume();
+        for (size_t i = 0; i < framesPerBuffer; ++i)
+            buffer[i] *= volumeMultiplier;
+
+        std::copy(buffer.begin(), buffer.begin() + framesPerBuffer, output);
         return paContinue;
     }
-
-    auto volumeMultiplier = voipHandler->getVolume();
-
-    /* reduces the volume */
-    for (size_t i = 0; i < CF_NET_MIN(buffer.size(), static_cast<size_t>(framesPerBuffer)); ++i)
-        buffer[i] *= volumeMultiplier;
-
-    if (buffer.size() < framesPerBuffer) {
-        std::cout << "bdehubeb" << std::endl;
-        std::copy(buffer.begin(), buffer.end(), output);
-        // std::fill(output, output + framesPerBuffer, 0.0f);
-        return paContinue;
-    }
-
-    std::copy(buffer.begin(), buffer.begin() + framesPerBuffer, output);
-    buffer.erase(buffer.begin(), buffer.begin() + framesPerBuffer);
-    return paContinue;
 }
 
 //////////////
@@ -108,7 +130,7 @@ void VoIPAudio::init(void) {
 void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
     auto &client = Network::NET::getClient();
     size_t nbPackets = client.getSizeIncommingData(Network::SV_VOIP, false);
-    std::vector<std::vector<uint8_t>> tempbuffer;
+    std::unordered_map<uint64_t, std::vector<std::vector<uint8_t>>> tempbuffer;
     for (size_t i = 0; i < nbPackets; i++) {
         size_t readCount = 0;
 
@@ -122,12 +144,15 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
             msg.readContinuousData(segment, readCount);
 
             /*todo:  playerid is a array<16>, uuid some sort */
+            uint64_t playerId = segment.playerIndex1;
             size_t dataSize = segment.size;
 
             std::vector<uint8_t> encodedData(dataSize);
             msg.readData(encodedData.data(), readCount, dataSize);
+            if (tempbuffer.find(playerId) == tempbuffer.end())
+                tempbuffer[playerId] = std::vector<std::vector<uint8_t>>();
 
-            tempbuffer.push_back(encodedData);
+            tempbuffer[playerId].push_back(encodedData);
         } while (readCount != msg.getSize());
 
         {
@@ -142,45 +167,95 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
 void VoIPAudio::processSoundInput(void) {
     while (m_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (!m_enabled || m_inputBuffer.empty())
+        if (!m_enabled)
             continue;
 
-        std::vector<std::vector<uint8_t>> vecs;
+        std::unordered_map<uint64_t, std::vector<std::vector<uint8_t>>> vecsMap;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            vecs = m_inputBuffer.front();
+            if (m_inputBuffer.empty())
+                continue;
+            vecsMap = m_inputBuffer.front();
             m_inputBuffer.pop();
         }
 
-        std::vector<float> decodeVecs;
+        std::unordered_map<uint64_t, std::vector<float>> decodeVecs;
+        for (const auto &pair : vecsMap)
+            decodeVecs[pair.first] = std::vector<float>();
 
-
-        for (auto &encodedData : vecs) {
-            std::vector<float> decodedBuffer(FRAME_SIZE);
-            int decodedSize =
-                opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
-            if (decodedSize < 0) {
-                std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
-                continue;
-            }
-
-            if (m_outputBuffer.empty())
-                m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
-            else {
-                // std::cout << "fuck" << std::endl;
-                if (vecs.size() == 1) {
-                    m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+        for (auto &[playerId, vecs] : vecsMap) {
+            for (auto &encodedData : vecs) {
+                std::vector<float> decodedBuffer(FRAME_SIZE, 0.0f);
+                int decodedSize = opus_decode_float(decoder, encodedData.data(), encodedData.size(),
+                                                    decodedBuffer.data(), FRAME_SIZE, 0);
+                if (decodedSize < 0) {
+                    std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
                     continue;
                 }
-
-                std::cout << "buf" << std::endl;
-                std::transform(decodedBuffer.begin(), decodedBuffer.end(), m_outputBuffer.begin(), m_outputBuffer.begin(), [](float a, float b) {
-                    return (a + b);
-                });
-                if (decodedBuffer.size() > m_outputBuffer.size())
-                    m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin() + m_outputBuffer.size(), decodedBuffer.end());
+                decodeVecs[playerId].insert(decodeVecs[playerId].end(), decodedBuffer.begin(),
+                                            decodedBuffer.begin() + decodedSize);
             }
         }
+
+        {
+            std::lock_guard<std::mutex> lock(m_sndmutex);
+            for (auto &[playerId, buffer] : decodeVecs) {
+                if (m_outputBuffers.find(playerId) == m_outputBuffers.end())
+                    m_outputBuffers[playerId] = std::vector<float>();
+
+                m_outputBuffers[playerId].insert(m_outputBuffers[playerId].end(), buffer.begin(), buffer.end());
+            }
+        }
+
+        // std::vector<float> mixedBuffer(FRAME_SIZE, 0.0f);
+
+        // for (const auto &decodedBuffer : decodeVecs) {
+        //     // std::transform(decodedBuffer.begin(), decodedBuffer.end(), mixedBuffer.begin(), mixedBuffer.begin(),
+        //     // std::plus<float>());
+        //     std::transform(decodedBuffer.begin(), decodedBuffer.end(), mixedBuffer.begin(), mixedBuffer.begin(),
+        //                    [decodeVecs](float a, float b) { return (a + b) / float(decodeVecs.size()); });
+        // }
+
+        // // m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
+        // {
+        //     std::lock_guard<std::mutex> lock(m_sndmutex);
+        //     if (m_outputBuffer.empty() || m_outputBuffer.size() < FRAME_SIZE * 2) {
+        //         m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
+        //         continue;
+        //     }
+        //     // if (m_outputBuffer.size() < mixedBuffer.size()) {
+        //     //     std::cout << "jojo" << std::endl;
+        //     //     m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
+        //     //     continue;
+        //     // }
+        //     std::cout << m_outputBuffer.size() << " b" << std::endl;
+        //     std::transform(mixedBuffer.begin(), mixedBuffer.end(), m_outputBuffer.begin() + FRAME_SIZE,
+        //                    m_outputBuffer.begin() + FRAME_SIZE, [](float a, float b) { return (a + b / 2.f); });
+        // }
+        // }
+        // if (mixedBuffer.size() > m_outputBuffer.size())
+        //     m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin() + m_outputBuffer.size(),
+        //     mixedBuffer.end());
+        // }
+
+        // if (m_outputBuffer.empty())
+        //     m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+        // else {
+        //     // std::cout << "fuck" << std::endl;
+        //     if (vecs.size() == 1) {
+        //         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+        //         continue;
+        //     }
+
+        //     std::cout << "buf" << std::endl;
+        //     std::transform(decodedBuffer.begin(), decodedBuffer.end(), m_outputBuffer.begin(),
+        //     m_outputBuffer.begin(), [](float a, float b) {
+        //         return (a + b);
+        //     });
+        //     if (decodedBuffer.size() > m_outputBuffer.size())
+        //         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin() + m_outputBuffer.size(),
+        //         decodedBuffer.end());
+        // }
         // Encode captured audio using Opus
 
         // Add decoded audio to playback buffer
