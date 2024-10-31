@@ -55,12 +55,12 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onGame
 template <class... Events>
 template <typename T>
 void gengine::interface::network::system::ServerEventReceiver<Events...>::dynamicPublish(void) {
-    m_eventsCallbacks.insert(std::make_pair(
-        m_id, std::make_pair<std::function<void(void *, uuids::uuid &)>, size_t>(
-                  [this](void *data, uuids::uuid &remoteUUID) -> void {
-                      gengine::interface::event::SharedEvent<T> event(*reinterpret_cast<T *>(data), remoteUUID);
-                      this->template publishEvent<gengine::interface::event::SharedEvent<T>>(event);
-                  },
-                  sizeof(T))));
+    m_eventsCallbacks.insert(
+        std::make_pair(m_id, std::make_pair<std::function<void(void *, uuids::uuid &)>, size_t>(
+                                 [this](void *data, uuids::uuid &remoteUUID) -> void {
+                                     interface::event::SharedEvent<T> event(*reinterpret_cast<T *>(data), remoteUUID);
+                                     this->template publishEvent<interface::event::SharedEvent<T>>(event);
+                                 },
+                                 sizeof(T))));
     m_id++;
 }
