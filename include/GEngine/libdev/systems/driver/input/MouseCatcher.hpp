@@ -15,9 +15,10 @@
 #include "module/raylib_safe.h"
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/driver/input/Mouse.hpp"
+#include "GEngine/libdev/tools/Math.hpp"
 
 namespace gengine::system::driver::input {
 using InputState = gengine::system::event::driver::input::state_t;
@@ -25,15 +26,18 @@ class MouseCatcher : public gengine::System<MouseCatcher>, public LocalSystem {
 public:
     void init(void) override;
 
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onRenderLoop(gengine::system::event::RenderLoop &e);
 
 private:
-    void processMouseInput(int key, InputState state);
+    Vect2 m_prevMousePos = {0, 0};
+    void processMouseInput(int button, InputState state, Vect2 mousePos);
 };
 
 MouseButton &operator++(MouseButton &key);
 
-using MouseLeftEvent = gengine::system::event::driver::input::Mouse_Left;
-using MouseRightEvent = gengine::system::event::driver::input::Mouse_Right;
-using MouseMiddleEvent = gengine::system::event::driver::input::Mouse_Middle;
+using MouseMoveEvent = gengine::system::event::driver::input::MouseMove;
+using MouseButtonEvent = gengine::system::event::driver::input::MouseButton;
+using MouseLeftEvent = gengine::system::event::driver::input::MouseLeft;
+using MouseRightEvent = gengine::system::event::driver::input::MouseRight;
+using MouseMiddleEvent = gengine::system::event::driver::input::MouseMiddle;
 } // namespace gengine::system::driver::input

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "GEngine/libdev/tools/Math.hpp"
 #include "module/raylib_safe.h"
 
 namespace gengine::component::driver::output {
@@ -60,4 +61,27 @@ struct Rect {
     bool operator==(const Rect &) const = default;
 }; // Color translater from raylib to GEngine
 
+// Function to assign a Vector2 (raylib) to a gengine::Vect2
+inline gengine::Vect2 toVect2(const Vector2 &vec) {
+    return gengine::Vect2{vec.x, vec.y};
+}
+
+// Function to assign a gengine::Vect2 to a Vector2 (raylib)
+inline Vector2 toVector2(const gengine::Vect2 &vect) {
+    return Vector2{vect.x, vect.y};
+}
+
+// Assignment operator: Vector2 to gengine::Vect2
+inline gengine::Vect2 &operator==(gengine::Vect2 &vect, const Vector2 &vec) {
+    vect.x = vec.x;
+    vect.y = vec.y;
+    return vect;
+}
+
+// Assignment operator: gengine::Vect2 to Vector2
+inline Vector2 &operator==(Vector2 &vec, const gengine::Vect2 &vect) {
+    vec.x = vect.x;
+    vec.y = vect.y;
+    return vec;
+}
 } // namespace gengine::component::driver::output

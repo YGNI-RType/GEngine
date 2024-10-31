@@ -8,35 +8,41 @@
 #include "GEngine/libdev/systems/driver/input/MouseCatcher.hpp"
 #include <iostream>
 
+#include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
+
 namespace gengine::system::driver::input {
 void MouseCatcher::init(void) {
-    subscribeToEvent<gengine::system::event::MainLoop>(&MouseCatcher::onMainLoop);
+    subscribeToEvent<gengine::system::event::RenderLoop>(&MouseCatcher::onRenderLoop);
 }
 
-void MouseCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
+void MouseCatcher::onRenderLoop(gengine::system::event::RenderLoop &e) {
+    Vect2 mousePos = gengine::component::driver::output::toVect2(GetMousePosition());
     MouseButton button = MOUSE_BUTTON_LEFT;
     do {
         if (IsMouseButtonReleased(button))
-            processMouseInput(button, InputState::RELEASE);
+            processMouseInput(button, InputState::RELEASE, mousePos);
         if (IsMouseButtonPressed(button))
-            processMouseInput(button, InputState::PRESSED);
+            processMouseInput(button, InputState::PRESSED, mousePos);
         if (IsMouseButtonDown(button))
-            processMouseInput(button, InputState::DOWN);
+            processMouseInput(button, InputState::DOWN, mousePos);
         ++button;
     } while (button != MOUSE_BUTTON_LEFT);
+    if (mousePos != m_prevMousePos) {
+        publishEvent(MouseMoveEvent(mousePos));
+        m_prevMousePos = mousePos;
+    }
 }
 
-void MouseCatcher::processMouseInput(int button, InputState state) {
-    Vector2 cursorPos = GetMousePosition();
+void MouseCatcher::processMouseInput(int button, InputState state, Vect2 mousePos) {
     switch (button) {
     case MOUSE_BUTTON_LEFT:
-        publishEvent(MouseLeftEvent(state, cursorPos));
+        publishEvent(MouseLeftEvent(state, mousePos));
         break;
     case MOUSE_BUTTON_RIGHT:
-        publishEvent(MouseRightEvent(state, cursorPos));
+        publishEvent(MouseRightEvent(state, mousePos));
         break;
     case MOUSE_BUTTON_MIDDLE:
-        publishEvent(MouseMiddleEvent(state, cursorPos));
+        publishEvent(MouseMiddleEvent(state, mousePos));
         break;
     default:
         break;
