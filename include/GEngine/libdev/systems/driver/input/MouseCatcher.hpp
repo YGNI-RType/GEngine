@@ -16,6 +16,7 @@
 
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/RenderLoop.hpp"
+#include "GEngine/libdev/systems/events/driver/output/Window.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/driver/input/Mouse.hpp"
 #include "GEngine/libdev/tools/Math.hpp"
@@ -26,11 +27,14 @@ class MouseCatcher : public gengine::System<MouseCatcher>, public LocalSystem {
 public:
     void init(void) override;
 
+    void onWindowResized(gengine::system::event::WindowResized &e);
     void onRenderLoop(gengine::system::event::RenderLoop &e);
 
 private:
     Vect2 m_prevMousePos = {0, 0};
     void processMouseInput(int button, InputState state, Vect2 mousePos);
+
+    Vect2 m_ratio = {1, 1};
 };
 
 MouseButton &operator++(MouseButton &key);

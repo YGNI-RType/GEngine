@@ -23,6 +23,7 @@ Draw::Draw(const Color &clear)
 
 void Draw::init(void) {
     subscribeToEvent<gengine::system::event::RenderLoop>(&Draw::onRenderLoop);
+    subscribeToEvent<gengine::system::event::WindowResized>(&Draw::onWindowResized);
     subscribeToEvent<gengine::system::event::BeginDraw>(&Draw::onBeginDraw);
     subscribeToEvent<gengine::system::event::EndDraw>(&Draw::onEndDraw);
 }
@@ -36,8 +37,12 @@ void Draw::onRenderLoop(gengine::system::event::RenderLoop &e) {
         toDraw.emplace(entity, drawable.zIndex);
 
     for (auto &[entity, zIndex] : toDraw)
-        publishEvent(gengine::system::event::Draw(entity));
+        publishEvent(gengine::system::event::Draw(entity, m_ratio));
     publishEvent(gengine::system::event::EndDraw());
+}
+
+void Draw::onWindowResized(gengine::system::event::WindowResized &e) {
+    m_ratio = e.ratio;
 }
 
 void Draw::onBeginDraw(gengine::system::event::BeginDraw &e) {
@@ -66,7 +71,7 @@ void DrawSprite::onDraw(gengine::system::event::Draw &e) {
             src.width = txt.width;
         if (txt.height < src.height)
             src.height = txt.height;
-        Rectangle r = {pos.x, pos.y, src.width * scale.x, src.height * scale.y};
+        Rectangle r = {pos.x * e.ratio.x, pos.y * e.ratio.y, src.width * scale.x * e.ratio.x, src.height * scale.y * e.ratio.y};
         DrawTexturePro(txt, src, r, {0, 0}, rotation, tint); // TODO origin
     }
 }
@@ -83,7 +88,7 @@ void DrawText::onDraw(gengine::system::event::Draw &e) {
         auto &fontMan = getSystem<FontManager>();
         auto &[path, str, fontSize, spacing, tint] = texts.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
-        DrawTextPro(fontMan.get(path.c_str()), str.c_str(), Vector2{pos.x, pos.y}, {0, 0}, rotation, fontSize * scale.y,
+        DrawTextPro(fontMan.get(path.c_str()), str.c_str(), Vector2{pos.x * e.ratio.x, pos.y * e.ratio.y}, {0, 0}, rotation, fontSize * scale.y * e.ratio.y,
                     spacing, tint); // TODO origin
     }
 }
@@ -99,7 +104,7 @@ void DrawRectangle::onDraw(gengine::system::event::Draw &e) {
     if (rectangles.contains(e.entity) && transforms.contains(e.entity)) {
         auto &[width, height, color] = rectangles.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
-        Rectangle r = {pos.x, pos.y, width * scale.x, height * scale.y};
+        Rectangle r = {pos.x * e.ratio.x, pos.y * e.ratio.y, width * scale.x * e.ratio.x, height * scale.y * e.ratio.y};
         DrawRectanglePro(r, {0, 0}, rotation, color); // TODO origin
     }
 }
@@ -115,7 +120,7 @@ void DrawCircle::onDraw(gengine::system::event::Draw &e) {
     if (circles.contains(e.entity) && transforms.contains(e.entity)) {
         auto &[r, color] = circles.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
-        ::DrawCircle(pos.x, pos.y, r * scale.x, color);
+        ::DrawCircle(pos.x * e.ratio.x, pos.y * e.ratio.y, r * scale.x * e.ratio.x, color);
     }
 }
 

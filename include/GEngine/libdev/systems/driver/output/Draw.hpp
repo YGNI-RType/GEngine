@@ -29,6 +29,7 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
+#include "GEngine/libdev/systems/events/driver/output/Window.hpp"
 
 namespace gengine::system::driver::output {
 class Draw : public gengine::System<Draw, component::driver::output::Drawable>, public LocalSystem {
@@ -38,12 +39,14 @@ public:
     void init(void) override;
 
     void onRenderLoop(gengine::system::event::RenderLoop &e);
+    void onWindowResized(gengine::system::event::WindowResized &e);
 
     void onBeginDraw(gengine::system::event::BeginDraw &e);
     void onEndDraw(gengine::system::event::EndDraw &e);
 
 private:
     Color m_clear;
+    Vect2 m_ratio = {1, 1};
 };
 
 class DrawSprite : public gengine::System<DrawSprite, component::driver::output::Sprite, component::Transform2D,
