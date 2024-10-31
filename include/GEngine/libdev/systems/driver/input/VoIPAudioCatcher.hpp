@@ -39,6 +39,8 @@ public:
 
 private:
     bool m_capturing = false;
+    size_t m_sampleRate = 16000;
+    size_t m_numChannel = 1;
 
     std::vector<uint8_t> m_captureBuffer; /* your buffer */
 };

@@ -95,6 +95,13 @@ void UDPMessage::setAck(bool ack) {
         m_flags &= ~ACK;
 }
 
+void UDPMessage::setFastRetransmission(bool fastRetransmission) {
+    if (fastRetransmission)
+        m_flags |= FAST_RETRANSMISSION;
+    else
+        m_flags &= ~FAST_RETRANSMISSION;
+}
+
 uint64_t UDPMessage::getAckNumber(void) const {
     if (!shouldAck())
         return 0;

@@ -16,7 +16,7 @@
 
 namespace gengine::system::driver::input {
 
-constexpr size_t SAMPLE_RATE = 48000;
+constexpr size_t SAMPLE_RATE = 16000;
 constexpr size_t FRAME_SIZE = 960;
 
 // Opus encoder and decoder
@@ -56,6 +56,19 @@ void VoIPAudioCatcher::init(void) {
     int iErr;
     PaError paErr;
 
+    PaDeviceIndex defaultInputDevice = Pa_GetDefaultInputDevice();
+    if (defaultInputDevice == paNoDevice)
+        throw std::runtime_error("No default input device available.");
+
+    const PaDeviceInfo *inputDeviceInfo = Pa_GetDeviceInfo(defaultInputDevice);
+    if (inputDeviceInfo == nullptr)
+        throw std::runtime_error("Failed to get input device info.");
+
+    // if(m_sampleRate != static_cast<size_t>(inputDeviceInfo->defaultSampleRate))
+    //     std::cerr << "VoIP: Your default sample rate is not 48kHz, this may cause issues." << std::endl;
+
+    m_numChannel = inputDeviceInfo->maxInputChannels;
+
     encoder = opus_encoder_create(SAMPLE_RATE, 1, OPUS_APPLICATION_AUDIO, &iErr);
     if (iErr != OPUS_OK)
         throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(iErr)));
@@ -69,10 +82,8 @@ void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
     if (m_captureBuffer.empty())
         return;
 
-    Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_VOIP);
-    // msg.startCompressingSegment(false);
+    Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::FAST_RETRANSMISSION, Network::CL_VOIP);
     msg.appendData((const void *)m_captureBuffer.data(), CF_NET_MIN(1400 - sizeof(Network::UDPG_NetChannelHeader), m_captureBuffer.size()));
-    // msg.stopCompressingSegment(false);
 
     Network::NET::getClient().pushData(msg);
 

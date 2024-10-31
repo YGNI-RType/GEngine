@@ -17,7 +17,7 @@
 
 namespace gengine::system::driver::output {
 
-constexpr size_t SAMPLE_RATE = 48000;
+constexpr size_t SAMPLE_RATE = 16000;
 constexpr size_t FRAME_SIZE = 960;
 
 // Opus encoder and decoder
@@ -48,7 +48,9 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
         buffer[i] *= volumeMultiplier;
 
     if (buffer.size() < framesPerBuffer) {
-        std::fill(output, output + framesPerBuffer, 0.0f);
+        std::cout << "bdehubeb" << std::endl;
+        std::copy(buffer.begin(), buffer.end(), output);
+        // std::fill(output, output + framesPerBuffer, 0.0f);
         return paContinue;
     }
 
@@ -77,12 +79,18 @@ void VoIPAudio::init(void) {
 
     // Open capture stream
 
-    auto index = Pa_GetDefaultInputDevice();
-    auto deviceconut = Pa_GetDeviceCount();
-    auto apicount = Pa_GetHostApiCount();
-    const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(index);
-    if (deviceInfo == nullptr)
-        throw std::runtime_error("No default input device available");
+    PaDeviceIndex defaultInputDevice = Pa_GetDefaultInputDevice();
+    if (defaultInputDevice == paNoDevice)
+        throw std::runtime_error("No default input device available.");
+
+    const PaDeviceInfo *inputDeviceInfo = Pa_GetDeviceInfo(defaultInputDevice);
+    if (inputDeviceInfo == nullptr)
+        throw std::runtime_error("Failed to get input device info.");
+
+    // if(m_sampleRate != static_cast<size_t>(inputDeviceInfo->defaultSampleRate))
+    //     std::cerr << "VoIP: Your default sample rate is not 48kHz, this may cause issues." << std::endl;
+
+    m_numChannel = inputDeviceInfo->maxInputChannels;
 
     // Open playback stream
     paErr = Pa_OpenDefaultStream(&playbackStream, 0, 1, paFloat32, SAMPLE_RATE, FRAME_SIZE, playbackCallback, this);
@@ -144,8 +152,9 @@ void VoIPAudio::processSoundInput(void) {
             m_inputBuffer.pop();
         }
 
+        std::vector<float> decodeVecs;
 
-        std::vector<float> finalBuffer;
+
         for (auto &encodedData : vecs) {
             std::vector<float> decodedBuffer(FRAME_SIZE);
             int decodedSize =
@@ -155,20 +164,27 @@ void VoIPAudio::processSoundInput(void) {
                 continue;
             }
 
-            if (finalBuffer.empty())
-                finalBuffer.insert(finalBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+            if (m_outputBuffer.empty())
+                m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
             else {
-                std::transform(decodedBuffer.begin(), decodedBuffer.end(), finalBuffer.begin(), finalBuffer.begin(), [](float a, float b) {
-                    return (a + b) / 2.0f;
+                // std::cout << "fuck" << std::endl;
+                if (vecs.size() == 1) {
+                    m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
+                    continue;
+                }
+
+                std::cout << "buf" << std::endl;
+                std::transform(decodedBuffer.begin(), decodedBuffer.end(), m_outputBuffer.begin(), m_outputBuffer.begin(), [](float a, float b) {
+                    return (a + b);
                 });
-                if (decodedBuffer.size() > finalBuffer.size())
-                    finalBuffer.insert(finalBuffer.end(), decodedBuffer.begin() + finalBuffer.size(), decodedBuffer.end());
+                if (decodedBuffer.size() > m_outputBuffer.size())
+                    m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin() + m_outputBuffer.size(), decodedBuffer.end());
             }
         }
         // Encode captured audio using Opus
 
         // Add decoded audio to playback buffer
-        m_outputBuffer.insert(m_outputBuffer.end(), finalBuffer.begin(), finalBuffer.end());
+        // m_outputBuffer.insert(m_outputBuffer.end(), finalBuffer.begin(), finalBuffer.end());
     }
 }
 

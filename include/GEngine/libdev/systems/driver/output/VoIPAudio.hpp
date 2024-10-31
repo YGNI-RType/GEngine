@@ -60,6 +60,9 @@ private:
     std::atomic_bool m_streaming = false;
     std::thread m_soundThread;
 
+    size_t m_sampleRate = 16000;
+    size_t m_numChannel = 1;
+
     float volume = 0.8f; /* in % */
     std::vector<float> m_outputBuffer; /* otherpeoplebuffer for port sound */
     std::queue<std::vector<std::vector<uint8_t>>> m_inputBuffer;

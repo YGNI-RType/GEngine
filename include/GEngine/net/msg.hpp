@@ -53,6 +53,7 @@ public:
         ACK = 16,
         WAS_FRAGMENTED = 32,
         END_COMPRESS = 64,
+        FAST_RETRANSMISSION = 128,
     };
 
 public:
@@ -94,6 +95,10 @@ public:
     }
     bool shouldAck(void) const {
         return m_flags & ACK;
+    }
+    /* tells if the network layer should immediately handle, without getting to the engine part */
+    bool shouldFastRetransmit(void) const {
+        return m_flags & FAST_RETRANSMISSION;
     }
 
     uint8_t getFlags(void) const {
@@ -288,6 +293,7 @@ public:
     void setWasFragmented(bool fragmented);
     void setFullAck(bool fullack);
     void setAck(bool ack);
+    void setFastRetransmission(bool fastRetransmission);
 
     void writeHeader(const UDPG_NetChannelHeader &header);
     void readHeader(UDPG_NetChannelHeader &header, size_t &readOffset) const;
