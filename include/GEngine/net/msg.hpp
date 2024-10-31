@@ -112,6 +112,7 @@ public:
     virtual const byte_t *getData(void) const = 0;
     virtual byte_t *getModifyData(void) = 0;
     virtual uint64_t getMaxMsgSize(void) const = 0;
+    virtual uint8_t getClassType(void) const = 0;
 
     /******** WRITE DATA ********/
 
@@ -234,6 +235,8 @@ private:
     size_t bitBuffer = 0;
 };
 
+/****************************************************************************************************/
+
 class TCPMessage : public AMessage {
 public:
     TCPMessage(uint8_t type);
@@ -249,6 +252,9 @@ public:
     }
     uint64_t getMaxMsgSize(void) const override final {
         return MAX_TCP_MSGLEN;
+    }
+    uint8_t getClassType(void) const override final {
+        return 'T';
     }
 
     void getSerialize(TCPSerializedMessage &msg) const;
@@ -281,6 +287,9 @@ public:
     }
     uint64_t getMaxMsgSize(void) const override final {
         return MAX_UDP_MSGLEN;
+    }
+    uint8_t getClassType(void) const override final {
+        return 'U';
     }
 
     uint64_t getHash(void) const;

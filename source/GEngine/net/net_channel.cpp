@@ -145,7 +145,6 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
 
         if (msg.isFullAck()) {
             m_reloadingAck = false;
-            msg.setFullAck(false);
         }
 
         /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */

@@ -8,6 +8,7 @@
 #include "GEngine/net/net_record.hpp"
 
 #include <bzlib.h>
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <thread>
@@ -51,21 +52,53 @@ void NetRecord::init(bool shouldWrite, const std::string &demoFilePath) {
     if (!shouldWrite) {
         openFile(demoFilePath);
         return;
-    } else {
-        std::cout << "Started recording..." << std::endl;
-        m_fs.open(m_recordFilePath, std::ios::out | std::ios::binary);
-        if (!m_fs.is_open())
-            throw std::runtime_error("Failed to open record file");
     }
 }
 
+void NetRecord::update(const AMessage &msg) {
+    if (!isRecording())
+        return;
+
+    if (!m_hasFirstUpdate) {
+        if (!msg.isFullAck())
+            return;
+        m_hasFirstUpdate = true;
+    }
+
+    uint32_t dt;
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::high_resolution_clock::now().time_since_epoch())
+                   .count();
+    dt = m_lastWriteTime == 0 ? 0 : now - m_lastWriteTime;
+    m_lastWriteTime = now;
+
+    m_fs.write(reinterpret_cast<const char *>(&dt), sizeof(dt));
+    auto msgType = msg.getType();
+    auto msgFlags = msg.getFlags();
+    auto msgSize = msg.getSize();
+    auto msgData = msg.getData();
+    auto msgClassType = msg.getClassType();
+    m_fs.write(reinterpret_cast<const char *>(&msgType), sizeof(msgType));
+    m_fs.write(reinterpret_cast<const char *>(&msgClassType), sizeof(msgClassType));
+    m_fs.write(reinterpret_cast<const char *>(&msgFlags), sizeof(msgFlags));
+    m_fs.write(reinterpret_cast<const char *>(&msgSize), sizeof(msgSize));
+    m_fs.write(reinterpret_cast<const char *>(msgData), msgSize);
+
+    std::cout << "updating record: " << dt << ", size: " << msgSize << std::endl;
+}
+
 bool NetRecord::startRecord(void) {
-    if (isRecording() || isWatching() || !m_fs.is_open())
+    if (isRecording() || isWatching())
         return false;
 
+    std::cout << "Started recording..." << std::endl;
+    m_fs.open(m_recordFilePath, std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!m_fs.is_open())
+        throw std::runtime_error("Failed to open record file. Abort...");
     m_fs.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
     m_fs.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
     m_recording = true;
+    m_hasFirstUpdate = false;
     return true;
 }
 
@@ -112,6 +145,9 @@ bool NetRecord::endRecord(void) {
 
         m_recording = false;
         std::cout << "Done compressing the demo file !" << std::endl;
+
+        if (std::remove(m_recordFilePath.c_str()) != 0)
+            std::cerr << "Error deleting temporary record file: " << m_recordFilePath << std::endl;
     });
     compressionThread.detach();
 

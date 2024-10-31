@@ -111,6 +111,9 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
     if (!m_netChannel.readDatagram(socket, msg, readOffset))
         return true;
 
+    if (m_netRecord.isRecording())
+        m_netRecord.update(msg);
+
     switch (msg.getType()) {
     case SV_SNAPSHOT:
         pushIncommingDataAck(msg, readOffset);
@@ -127,18 +130,22 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
         return false;
 
     auto &sock = m_netChannel.getTcpSocket();
-    if (set.isSignaled(sock)) {
-        TCPMessage msg(0);
-        if (!m_netChannel.readStream(msg))
-            return false;
+    if (!set.isSignaled(sock))
+        return false;
 
-        if (m_netChannel.isDisconnected()) {
-            disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
-            return true;
-        }
-        return handleServerTCP(msg);
+    TCPMessage msg(0);
+    if (!m_netChannel.readStream(msg))
+        return false;
+
+    if (m_netChannel.isDisconnected()) {
+        disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
+        return true;
     }
-    return false;
+
+    if (m_netRecord.isRecording())
+        m_netRecord.update(msg);
+
+    return handleServerTCP(msg);
 }
 
 bool CLNetClient::handleServerTCP(const TCPMessage &msg) {

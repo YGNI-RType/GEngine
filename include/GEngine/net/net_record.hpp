@@ -10,6 +10,8 @@
 #include <atomic>
 #include <fstream>
 
+#include "msg.hpp"
+
 namespace Network {
 constexpr uint64_t MAGIC_NUMBER = 0x4d4544474547;
 
@@ -29,6 +31,8 @@ public:
     /* force the server to send fullsnapshot */
     bool startRecord(void);
     bool endRecord(void);
+
+    void update(const AMessage &msg);
 
     void updateWatch();
 
@@ -57,5 +61,8 @@ private:
     std::string m_recordFilePath;
 
     size_t m_execHash;
+
+    uint32_t m_lastWriteTime = 0;
+    bool m_hasFirstUpdate;
 };
 } // namespace Network
