@@ -13,15 +13,16 @@
 
 #include "GEngine/libdev/Entity.hpp"
 #include "GEngine/libdev/System.hpp"
+#include "GEngine/libdev/components/driver/output/RaylibTypes.hpp"
 
 namespace gengine::system::event {
 class BeginDraw : public Event {
 public:
-    Color clear;
-    BeginDraw(Color &&clear)
+    component::driver::output::Clr clear;
+    BeginDraw(component::driver::output::Clr &&clear)
         : clear(clear) {
     }
-    BeginDraw(Color &clear)
+    BeginDraw(component::driver::output::Clr &clear)
         : clear(clear) {
     }
 };

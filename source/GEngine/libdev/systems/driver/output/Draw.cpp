@@ -61,8 +61,13 @@ void DrawSprite::onDraw(gengine::system::event::Draw &e) {
         auto &txtMan = getSystem<TextureManager>();
         auto &[path, src, tint] = sprites.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
+        auto &txt = txtMan.get(path.c_str());
+        if (txt.width < src.width)
+            src.width = txt.width;
+        if (txt.height < src.height)
+            src.height = txt.height;
         Rectangle r = {pos.x, pos.y, src.width * scale.x, src.height * scale.y};
-        DrawTexturePro(txtMan.get(path.c_str()), src, r, {0, 0}, rotation, tint); // TODO origin
+        DrawTexturePro(txt, src, r, {0, 0}, rotation, tint); // TODO origin
     }
 }
 
