@@ -27,7 +27,7 @@ class KeyboardCatcher : public gengine::System<KeyboardCatcher>, public LocalSys
 public:
     void init(void) override;
 
-    void onMainLoop(gengine::system::event::RenderLoop &e);
+    void onRenderLoop(gengine::system::event::RenderLoop &e);
 
 private:
     void processKeyInput(int key, InputState state);
@@ -35,6 +35,7 @@ private:
 
 KeyboardKey &operator++(KeyboardKey &key);
 
+using KeyPressedEvent = gengine::system::event::driver::input::KeyPressed;
 using KeyApostropheEvent = gengine::system::event::driver::input::Key_Apostrophe;
 using KeyCommaEvent = gengine::system::event::driver::input::Key_Comma;
 using KeyMinusEvent = gengine::system::event::driver::input::Key_Minus;
