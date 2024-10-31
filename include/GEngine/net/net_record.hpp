@@ -56,6 +56,7 @@ private:
     std::fstream m_fs;
     bool m_enabled = false;
     std::atomic_bool m_recording = false;
+    std::atomic_bool m_recordingCompressed = false;
     std::atomic_bool m_watching = false;
 
     std::string m_recordFilePath;

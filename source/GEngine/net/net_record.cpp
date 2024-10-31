@@ -88,7 +88,7 @@ void NetRecord::update(const AMessage &msg) {
 }
 
 bool NetRecord::startRecord(void) {
-    if (isRecording() || isWatching())
+    if (isRecording() || isWatching() || m_recordingCompressed)
         return false;
 
     std::cout << "Started recording..." << std::endl;
@@ -108,8 +108,10 @@ bool NetRecord::endRecord(void) {
 
     uint32_t end = -1;
     m_fs.write(reinterpret_cast<const char *>(&end), sizeof(end));
-
     m_fs.close();
+
+    m_recording = false;
+    m_recordingCompressed = true;
 
     std::cout << "Ended record demo file" << std::endl;
 
@@ -143,11 +145,12 @@ bool NetRecord::endRecord(void) {
         demoFile.write(compressedBuffer.data(), compressedSize);
         demoFile.close();
 
-        m_recording = false;
         std::cout << "Done compressing the demo file !" << std::endl;
 
         if (std::remove(m_recordFilePath.c_str()) != 0)
             std::cerr << "Error deleting temporary record file: " << m_recordFilePath << std::endl;
+
+        m_recordingCompressed = false;
     });
     compressionThread.detach();
 

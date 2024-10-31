@@ -86,7 +86,8 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
 
             if (!record.isEnabled())
                 record.init(true);
-            record.startRecord();
+            if (!record.startRecord())
+                break;
 
             auto &client = NET::getClient();
             client.refreshSnapshots();
