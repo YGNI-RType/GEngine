@@ -7,44 +7,55 @@
 
 #pragma once
 
-#include <fstream>
 #include <atomic>
+#include <fstream>
 
-namespace Network
-{
-    constexpr uint64_t MAGIC_NUMBER = 0x716971686977;
+namespace Network {
+constexpr uint64_t MAGIC_NUMBER = 0x4d4544474547;
 
-    /*
-    Magic Number : 0x716971686977
-    hash of binary (so we close if the binary is a different one...)
-    <content compressed with glibz>
-    */
-    class NetRecord {
-        public:
-            NetRecord() = default;
-            NetRecord(bool shouldWrite, const std::string &demoFile = "");
-            ~NetRecord();
+/*
+Magic Number : 0x47454744454d
+hash of binary (so we close if the binary is a different one...)
+<content compressed with glibz>
+*/
+class NetRecord {
+public:
+    NetRecord() = default;
+    NetRecord(bool shouldWrite, const std::string &demoFile = "");
+    ~NetRecord();
 
-            /* force the server to send fullsnapshot */
-            bool startRecord(void);
-            bool endRecord(void);
+    void init(bool shouldWrite, const std::string &demoFile = "");
 
-            void updateWatch();
-        private:
-            void write(const void *data, size_t size);
-            bool read(void *data, size_t &sleepDuration);
+    /* force the server to send fullsnapshot */
+    bool startRecord(void);
+    bool endRecord(void);
 
-            bool isWatching(void) const { return m_watching; }
-            bool isRecording(void) const { return m_recording; }
+    void updateWatch();
 
-            void openFile(const std::string &filename);
+    bool isEnabled(void) const {
+        return m_enabled;
+    }
+    bool isRecording(void) const {
+        return m_recording;
+    }
+    bool isWatching(void) const {
+        return m_watching;
+    }
 
-        private:
-            std::fstream fs;
-            std::atomic_bool m_recording = false;
-            std::atomic_bool m_watching = false;
+private:
+    void write(const void *data, uint32_t size);
+    bool read(void *data, uint32_t &sleepDuration);
 
-            size_t m_execHash;
+    void openFile(const std::string &filename);
 
-    };
+private:
+    std::fstream m_fs;
+    bool m_enabled = false;
+    std::atomic_bool m_recording = false;
+    std::atomic_bool m_watching = false;
+
+    std::string m_recordFilePath;
+
+    size_t m_execHash;
+};
 } // namespace Network

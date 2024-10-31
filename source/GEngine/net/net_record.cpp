@@ -14,48 +14,78 @@
 #include <vector>
 
 namespace Network {
-NetRecord::NetRecord(bool shouldWrite, const std::string &demoFilePath){
+NetRecord::NetRecord(bool shouldWrite, const std::string &demoFilePath)
+    : m_enabled(true) {
+    init(shouldWrite, demoFilePath);
+}
+
+void NetRecord::init(bool shouldWrite, const std::string &demoFilePath) {
+    m_enabled = true;
+
+#ifdef _WIN32
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+    std::ifstream execFile(exePath, std::ios::binary);
+#else
     std::ifstream execFile("/proc/self/exe", std::ios::binary);
+#endif
     if (!execFile.is_open())
         throw std::runtime_error("Failed to open executable file for hashing");
     std::vector<char> execBuffer((std::istreambuf_iterator<char>(execFile)), std::istreambuf_iterator<char>());
     m_execHash = std::hash<std::string>{}(std::string(execBuffer.begin(), execBuffer.end()));
 
-    #ifdef _WIN32
-        fs.open("C:\\Windows\\Temp\\record.bin", std::ios::in | std::ios::binary);
-    #else
-        fs.open("/tmp/record.bin", std::ios::in | std::ios::binary);
-    #endif
-    if (!fs.is_open())
-        throw std::runtime_error("Failed to open record file");
+#ifdef _WIN32
+    m_recordFilePath = "C:\\Windows\\Temp\\record.bin";
+#else
+    m_recordFilePath = "/tmp/record.bin";
+#endif
+
+    // Check if the file already exists and change the name if it does
+    size_t counter = 1;
+    const std::string ogRecordFilePath = m_recordFilePath;
+    while (std::filesystem::exists(m_recordFilePath)) {
+        m_recordFilePath = ogRecordFilePath + "." + std::to_string(counter);
+        counter++;
+    }
 
     if (!shouldWrite) {
         openFile(demoFilePath);
         return;
+    } else {
+        std::cout << "Started recording..." << std::endl;
+        m_fs.open(m_recordFilePath, std::ios::out | std::ios::binary);
+        if (!m_fs.is_open())
+            throw std::runtime_error("Failed to open record file");
     }
 }
 
 bool NetRecord::startRecord(void) {
-    if (isRecording() || isWatching())
+    if (isRecording() || isWatching() || !m_fs.is_open())
         return false;
 
-    fs.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
-    fs.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
+    m_fs.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
+    m_fs.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
     m_recording = true;
     return true;
 }
 
 bool NetRecord::endRecord(void) {
-    if (!isRecording() || isWatching())
+    if (!isRecording() || isWatching() || !m_fs.is_open())
         return false;
 
-    size_t end = -1;
-    fs.write(reinterpret_cast<const char *>(&end), sizeof(end));
+    uint32_t end = -1;
+    m_fs.write(reinterpret_cast<const char *>(&end), sizeof(end));
+
+    m_fs.close();
 
     std::cout << "Ended record demo file" << std::endl;
 
     std::thread compressionThread([this]() {
         std::cout << "Compressing the demo file..." << std::endl;
+
+        std::ifstream fs(m_recordFilePath, std::ios::in | std::ios::binary);
+        if (!fs.is_open())
+            throw std::runtime_error("Failed to open record file for compression");
 
         /* Compress the file content after the magic number and the hash */
         fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
@@ -69,11 +99,14 @@ bool NetRecord::endRecord(void) {
         if (result != BZ_OK)
             throw std::runtime_error("Failed to compress data");
 
+        fs.close();
         std::filesystem::create_directory("demos");
         std::ofstream demoFile("demos/demo_" + std::to_string(std::time(nullptr)), std::ios::out | std::ios::binary);
         if (!demoFile.is_open())
             throw std::runtime_error("Failed to open compressed file for writing");
 
+        demoFile.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
+        demoFile.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
         demoFile.write(compressedBuffer.data(), compressedSize);
         demoFile.close();
 
@@ -86,26 +119,27 @@ bool NetRecord::endRecord(void) {
 }
 
 void NetRecord::openFile(const std::string &filename) {
-    fs.open(filename, std::ios::out | std::ios::binary);
-    if (!fs.is_open())
+    m_fs.open(filename, std::ios::out | std::ios::binary);
+    if (!m_fs.is_open())
         throw std::runtime_error("Failed to open record file");
 
     uint32_t magicNumber;
-    fs.read(reinterpret_cast<char *>(&magicNumber), sizeof(magicNumber));
+    m_fs.read(reinterpret_cast<char *>(&magicNumber), sizeof(magicNumber));
     if (magicNumber != MAGIC_NUMBER)
         throw std::runtime_error("Invalid magic number in record file");
 
     std::size_t execHash;
-    fs.read(reinterpret_cast<char *>(&execHash), sizeof(execHash));
+    m_fs.read(reinterpret_cast<char *>(&execHash), sizeof(execHash));
     if (execHash != m_execHash)
         throw std::runtime_error("Invalid executable hash in record file");
 
-    fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
-    std::vector<char> compressedBuffer((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
+    m_fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
+    std::vector<char> compressedBuffer((std::istreambuf_iterator<char>(m_fs)), std::istreambuf_iterator<char>());
     uint32_t decompressedSize = compressedBuffer.size() * 10; // Estimate decompressed size
     std::vector<char> decompressedBuffer(decompressedSize);
 
-    int result = BZ2_bzBuffToBuffDecompress(decompressedBuffer.data(), &decompressedSize, compressedBuffer.data(), compressedBuffer.size(), 0, 0);
+    int result = BZ2_bzBuffToBuffDecompress(decompressedBuffer.data(), &decompressedSize, compressedBuffer.data(),
+                                            compressedBuffer.size(), 0, 0);
     if (result != BZ_OK)
         throw std::runtime_error("Failed to decompress data");
 
@@ -113,42 +147,61 @@ void NetRecord::openFile(const std::string &filename) {
     decompressedBuffer.resize(decompressedSize);
 
     // Replace the file stream with the decompressed data
-    fs.close();
-    fs.clear();
-    fs.open("/dev/null", std::ios::in | std::ios::out | std::ios::binary);
-    fs.write(decompressedBuffer.data(), decompressedBuffer.size());
-    fs.seekg(0, std::ios::beg);
-    m_watching = true;
+    m_fs.close();
+    m_fs.clear();
 
+    // Create a temporary file in a cross-platform way
+    std::string tempFilePath;
+#ifdef _WIN32
+    char tempPath[MAX_PATH];
+    GetTempPath(MAX_PATH, tempPath);
+    tempFilePath = std::string(tempPath) + "decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
+#else
+    tempFilePath = "/tmp/decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
+#endif
+
+    std::ofstream tempFile(tempFilePath, std::ios::out | std::ios::binary);
+    if (!tempFile.is_open())
+        throw std::runtime_error("Failed to open temporary file for writing");
+
+    tempFile.write(decompressedBuffer.data(), decompressedBuffer.size());
+    tempFile.close();
+
+    m_fs.open(tempFilePath, std::ios::in | std::ios::binary);
+    if (!m_fs.is_open())
+        throw std::runtime_error("Failed to open temporary file for reading");
+
+    m_fs.seekg(0, std::ios::beg);
+    m_watching = true;
 }
 
 void NetRecord::updateWatch() {
     if (!isWatching())
         return;
 
-    size_t sleepDuration;
+    uint32_t sleepDuration;
     while (read(nullptr, sleepDuration))
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
 }
 
-void NetRecord::write(const void *data, size_t size) {
-    fs.write((const char *)&size, sizeof(size));
-    fs.write(reinterpret_cast<const char *>(data), size);
+void NetRecord::write(const void *data, uint32_t size) {
+    m_fs.write((const char *)&size, sizeof(size));
+    m_fs.write(reinterpret_cast<const char *>(data), size);
 }
 
-bool NetRecord::read(void *data, size_t &sleepDuration) {
-    size_t size;
-    fs.read((char *)&size, sizeof(size));
+bool NetRecord::read(void *data, uint32_t &sleepDuration) {
+    uint32_t size;
+    m_fs.read((char *)&size, sizeof(size));
     if ((int64_t)size == -1)
         return false;
 
-    fs.read((char *)&sleepDuration, sizeof(size));
-    fs.read(reinterpret_cast<char *>(data), size);
+    m_fs.read((char *)&sleepDuration, sizeof(size));
+    m_fs.read(reinterpret_cast<char *>(data), size);
     return true;
 }
 
 NetRecord::~NetRecord() {
-    if (fs.is_open())
-        fs.close();
+    if (m_fs.is_open())
+        m_fs.close();
 }
 } // namespace Network

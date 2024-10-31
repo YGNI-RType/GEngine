@@ -297,4 +297,12 @@ bool CLNetClient::sendPackets(void) {
     }
     return true;
 }
+
+void CLNetClient::refreshSnapshots(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return;
+
+    m_netChannel.reloadAck();
+}
+
 } // namespace Network

@@ -91,6 +91,10 @@ public:
         return mg_eventManager;
     }
 
+    static NetRecord &getRecord(void) {
+        return mg_record;
+    }
+
 public:
     /* todo : temp*/
     static SocketUDP &getSocketUdp(void) {

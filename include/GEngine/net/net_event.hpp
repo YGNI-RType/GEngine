@@ -19,7 +19,7 @@
 #include <typeindex>
 
 namespace Network::Event {
-enum Type { CONNECT, DISCONNECT, PING_LAN, RECORD };
+enum Type { CONNECT, DISCONNECT, PING_LAN, RECORD, WATCH };
 
 enum CallbackType {
     CT_OnClientConnect,

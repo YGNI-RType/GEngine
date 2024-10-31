@@ -72,6 +72,8 @@ public:
         return m_connectionState >= CON_AUTHORIZING;
     }
 
+    void refreshSnapshots(void);
+
 public:
     bool sendPackets(void);
     bool sendDatagram(UDPMessage &finishedMsg);
@@ -117,7 +119,7 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 24, 1400> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 2, 1400> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 
