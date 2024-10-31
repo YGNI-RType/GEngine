@@ -13,6 +13,7 @@
 #include "structs/msg_tcp_structs.hpp"
 #include "structs/msg_udp_structs.hpp"
 #include "utils/pack.hpp"
+#include "GEngine/utils/libapi.hpp"
 
 #include "msg_error.hpp"
 
@@ -224,7 +225,7 @@ protected:
     bool m_compressNow = false;
 
 private:
-    static Compression::AHC m_huffman;
+    API static Compression::AHC m_huffman;
     size_t bitBuffer = 0;
 };
 

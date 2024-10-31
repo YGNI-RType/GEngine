@@ -3,6 +3,8 @@ project(GEngine)
 
 include(GNUInstallDirs)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
 vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
@@ -56,7 +58,11 @@ find_package(portaudio CONFIG REQUIRED)
 find_package(Opus REQUIRED)
 find_package(BZip2 REQUIRED)
 
-target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw) #TODO suppr glfw
+if(WIN32)
+    target_link_libraries(GEngine portaudio ${OPUS_LIBRARIES} BZip2::BZip2 raylib) #TODO suppr glfw
+else()
+    target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw) #TODO suppr glfw
+endif()
 target_link_libraries(GEngine_static) #TODO suppr glfw
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)

@@ -44,7 +44,7 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
     auto volumeMultiplier = voipHandler->getVolume();
 
     /* reduces the volume */
-    for (size_t i = 0; i < std::min(buffer.size(), static_cast<size_t>(framesPerBuffer)); ++i)
+    for (size_t i = 0; i < CF_NET_MIN(buffer.size(), static_cast<size_t>(framesPerBuffer)); ++i)
         buffer[i] *= volumeMultiplier;
 
     if (buffer.size() < framesPerBuffer) {

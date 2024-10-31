@@ -11,6 +11,7 @@
 #include "GEngine/driver/Engine.hpp"
 #include "GEngine/game/Engine.hpp"
 #include "GEngine/libdev/Component.hpp"
+#include "GEngine/utils/libapi.hpp"
 #include <memory>
 #include <mutex>
 #include <utility> // For std::forward
@@ -200,8 +201,8 @@ private:
     GEngine &operator=(const GEngine &) = delete;
 
     // Singleton instance and initialization flag
-    static std::unique_ptr<GEngine> instance;
-    static std::once_flag initFlag;
+    API static std::unique_ptr<GEngine> instance;
+    API static std::once_flag initFlag;
 
     gengine::BaseEngine m_local;  ///< Instance of the game engine.
     gengine::BaseEngine m_remote; ///< Instance of the driver engine.
