@@ -25,7 +25,6 @@ class Updater : public System<Updater, component::NetSend> {
 public:
     Updater(const BaseEngine::world_t &currentWorld);
     void init(void) override;
-    // void onStartEngine(gengine::system::event::StartEngine &);
     void onGameLoop(gengine::system::event::GameLoop &);
 
 private:

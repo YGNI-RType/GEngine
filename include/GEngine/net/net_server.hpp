@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "events/socket_event.hpp"
 #include "events/disconnection.hpp"
+#include "events/socket_event.hpp"
 #include "net_client.hpp"
 #include "net_socket.hpp"
 

@@ -26,38 +26,30 @@ void Snapshot::init(void) {
 
 void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
     m_currentSnapshotId++;
-    createSnapshots();
     getAndSendDeltaDiff();
 }
 
 void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteLocal &e) {
-    interface::component::RemoteLocal r(e.remote);
-    m_clientSnapshots.insert(std::make_pair(r, std::make_pair(m_currentSnapshotId, snapshots_t())));
-    m_clientSnapshots[r].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
+    m_clientSnapshots.insert(std::make_pair(e.uuid, std::make_pair(m_currentSnapshotId, snapshots_t())));
+    m_clientSnapshots[e.uuid].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
 }
 
 void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e) {
-    m_clientSnapshots.erase(e.remote);
+    m_clientSnapshots.erase(e.uuid);
 }
 
-void Snapshot::createSnapshots(void) {
-    auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
-    for (auto &[remote, client] : clientsSys.getClients()) {
-        if (client.shouldDelete())
-            continue;
-        auto it = m_clientSnapshots.find(remote);
-        if (it == m_clientSnapshots.end())
-            continue;
-        it->second.second[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld;
-    }
-}
 void Snapshot::getAndSendDeltaDiff(void) {
+    auto &currentNetSends = getComponents<component::NetSend>();
+    auto &remotes = getComponents<interface::component::RemoteLocal>();
+    for (auto [e, r, netsend] : Zip(remotes, currentNetSends))
+        netsend.update();
+
     auto &server = Network::NET::getServer();
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
-    for (auto &[remote, client] : clientsSys.getClients()) {
+    for (auto &[uuid, client] : clientsSys.getClients()) {
         if (client.shouldDelete() || !client.isReady())
             continue;
-        auto it = m_clientSnapshots.find(remote);
+        auto it = m_clientSnapshots.find(uuid);
         if (it == m_clientSnapshots.end())
             continue;
 
@@ -65,69 +57,56 @@ void Snapshot::getAndSendDeltaDiff(void) {
         auto lastReceived = client.getLastAck();
         auto lastId = firstSnapshotId + lastReceived;
         auto diff = m_currentSnapshotId - lastId;
+
+        if (diff % MAX_SNAPSHOT)
+            snapshots[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld; // does not erase lastsnapshot received
         // std::cout << "client : " << remote.getUUIDString() << " | diff: " << diff << " | m_currentSnapshotId: " <<
         // m_currentSnapshotId << " last id: " << lastId
         // << " UDP Last ACK: " << lastReceived << std::endl;
 
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
-        auto &last = diff > MAX_SNAPSHOT ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
+        auto &last = snapshots[lastId % MAX_SNAPSHOT];
         bool fullSnapshot = diff > MAX_SNAPSHOT;
 
-        auto &currentNetSends = getComponents<component::NetSend>();
         auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
             last[std::type_index(typeid(component::NetSend))]);
 
-        auto &remotes = getComponents<interface::component::RemoteLocal>();
-        for (auto [e, r, netsend] : Zip(remotes, currentNetSends))
-            netsend.update();
+        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                    Network::UDPMessage::COMPRESSED,
+                                Network::SV_SNAPSHOT);
+        msg.setFullAck(fullSnapshot);
 
-        try {
-            Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
-                                        Network::UDPMessage::COMPRESSED,
-                                    Network::SV_SNAPSHOT);
-            msg.setFullAck(fullSnapshot);
-
-            uint32_t nbEntity = 0;
-            msg.appendData(nbEntity);
-            size_t realSize = msg.getSize();
-            msg.startCompressingSegment(false);
-            for (auto [entity, currentNetSend] : currentNetSends) {
-                if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
-                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                    msg.appendData(uint32_t(entity), &realSize);
-                    for (auto &byte : bytes)
-                        msg.appendData(byte, &realSize);
-                    for (auto &[typeId, comp] : comps) {
-                        auto &type = getTypeindex(typeId);
-                        msg.appendData(toVoid(type, comp), getComponentSize(type), &realSize);
-                    }
-                    nbEntity++;
+        uint32_t nbEntity = 0;
+        msg.appendData(nbEntity);
+        msg.startCompressingSegment(false);
+        for (auto [entity, currentNetSend] : currentNetSends) {
+            if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
+                auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                msg.appendData(uint32_t(entity));
+                for (auto &byte : bytes)
+                    msg.appendData(byte);
+                for (auto &[typeId, comp] : comps) {
+                    auto &type = getTypeindex(typeId);
+                    msg.appendData(toVoid(type, comp), getComponentSize(type));
                 }
+                nbEntity++;
             }
-            for (auto [entity, lastNetSend] : lastNetSends) {
-                if (!currentNetSends.contains(entity)) {
-                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                    msg.appendData(uint32_t(entity), &realSize);
-                    for (auto &byte : bytes)
-                        msg.appendData(byte, &realSize);
-                    for (auto &[typeId, comp] : comps) {
-                        auto &type = getTypeindex(typeId);
-                        msg.appendData(toVoid(type, comp), getComponentSize(type), &realSize);
-                    }
-                    nbEntity++;
-                }
-            } // TODO cleaner
-            msg.stopCompressingSegment(false);
-            msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
-
-            if (!server.isRunning())
-                continue;
-            client.getNet()->pushData(msg, true);
-        } catch (const Network::MsgError &e) {
-            std::cerr << e.what() << std::endl;
-
-            /* TODO : do something when something happens... */
         }
+        for (auto [entity, lastNetSend] : lastNetSends) {
+            if (!currentNetSends.contains(entity)) {
+                auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                msg.appendData(uint32_t(entity));
+                for (auto &byte : bytes)
+                    msg.appendData(byte);
+                for (auto &[typeId, comp] : comps) {
+                    auto &type = getTypeindex(typeId);
+                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+                }
+                nbEntity++;
+            }
+        } // TODO cleaner
+        msg.stopCompressingSegment(false);
+        msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
     }
 }
@@ -137,10 +116,10 @@ Snapshot::getDeltaDiff(ecs::entity::Entity entity, const snapshot_t &snap1, cons
     std::map<ecs::component::ComponentTools::component_id_t, const std::any> comps;
     int nbComp = snap2.size();
     std::vector<uint8_t> bits(nbComp * 2 / 8 + (nbComp * 2 % 8 ? 1 : 0), 0);
+
     for (auto &[type, anySparse] : snap1) {
         if (type == std::type_index(typeid(component::NetSend)) || !snap2.contains(type))
             continue;
-
         auto opt = compareComponentsEntity(entity, type, anySparse, snap2.find(type)->second);
         if (!opt.has_value())
             continue;

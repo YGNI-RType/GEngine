@@ -19,6 +19,8 @@ public:
     // Constructor - Generates a new UUID upon object creation
     RemoteLocal();
 
+    RemoteLocal(const uuids::uuid &uuid);
+
     // Copy constructor
     RemoteLocal(const RemoteLocal &other);
 
@@ -38,10 +40,19 @@ public:
         return false;
     }
 
+    static void generateUUID(uuids::uuid &toGenerate);
+
+    void setWhoIAm(const uuids::uuid &toSet) {
+        m_whoIAm = toSet;
+    }
+
+    uuids::uuid getWhoIAm(void) const {
+        return m_whoIAm;
+    }
+
 private:
     uuids::uuid m_uuid;
-
-    void generateUUID();
+    uuids::uuid m_whoIAm;
 };
 } // namespace gengine::interface::component
 

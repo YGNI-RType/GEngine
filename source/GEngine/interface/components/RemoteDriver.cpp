@@ -10,24 +10,31 @@
 namespace gengine::interface::component {
 
 RemoteLocal::RemoteLocal() {
-    generateUUID();
+    generateUUID(m_uuid);
+}
+
+RemoteLocal::RemoteLocal(const uuids::uuid &uuid)
+    : m_uuid(uuid) {
 }
 
 // Copy constructor
-RemoteLocal::RemoteLocal(const RemoteLocal &other) {
-    m_uuid = other.getUUIDBytes();
+RemoteLocal::RemoteLocal(const RemoteLocal &other)
+    : m_uuid(other.m_uuid)
+    , m_whoIAm(other.m_whoIAm) {
 }
 
 // Assignment operator
 RemoteLocal &RemoteLocal::operator=(const RemoteLocal &other) {
-    if (this != &other)
-        m_uuid = other.getUUIDBytes();
+    if (this != &other) {
+        m_uuid = other.m_uuid;
+        m_whoIAm = other.m_whoIAm;
+    }
     return *this;
 }
 
 // Overloading the == operator to compare based on UUID
 bool RemoteLocal::operator==(const RemoteLocal &other) const {
-    return m_uuid == other.getUUIDBytes();
+    return m_uuid == other.m_uuid && m_whoIAm == other.m_whoIAm;
 }
 
 // Getter for the UUID as a string (hexadecimal format)
@@ -40,7 +47,7 @@ const uuids::uuid &RemoteLocal::getUUIDBytes() const {
     return m_uuid;
 }
 
-void RemoteLocal::generateUUID() {
+void RemoteLocal::generateUUID(uuids::uuid &toGenerate) {
     std::random_device rd;
     auto seed_data = std::array<int, std::mt19937::state_size>{};
     std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
@@ -49,6 +56,6 @@ void RemoteLocal::generateUUID() {
     uuids::uuid_random_generator gen{generator};
 
     uuids::uuid_random_generator uuidG(gen);
-    m_uuid = uuidG();
+    toGenerate = uuidG();
 }
 } // namespace gengine::interface::component

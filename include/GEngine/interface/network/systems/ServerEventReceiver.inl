@@ -22,7 +22,7 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onGame
     auto &clients = this->template getSystem<gengine::interface::network::system::ServerClientsHandler>();
     size_t readCount = 0;
 
-    for (auto &[remote, client] : clients.getClients()) {
+    for (auto &[uuid, client] : clients.getClients()) {
         if (client.shouldDelete())
             continue;
 
@@ -46,11 +46,9 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onGame
             std::vector<Network::byte_t> data(size);
 
             msg.readData(data.data(), readCount, size);
-
-            gengine::interface::component::RemoteLocal id = remote;
+            uuids::uuid id = uuid;
             callback(data.data(), id);
         }
-        // TODO client.setLastAck(client.getLastAck() + 1);
     }
 }
 
@@ -58,10 +56,10 @@ template <class... Events>
 template <typename T>
 void gengine::interface::network::system::ServerEventReceiver<Events...>::dynamicPublish(void) {
     m_eventsCallbacks.insert(std::make_pair(
-        m_id, std::make_pair<std::function<void(void *, gengine::interface::component::RemoteLocal &)>, size_t>(
-                  [this](void *data, interface::component::RemoteLocal &remote) -> void {
-                      event::SharedEvent<T> event(*reinterpret_cast<T *>(data), remote);
-                      this->template publishEvent<event::SharedEvent<T>>(event);
+        m_id, std::make_pair<std::function<void(void *, uuids::uuid &)>, size_t>(
+                  [this](void *data, uuids::uuid &remoteUUID) -> void {
+                      gengine::interface::event::SharedEvent<T> event(*reinterpret_cast<T *>(data), remoteUUID);
+                      this->template publishEvent<gengine::interface::event::SharedEvent<T>>(event);
                   },
                   sizeof(T))));
     m_id++;

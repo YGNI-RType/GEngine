@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEngine/interface/events/SharedEvent.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
@@ -48,9 +48,7 @@ private:
 
     std::uint64_t m_id = 0;
     const Network::NetServer &m_server;
-    std::unordered_map<std::uint64_t,
-                       std::pair<std::function<void(void *, interface::component::RemoteLocal &)>, size_t>>
-        m_eventsCallbacks;
+    std::unordered_map<std::uint64_t, std::pair<std::function<void(void *, uuids::uuid &)>, size_t>> m_eventsCallbacks;
     mutable std::mutex m_netMutex;
 };
 

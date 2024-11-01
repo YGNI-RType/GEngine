@@ -39,6 +39,9 @@ public:
     T &getSystem(void);
 
     template <class T>
+    bool hasSystem(void);
+
+    template <class T>
     void publishEvent(T &event);
 
     template <class T>

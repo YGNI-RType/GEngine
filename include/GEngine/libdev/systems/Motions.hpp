@@ -15,6 +15,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
+#include "GEngine/libdev/components/Accelerations.hpp"
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/Velocities.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
@@ -27,6 +28,18 @@ public:
 };
 
 class Motion3D : public System<Motion3D, component::Transform3D, component::Velocity3D> {
+public:
+    void init(void);
+    void onGameLoop(event::GameLoop &);
+};
+
+class MotionAcceleration2D : public System<MotionAcceleration2D, component::Velocity2D, component::Acceleration2D> {
+public:
+    void init(void);
+    void onGameLoop(event::GameLoop &);
+};
+
+class MotionAcceleration3D : public System<MotionAcceleration3D, component::Velocity3D, component::Acceleration3D> {
 public:
     void init(void);
     void onGameLoop(event::GameLoop &);

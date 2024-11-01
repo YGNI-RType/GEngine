@@ -23,7 +23,7 @@
 #include "GEngine/interface/components/RemoteLocal.hpp"
 #include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/network/components/NetSend.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 
 #define MAX_SNAPSHOT 60
 
@@ -43,13 +43,12 @@ public:
 
     void registerSnapshot(gengine::interface::event::NewRemoteLocal &e);
     void destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e);
-    void createSnapshots(void);
     void getAndSendDeltaDiff(void);
 
 private:
     const snapshot_t &m_currentWorld;
     snapshot_t m_dummySnapshot;
-    std::unordered_map<interface::component::RemoteLocal, std::pair<uint64_t, snapshots_t>> m_clientSnapshots;
+    std::unordered_map<uuids::uuid, std::pair<uint64_t, snapshots_t>> m_clientSnapshots;
     uint64_t m_currentSnapshotId = -1;
 
     std::pair<std::vector<uint8_t>, std::map<ecs::component::ComponentTools::component_id_t, const std::any>>

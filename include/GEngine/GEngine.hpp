@@ -115,9 +115,11 @@ public:
      * This function ensures that the GEngine instance is initialized only once using a thread-safe mechanism.
      * It also registers the necessary game engine elements by calling the registerElements method.
      */
-    static void init(void) {
-        std::call_once(initFlag, []() {
+    static void init(int size, const char **argv) {
+        std::call_once(initFlag, [size, argv]() {
             instance.reset(new GEngine());
+            instance->getLocal().setParams(argv, size);
+            instance->getRemote().setParams(argv, size);
             instance->registerElements();
         });
     }
@@ -132,7 +134,7 @@ public:
      */
     static GEngine &getInstance(void) {
         if (!instance)
-            init();
+            init(0, NULL);
         return *instance;
     }
 
@@ -146,7 +148,7 @@ public:
      */
     static GEngine *getInstancePointer(void) {
         if (!instance)
-            init();
+            init(0, NULL);
         return instance.get();
     }
 
@@ -160,13 +162,13 @@ public:
 
     static gengine::BaseEngine &getLocal(void) {
         if (!instance)
-            init();
+            init(0, NULL);
         return instance->m_local;
     }
 
     static gengine::BaseEngine &getRemote(void) {
         if (!instance)
-            init();
+            init(0, NULL);
         return instance->m_remote;
     }
 
@@ -187,7 +189,7 @@ private:
      */
     static void registerElements(void) {
         if (!instance)
-            init();
+            init(0, NULL);
 
         auto sharedRegistry = std::make_unique<Registry>(instance->m_local, instance->m_remote);
 
