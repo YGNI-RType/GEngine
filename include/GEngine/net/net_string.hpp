@@ -77,7 +77,7 @@ public:
         return m_array[index];
     }
 
-    char &operator[](size_t index) const {
+    char operator[](size_t index) const {
         if (index >= Size)
             throw std::out_of_range("Index out of range");
         return m_array[index];
