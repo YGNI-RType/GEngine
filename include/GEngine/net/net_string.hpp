@@ -25,15 +25,15 @@ public:
         size_t len = std::strlen(str);
         if (len > Size)
             throw std::out_of_range("String too long");
+        m_array.fill(0);
         std::memcpy(m_array.data(), str, len);
-        m_array[len] = 0; // Null-terminate the string
     }
     NetString(const std::string &str) {
         size_t len = str.size();
         if (len > Size)
             throw std::out_of_range("String too long");
+        m_array.fill(0);
         std::memcpy(m_array.data(), str.c_str(), len);
-        m_array[len] = 0; // Null-terminate the string
     }
 
     NetString(const NetString &other) {
@@ -55,6 +55,10 @@ public:
         return size();
     }
 
+    size_t max() const {
+        return m_array.size();
+    }
+
     bool empty() const {
         return m_array[0] == 0;
     }
@@ -67,7 +71,7 @@ public:
         return reinterpret_cast<char *>(m_array.data());
     }
 
-    char operator[](size_t index) {
+    char &operator[](size_t index) {
         if (index >= Size)
             throw std::out_of_range("Index out of range");
         return m_array[index];

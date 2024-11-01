@@ -27,4 +27,9 @@ struct DisconnectFromServer : gengine::Event {
     DisconnectFromServer() {
     }
 };
+
+struct PingLan : gengine::Event {
+    PingLan() {
+    }
+};
 } // namespace gengine::interface::network::event
