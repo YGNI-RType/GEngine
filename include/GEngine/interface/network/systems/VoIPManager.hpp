@@ -15,7 +15,7 @@
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
 #include "GEngine/interface/events/RemoteLocal.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerEventReceiver.hpp"
 
 namespace gengine::interface::network::system {
 

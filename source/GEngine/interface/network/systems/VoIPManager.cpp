@@ -46,8 +46,8 @@ void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
             msgSend = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);
         }
         Network::UDPG_VoIPSegment segment = {.size = static_cast<uint16_t>(bufferSize)};
-        std::memcpy(&segment.playerIndex1, remote.getUUIDBytes().as_bytes().data(), 8);
-        std::memcpy(&segment.playerIndex2, remote.getUUIDBytes().as_bytes().data() + 8, 8);
+        std::memcpy(&segment.playerIndex1, remote.as_bytes().data(), 8);
+        std::memcpy(&segment.playerIndex2, remote.as_bytes().data() + 8, 8);
 
         msgSend.appendData(segment);
         msgSend.appendData((const void *)buffer.data(), bufferSize);

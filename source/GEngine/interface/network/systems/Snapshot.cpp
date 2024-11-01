@@ -65,7 +65,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
         // << " UDP Last ACK: " << lastReceived << std::endl;
 
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
-        auto &last = snapshots[lastId % MAX_SNAPSHOT];
+        auto &last = diff > MAX_SNAPSHOT ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
         bool fullSnapshot = diff > MAX_SNAPSHOT;
 
         auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
@@ -108,6 +108,9 @@ void Snapshot::getAndSendDeltaDiff(void) {
         msg.stopCompressingSegment(false);
         msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
+        if (!server.isRunning())
+            continue;
+        client.getNet()->pushData(msg, true);
     }
 }
 
