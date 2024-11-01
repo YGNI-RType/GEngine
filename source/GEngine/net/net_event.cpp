@@ -7,6 +7,7 @@
 
 #include "GEngine/net/net_event.hpp"
 #include "GEngine/net/events/connection.hpp"
+#include "GEngine/net/events/record.hpp"
 #include "GEngine/net/net.hpp"
 
 namespace Network::Event {
@@ -69,6 +70,45 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
     case PING_LAN:
         NET::pingServers();
         break;
+    case RECORD: {
+        auto &record = NET::getRecord();
+
+        auto &dataPtr = reinterpret_cast<Info<RecordInfo> &>(header).data;
+        switch (dataPtr->mode) {
+        case RecordInfo::STOP:
+            if (record.isRecording())
+                record.endRecord();
+            /* todo end watching */
+            break;
+        case RecordInfo::RECORD: {
+            if (record.isRecording())
+                break;
+
+            if (!record.isEnabled())
+                record.init();
+
+            if (!record.startRecord())
+                break;
+
+            auto &client = NET::getClient();
+            client.refreshSnapshots();
+        } break;
+        case RecordInfo::WATCH:
+            if (record.isWatching())
+                break;
+
+            if (!record.isEnabled())
+                record.init();
+
+            if (!record.startWatch(dataPtr->demoFile))
+                break;
+
+            record.startWatchFakeNet();
+            break;
+        default:
+            break;
+        }
+    }
     default:
         break;
     }

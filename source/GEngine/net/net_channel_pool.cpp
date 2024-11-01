@@ -79,6 +79,12 @@ bool PacketPoolUdp::deleteSequence(uint32_t sequence) {
     return true;
 }
 
+void PacketPoolUdp::clear(void) {
+    m_poolSequences.clear();
+    m_pool.clear();
+    m_poolSize = 0;
+}
+
 /*****************************************************************/
 
 /* tells if it's first time or not */

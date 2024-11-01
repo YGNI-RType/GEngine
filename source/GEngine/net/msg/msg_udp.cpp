@@ -29,7 +29,7 @@ UDPMessage &UDPMessage::operator=(const UDPMessage &other) {
     return *this;
 }
 
-void UDPMessage::setSerialize(UDPSerializedMessage &msg) {
+void UDPMessage::setSerialize(const UDPSerializedMessage &msg) {
     m_type = msg.type;
     m_flags = msg.flag;
     std::memcpy(m_data, &msg.data, msg.curSize);
@@ -81,11 +81,11 @@ void UDPMessage::setWasFragmented(bool fragmented) {
         m_flags &= ~WAS_FRAGMENTED;
 }
 
-void UDPMessage::setEncrypted(bool encrypted) {
-    if (encrypted)
-        m_flags |= ENCRYPTED;
+void UDPMessage::setFullAck(bool fullack) {
+    if (fullack)
+        m_flags |= FULL_ACK;
     else
-        m_flags &= ~ENCRYPTED;
+        m_flags &= ~FULL_ACK;
 }
 
 void UDPMessage::setAck(bool ack) {
@@ -93,6 +93,13 @@ void UDPMessage::setAck(bool ack) {
         m_flags |= ACK;
     else
         m_flags &= ~ACK;
+}
+
+void UDPMessage::setFastRetransmission(bool fastRetransmission) {
+    if (fastRetransmission)
+        m_flags |= FAST_RETRANSMISSION;
+    else
+        m_flags &= ~FAST_RETRANSMISSION;
 }
 
 uint64_t UDPMessage::getAckNumber(void) const {
