@@ -29,7 +29,7 @@ UDPMessage &UDPMessage::operator=(const UDPMessage &other) {
     return *this;
 }
 
-void UDPMessage::setSerialize(UDPSerializedMessage &msg) {
+void UDPMessage::setSerialize(const UDPSerializedMessage &msg) {
     m_type = msg.type;
     m_flags = msg.flag;
     std::memcpy(m_data, &msg.data, msg.curSize);

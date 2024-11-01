@@ -29,6 +29,14 @@ PACK(struct HeaderSerializedMessage {
     uint64_t curSize;
 });
 
+PACK(struct SerializedMessage {
+    uint8_t type;
+    uint64_t curSize;
+    uint8_t flag;
+    byte_t data[MAX_TCP_MSGLEN];
+});
+
+
 PACK(struct UDPSerializedMessage {
     uint8_t type;
     uint64_t curSize;
@@ -39,7 +47,7 @@ PACK(struct UDPSerializedMessage {
 PACK(struct TCPSerializedMessage {
     uint8_t type;
     uint64_t curSize;
-    bool isFinished = true;
+    uint8_t flag;
     byte_t data[MAX_TCP_MSGLEN];
 });
 
@@ -309,7 +317,7 @@ public:
 
     void getSerialize(UDPSerializedMessage &msg) const;
     std::vector<UDPSerializedMessage> getSerializeFragmented(void) const;
-    void setSerialize(UDPSerializedMessage &msg);
+    void setSerialize(const UDPSerializedMessage &msg);
 
     uint64_t getAckNumber(void) const;
 

@@ -111,6 +111,9 @@ bool NET::start(void) {
         while (mg_aEnable)
             sleep(NET_SLEEP_DURATION);
     });
+
+    if (mg_client.isEnabled())
+        mg_record.startWatchThread();
     return true;
 }
 

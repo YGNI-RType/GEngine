@@ -8,6 +8,9 @@
 #pragma once
 
 #include <atomic>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <fstream>
 
 #include "msg.hpp"
@@ -23,18 +26,21 @@ hash of binary (so we close if the binary is a different one...)
 class NetRecord {
 public:
     NetRecord() = default;
-    NetRecord(bool shouldWrite, const std::string &demoFile = "");
     ~NetRecord();
 
-    void init(bool shouldWrite, const std::string &demoFile = "");
+    void init(void);
 
     /* force the server to send fullsnapshot */
     bool startRecord(void);
     bool endRecord(void);
 
-    void update(const AMessage &msg);
+    bool startWatch(const std::string &filePath);
+    bool endWatch(void);
+    void startWatchThread(void);
+    void startWatchFakeNet(void);
 
-    void updateWatch();
+    void update(const AMessage &msg);
+    void watchLoop(void);
 
     bool isEnabled(void) const {
         return m_enabled;
@@ -47,19 +53,27 @@ public:
     }
 
 private:
-    void write(const void *data, uint32_t size);
-    bool read(void *data, uint32_t &sleepDuration);
+    bool updateWatch(SerializedMessage &msg, uint8_t type, uint32_t sleepDuration);
 
-    void openFile(const std::string &filename);
+    bool read(SerializedMessage &msg, uint8_t &type, uint32_t &sleepDuration);
+
+    void openFile(const std::string &filename, bool checkHash = false);
 
 private:
     std::fstream m_fs;
     bool m_enabled = false;
+    bool m_alive = true;
     std::atomic_bool m_recording = false;
     std::atomic_bool m_recordingCompressed = false;
     std::atomic_bool m_watching = false;
+    bool m_watchThreadRunning = false;
+
+    std::thread m_watchThread;
+    std::mutex m_watchMutex;
+    std::condition_variable m_watchCV;
 
     std::string m_recordFilePath;
+    std::string m_decompressFilePath;
 
     size_t m_execHash;
 

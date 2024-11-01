@@ -41,6 +41,9 @@ public:
 
     void init(void);
     void stop(void);
+    bool isEnabled(void) const {
+        return m_enabled;
+    }
 
     /* index of the pinged servers */
     bool connectToServer(size_t index);
@@ -53,6 +56,7 @@ public:
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    bool handleServerUDPSanitized(const UDPMessage &msg, size_t readOffset);
     bool handleServerTCP(const TCPMessage &msg);
 
     void checkTimeouts(void);

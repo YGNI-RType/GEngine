@@ -85,13 +85,26 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
                 break;
 
             if (!record.isEnabled())
-                record.init(true);
+                record.init();
+
             if (!record.startRecord())
                 break;
 
             auto &client = NET::getClient();
             client.refreshSnapshots();
         } break;
+        case RecordInfo::WATCH:
+            if (record.isWatching())
+                break;
+
+            if (!record.isEnabled())
+                record.init();
+
+            if (!record.startWatch(dataPtr->demoFile))
+                break;
+
+            record.startWatchFakeNet();
+            break;
         default:
             break;
         }

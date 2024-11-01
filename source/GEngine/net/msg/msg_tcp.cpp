@@ -14,9 +14,9 @@ TCPMessage::TCPMessage(uint8_t type)
 }
 
 TCPMessage &TCPMessage::operator=(const TCPMessage &other) {
-    m_isFinished = other.m_isFinished;
     m_curSize = other.m_curSize;
     m_type = other.m_type;
+    m_flags = other.m_flags;
     std::memcpy(m_data, other.m_data, m_curSize);
     return *this;
 }
@@ -24,14 +24,14 @@ TCPMessage &TCPMessage::operator=(const TCPMessage &other) {
 void TCPMessage::setSerialize(const TCPSerializedMessage &msg) {
     m_type = msg.type;
     m_curSize = msg.curSize;
-    m_isFinished = msg.isFinished;
+    m_flags = msg.flag;
     std::memcpy(m_data, &msg.data, m_curSize);
 }
 
 void TCPMessage::getSerialize(TCPSerializedMessage &msg) const {
     msg.type = m_type;
     msg.curSize = m_curSize;
-    msg.isFinished = m_isFinished;
+    msg.flag = m_flags;
     std::memcpy(&msg.data, m_data, m_curSize);
 }
 

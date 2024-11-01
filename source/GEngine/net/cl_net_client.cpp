@@ -108,12 +108,16 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
         addr != m_netChannel.getAddressUDP()) // why sending udp packets to the client ? who are you ?
         return false;
 
-    if (!m_netChannel.readDatagram(socket, msg, readOffset))
+    if (m_netRecord.isWatching() || !m_netChannel.readDatagram(socket, msg, readOffset))
         return true;
 
     if (m_netRecord.isRecording())
         m_netRecord.update(msg);
 
+    return handleServerUDPSanitized(msg, readOffset);
+}
+
+bool CLNetClient::handleServerUDPSanitized(const UDPMessage &msg, size_t readOffset) {
     switch (msg.getType()) {
     case SV_SNAPSHOT:
         pushIncommingDataAck(msg, readOffset);
@@ -136,6 +140,9 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
     TCPMessage msg(0);
     if (!m_netChannel.readStream(msg))
         return false;
+
+    if (m_netRecord.isWatching())
+        return true;
 
     if (m_netChannel.isDisconnected()) {
         disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
@@ -274,7 +281,7 @@ bool CLNetClient::pushIncommingStream(const TCPMessage &msg, size_t readCount) {
 /***************/
 
 bool CLNetClient::sendPackets(void) {
-    if (!m_enabled || !m_netChannel.isEnabled())
+    if (!m_enabled || !m_netChannel.isEnabled() || !m_netChannel.canCommunicate())
         return false;
 
     size_t byteSent = 0;

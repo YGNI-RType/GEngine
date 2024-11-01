@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/net/net_record.hpp"
+#include "GEngine/net/net.hpp"
 
 #include <bzlib.h>
 #include <chrono>
@@ -15,12 +16,7 @@
 #include <vector>
 
 namespace Network {
-NetRecord::NetRecord(bool shouldWrite, const std::string &demoFilePath)
-    : m_enabled(true) {
-    init(shouldWrite, demoFilePath);
-}
-
-void NetRecord::init(bool shouldWrite, const std::string &demoFilePath) {
+void NetRecord::init(void) {
     m_enabled = true;
 
 #ifdef _WIN32
@@ -48,11 +44,6 @@ void NetRecord::init(bool shouldWrite, const std::string &demoFilePath) {
         m_recordFilePath = ogRecordFilePath + "." + std::to_string(counter);
         counter++;
     }
-
-    if (!shouldWrite) {
-        openFile(demoFilePath);
-        return;
-    }
 }
 
 void NetRecord::update(const AMessage &msg) {
@@ -73,18 +64,38 @@ void NetRecord::update(const AMessage &msg) {
     m_lastWriteTime = now;
 
     m_fs.write(reinterpret_cast<const char *>(&dt), sizeof(dt));
+
     auto msgType = msg.getType();
     auto msgFlags = msg.getFlags();
     auto msgSize = msg.getSize();
     auto msgData = msg.getData();
     auto msgClassType = msg.getClassType();
-    m_fs.write(reinterpret_cast<const char *>(&msgType), sizeof(msgType));
     m_fs.write(reinterpret_cast<const char *>(&msgClassType), sizeof(msgClassType));
+    m_fs.write(reinterpret_cast<const char *>(&msgType), sizeof(msgType));
     m_fs.write(reinterpret_cast<const char *>(&msgFlags), sizeof(msgFlags));
     m_fs.write(reinterpret_cast<const char *>(&msgSize), sizeof(msgSize));
     m_fs.write(reinterpret_cast<const char *>(msgData), msgSize);
 
     std::cout << "updating record: " << dt << ", size: " << msgSize << std::endl;
+}
+
+bool NetRecord::read(SerializedMessage &msgBuffer, uint8_t &classType, uint32_t &sleepDuration) {
+    if (!m_fs.read((char *)&sleepDuration, sizeof(sleepDuration)))
+        return false;
+    if ((int64_t)sleepDuration == -1)
+        return false;
+
+    if (!m_fs.read(reinterpret_cast<char *>(&classType), sizeof(classType)))
+        return false;
+    if (!m_fs.read(reinterpret_cast<char *>(&msgBuffer.type), sizeof(msgBuffer.type)))
+        return false;
+    if (!m_fs.read(reinterpret_cast<char *>(&msgBuffer.flag), sizeof(msgBuffer.flag)))
+        return false;
+    if (!m_fs.read(reinterpret_cast<char *>(&msgBuffer.curSize), sizeof(msgBuffer.curSize)))
+        return false;
+    if (!m_fs.read(reinterpret_cast<char *>(msgBuffer.data), msgBuffer.curSize))
+        return false;
+    return true;
 }
 
 bool NetRecord::startRecord(void) {
@@ -157,20 +168,22 @@ bool NetRecord::endRecord(void) {
     return true;
 }
 
-void NetRecord::openFile(const std::string &filename) {
-    m_fs.open(filename, std::ios::out | std::ios::binary);
+void NetRecord::openFile(const std::string &filename, bool checkHash) {
+    m_fs.open(filename, std::ios::in | std::ios::binary);
     if (!m_fs.is_open())
         throw std::runtime_error("Failed to open record file");
 
-    uint32_t magicNumber;
+    uint64_t magicNumber;
     m_fs.read(reinterpret_cast<char *>(&magicNumber), sizeof(magicNumber));
     if (magicNumber != MAGIC_NUMBER)
         throw std::runtime_error("Invalid magic number in record file");
 
-    std::size_t execHash;
-    m_fs.read(reinterpret_cast<char *>(&execHash), sizeof(execHash));
-    if (execHash != m_execHash)
-        throw std::runtime_error("Invalid executable hash in record file");
+    if (checkHash) {
+        std::size_t execHash;
+        m_fs.read(reinterpret_cast<char *>(&execHash), sizeof(execHash));
+        if (execHash != m_execHash)
+            throw std::runtime_error("Invalid executable hash in record file");
+    }
 
     m_fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
     std::vector<char> compressedBuffer((std::istreambuf_iterator<char>(m_fs)), std::istreambuf_iterator<char>());
@@ -190,57 +203,135 @@ void NetRecord::openFile(const std::string &filename) {
     m_fs.clear();
 
     // Create a temporary file in a cross-platform way
-    std::string tempFilePath;
 #ifdef _WIN32
     char tempPath[MAX_PATH];
     GetTempPath(MAX_PATH, tempPath);
-    tempFilePath = std::string(tempPath) + "decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
+    m_decompressFilePath = std::string(tempPath) + "decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
 #else
-    tempFilePath = "/tmp/decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
+    m_decompressFilePath = "/tmp/decompressed_record_" + std::to_string(std::time(nullptr)) + ".bin";
 #endif
 
-    std::ofstream tempFile(tempFilePath, std::ios::out | std::ios::binary);
+    std::ofstream tempFile(m_decompressFilePath, std::ios::out | std::ios::binary);
     if (!tempFile.is_open())
         throw std::runtime_error("Failed to open temporary file for writing");
 
     tempFile.write(decompressedBuffer.data(), decompressedBuffer.size());
     tempFile.close();
 
-    m_fs.open(tempFilePath, std::ios::in | std::ios::binary);
+    m_fs.open(m_decompressFilePath, std::ios::in | std::ios::binary);
     if (!m_fs.is_open())
         throw std::runtime_error("Failed to open temporary file for reading");
 
     m_fs.seekg(0, std::ios::beg);
-    m_watching = true;
 }
 
-void NetRecord::updateWatch() {
+bool NetRecord::startWatch(const std::string &filePath) {
+    if (isRecording() || isWatching())
+        return false;
+
+    try {
+        openFile(filePath);
+    } catch (const std::exception &e) {
+        std::cerr << "Failed to open record file: " << e.what() << std::endl;
+        return false;
+    }
+    std::cout << "Started demo watch..." << std::endl;
+    m_watching = true;
+    return true;
+}
+
+bool NetRecord::updateWatch(SerializedMessage &msg, uint8_t classType, uint32_t sleepDuration) {
+    if (sleepDuration > 0)
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
+    auto &client = NET::getClient();
+
+    if (classType == 'T') {
+        TCPMessage tcpMsg(0);
+        tcpMsg.setSerialize(reinterpret_cast<const TCPSerializedMessage &>(msg));
+        return client.handleServerTCP(tcpMsg);
+    } else if (classType == 'U') {
+        UDPMessage udpMsg(0, 0);
+        size_t readCount = 0;
+        udpMsg.setSerialize(reinterpret_cast<const UDPSerializedMessage &>(msg));
+
+        if (udpMsg.hasHeader())
+            readCount += sizeof(UDPG_NetChannelHeader);
+        return client.handleServerUDPSanitized(udpMsg, readCount);
+    }
+    return false;
+}
+
+/* this is in a seperated thread */
+void NetRecord::watchLoop(void) {
     if (!isWatching())
         return;
 
-    uint32_t sleepDuration;
-    while (read(nullptr, sleepDuration))
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
+    while (m_watching) {
+        SerializedMessage msg;
+        uint8_t classType;
+        uint32_t sleepDuration;
+
+        if (!read(msg, classType, sleepDuration))
+            break;
+
+        if (!updateWatch(msg, classType, sleepDuration))
+            break;
+    }
+    endWatch();
 }
 
-void NetRecord::write(const void *data, uint32_t size) {
-    m_fs.write((const char *)&size, sizeof(size));
-    m_fs.write(reinterpret_cast<const char *>(data), size);
+void NetRecord::startWatchThread(void) {
+    m_watchThread = std::thread([this]() {
+        while (true) {
+            std::unique_lock<std::mutex> lock(m_watchMutex);
+            m_watchCV.wait(lock, [this]() { return m_watchThreadRunning; });
+            if (!m_alive)
+                break;
+            m_watchThreadRunning = false;
+            watchLoop();
+        }
+    });
 }
 
-bool NetRecord::read(void *data, uint32_t &sleepDuration) {
-    uint32_t size;
-    m_fs.read((char *)&size, sizeof(size));
-    if ((int64_t)size == -1)
+void NetRecord::startWatchFakeNet(void) {
+    if (!isWatching())
+        return;
+
+    {
+        std::lock_guard<std::mutex> lock(m_watchMutex);
+        m_watchThreadRunning = true;
+    }
+    m_watchCV.notify_all();
+}
+
+bool NetRecord::endWatch(void) {
+    if (!isWatching())
         return false;
 
-    m_fs.read((char *)&sleepDuration, sizeof(size));
-    m_fs.read(reinterpret_cast<char *>(data), size);
+    m_watching = false;
+    std::cout << "Demo ended." << std::endl;
+    if (std::remove(m_decompressFilePath.c_str()) != 0)
+        std::cerr << "Error deleting temporary decompressed record file: " << m_decompressFilePath << std::endl;
     return true;
 }
 
 NetRecord::~NetRecord() {
+    if (isRecording())
+        endRecord();
+    else if (isWatching())
+        endWatch();
+
     if (m_fs.is_open())
         m_fs.close();
+
+    if (m_watchThread.joinable()) {
+        m_alive = false;
+        {
+            std::lock_guard<std::mutex> lock(m_watchMutex);
+            m_watchThreadRunning = true;
+        }
+        m_watchCV.notify_one();
+        m_watchThread.join();
+    }
 }
 } // namespace Network
