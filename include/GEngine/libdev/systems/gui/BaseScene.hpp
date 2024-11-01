@@ -10,6 +10,7 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/components/gui/SceneMember.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
+#include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/gui/Scenes.hpp"
 
 namespace gengine::system::gui {
@@ -24,9 +25,9 @@ public:
 
     virtual void onClear(event::gui::ClearScene &e);
 
+    // virtual void onUpdate(gengine::system::event::GameLoop &e);
+
 protected:
     short m_sceneId;
 };
 } // namespace gengine::system::gui
-
-#include "BaseScene.inl"

@@ -5,22 +5,21 @@
 ** BaseScene.cpp
 */
 
-#pragma once
+#include "GEngine/libdev/systems/gui/BaseScene.hpp"
 
 namespace gengine::system::gui {
-// template <class... DependTypes>
 BaseScene::BaseScene(short sceneId)
     : m_sceneId(sceneId) {
 }
 
-// template <class... DependTypes>
 void BaseScene::init(void) {
     subscribeToEvent<event::gui::ClearScene>(&BaseScene::onClear);
     subscribeToEvent<event::gui::SpawnScene>(&BaseScene::onSpawn);
 }
 
-// template <class... DependTypes>
 void BaseScene::onClear(event::gui::ClearScene &e) {
+    if (e.sceneId != m_sceneId)
+        return;
     auto &members = getComponents<component::gui::SceneMember>();
     std::queue<ecs::entity::Entity> toKill;
 
@@ -33,4 +32,4 @@ void BaseScene::onClear(event::gui::ClearScene &e) {
         toKill.pop();
     }
 }
-} // namespace gengine::system::gui
+}

@@ -22,8 +22,8 @@ void SceneManager::onStartEngine(event::StartEngine &e) {
 }
 
 void SceneManager::onSwitchScene(event::gui::SwitchScene &e) {
-    publishEvent<event::gui::SpawnScene>(e.sceneId);
     publishEvent<event::gui::ClearScene>(m_currentScene);
     m_currentScene = e.sceneId;
+    publishEvent<event::gui::SpawnScene>(m_currentScene);
 }
 } // namespace gengine::system::gui

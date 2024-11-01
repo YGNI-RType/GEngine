@@ -59,9 +59,15 @@ using Text = gengine::component::driver::output::Text;
 } // namespace geg::component::io
 
 #include "GEngine/libdev/components/gui/Button.hpp"
+#include "GEngine/libdev/components/gui/InputBox.hpp"
 #include "GEngine/libdev/components/gui/SceneMember.hpp"
 namespace geg::component::gui {
     using SceneMember = gengine::component::gui::SceneMember;
+    using Button = gengine::component::gui::Button;
+    using ButtonSpriteTint = gengine::component::gui::ButtonSpriteTint;
+    using ToggleButton = gengine::component::gui::ToggleButton;
+    using SelectButton = gengine::component::gui::SelectButton;
+    using InputBox = gengine::component::gui::InputBox;
 }
 
 #include "GEngine/interface/network/components/NetSend.hpp"
