@@ -59,9 +59,9 @@ public:
     void onMouseLeft(geg::event::io::MouseLeft &e);
 };
 
-class InputBoxHandler
-    : public System<InputBoxHandler, geg::component::io::Text, gengine::component::gui::InputBox, gengine::component::gui::SelectButton, geg::component::Box<1>>,
-      public LocalSystem {
+class InputBoxHandler : public System<InputBoxHandler, geg::component::io::Text, gengine::component::gui::InputBox,
+                                      gengine::component::gui::SelectButton, geg::component::Box<1>>,
+                        public LocalSystem {
 public:
     void init(void) final;
 

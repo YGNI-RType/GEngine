@@ -19,4 +19,4 @@ struct Box : public Component<Box<Size>> {
         : entities(entities) {
     }
 };
-} // namespace gengine::component::gui
+} // namespace gengine::component

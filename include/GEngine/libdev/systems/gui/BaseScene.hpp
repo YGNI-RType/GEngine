@@ -9,8 +9,8 @@
 
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/components/gui/SceneMember.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/gui/Scenes.hpp"
 
 namespace gengine::system::gui {

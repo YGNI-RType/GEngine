@@ -71,7 +71,8 @@ void DrawSprite::onDraw(gengine::system::event::Draw &e) {
             src.width = txt.width;
         if (txt.height < src.height)
             src.height = txt.height;
-        Rectangle r = {pos.x * e.ratio.x, pos.y * e.ratio.y, src.width * scale.x * e.ratio.x, src.height * scale.y * e.ratio.y};
+        Rectangle r = {pos.x * e.ratio.x, pos.y * e.ratio.y, src.width * scale.x * e.ratio.x,
+                       src.height * scale.y * e.ratio.y};
         DrawTexturePro(txt, src, r, {0, 0}, rotation, tint); // TODO origin
     }
 }
@@ -88,8 +89,8 @@ void DrawText::onDraw(gengine::system::event::Draw &e) {
         auto &fontMan = getSystem<FontManager>();
         auto &[path, str, fontSize, spacing, tint] = texts.get(e.entity);
         auto &[pos, scale, rotation] = transforms.get(e.entity);
-        DrawTextPro(fontMan.get(path.c_str()), str.c_str(), Vector2{pos.x * e.ratio.x, pos.y * e.ratio.y}, {0, 0}, rotation, fontSize * scale.y * e.ratio.y,
-                    spacing, tint); // TODO origin
+        DrawTextPro(fontMan.get(path.c_str()), str.c_str(), Vector2{pos.x * e.ratio.x, pos.y * e.ratio.y}, {0, 0},
+                    rotation, fontSize * scale.y * e.ratio.y, spacing, tint); // TODO origin
     }
 }
 

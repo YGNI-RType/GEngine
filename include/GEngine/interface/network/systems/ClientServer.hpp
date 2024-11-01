@@ -18,8 +18,8 @@
 #include <unordered_map>
 
 #include "GEngine/interface/network/events/Connection.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/System.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/net/events/connection.hpp"
 #include "GEngine/net/events/ping_result.hpp"
 #include "GEngine/net/net.hpp"
@@ -47,6 +47,7 @@ public:
     const std::string &getServerIp(void) const;
     uint16_t getServerPort(void) const;
     std::vector<Network::Event::PingInfo> getPingInfos(void) const;
+
 private:
     std::string m_serverIp = "";
     uint16_t m_serverPort = 0;

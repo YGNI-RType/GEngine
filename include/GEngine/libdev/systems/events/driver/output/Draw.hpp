@@ -31,10 +31,12 @@ public:
     Entity entity;
     Vect2 ratio;
     Draw(Entity &&entity, const Vect2 &&ratio)
-        : entity(entity), ratio(ratio) {
+        : entity(entity)
+        , ratio(ratio) {
     }
     Draw(Entity entity, const Vect2 &ratio)
-        : entity(entity), ratio(ratio) {
+        : entity(entity)
+        , ratio(ratio) {
     }
 };
 class EndDraw : public Event {};

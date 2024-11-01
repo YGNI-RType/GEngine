@@ -8,11 +8,11 @@
 #pragma once
 
 #include "GEngine/libdev/components/Accelerations.hpp"
+#include "GEngine/libdev/components/Box.hpp"
 #include "GEngine/libdev/components/HitBoxs.hpp"
 #include "GEngine/libdev/components/SpanLife.hpp"
 #include "GEngine/libdev/components/Transforms.hpp"
 #include "GEngine/libdev/components/Velocities.hpp"
-#include "GEngine/libdev/components/Box.hpp"
 
 namespace geg::component {
 using HitBoxSquare2D = gengine::component::HitBoxSquare2D;
@@ -62,13 +62,13 @@ using Text = gengine::component::driver::output::Text;
 #include "GEngine/libdev/components/gui/InputBox.hpp"
 #include "GEngine/libdev/components/gui/SceneMember.hpp"
 namespace geg::component::gui {
-    using SceneMember = gengine::component::gui::SceneMember;
-    using Button = gengine::component::gui::Button;
-    using ButtonSpriteTint = gengine::component::gui::ButtonSpriteTint;
-    using ToggleButton = gengine::component::gui::ToggleButton;
-    using SelectButton = gengine::component::gui::SelectButton;
-    using InputBox = gengine::component::gui::InputBox;
-}
+using SceneMember = gengine::component::gui::SceneMember;
+using Button = gengine::component::gui::Button;
+using ButtonSpriteTint = gengine::component::gui::ButtonSpriteTint;
+using ToggleButton = gengine::component::gui::ToggleButton;
+using SelectButton = gengine::component::gui::SelectButton;
+using InputBox = gengine::component::gui::InputBox;
+} // namespace geg::component::gui
 
 #include "GEngine/interface/network/components/NetSend.hpp"
 

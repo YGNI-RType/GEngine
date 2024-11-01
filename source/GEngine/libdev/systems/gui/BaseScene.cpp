@@ -23,13 +23,12 @@ void BaseScene::onClear(event::gui::ClearScene &e) {
     auto &members = getComponents<component::gui::SceneMember>();
     std::queue<ecs::entity::Entity> toKill;
 
-    for (auto &[entity, member] : members) {
+    for (auto &[entity, member] : members)
         if (m_sceneId == member.sceneId)
             toKill.push(entity);
-    }
     while (!toKill.empty()) {
         killEntity(toKill.front());
         toKill.pop();
     }
 }
-}
+} // namespace gengine::system::gui
