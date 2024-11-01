@@ -30,11 +30,6 @@ endif()
 add_library(GEngine SHARED ${SOURCES} ${HEADERS})
 add_library(GEngine_static STATIC ${SOURCES} ${HEADERS})
 
-if(WIN32)
-  target_link_libraries(GEngine wsock32 ws2_32)
-  target_link_libraries(GEngine_static wsock32 ws2_32)
-endif()
-
 set(CMAKE_DEBUG_POSTFIX d)
 set_target_properties(GEngine PROPERTIES
     CXX_STANDARD 20
@@ -62,11 +57,12 @@ find_package(stduuid CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 if(WIN32)
-    target_link_libraries(GEngine portaudio ${OPUS_LIBRARIES} BZip2::BZip2 raylib) #TODO suppr glfw
+    target_link_libraries(GEngine wsock32 ws2_32 portaudio ${OPUS_LIBRARIES} BZip2::BZip2 raylib)
+    target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json PUBLIC wsock32 ws2_32)
 else()
-    target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw) #TODO suppr glfw
+    target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw)
+    target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json)
 endif()
-target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json) #TODO suppr glfw
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)
 target_compile_definitions(GEngine_static PRIVATE GENGINE_BUILD)
