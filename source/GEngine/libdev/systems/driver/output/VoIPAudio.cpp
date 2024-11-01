@@ -12,9 +12,9 @@
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
 #include <algorithm>
+#include <math.h>
 #include <opus/opus.h>
 #include <portaudio.h>
-#include <math.h>
 
 namespace gengine::system::driver::output {
 
@@ -24,14 +24,6 @@ constexpr size_t FRAME_SIZE = 960;
 // Opus encoder and decoder
 OpusDecoder *decoder;
 PaStream *playbackStream = nullptr;
-
-void applyHannWindow(std::vector<float>& buffer, int windowLength) {
-    for (int i = 0; i < windowLength && i < buffer.size(); ++i) {
-        float window = 0.5 * (1 - std::cos(2 * M_PI * i / (windowLength - 1)));
-        buffer[i] *= window;
-        buffer[buffer.size() - 1 - i] *= window;
-    }
-}
 
 static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
                             const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
@@ -108,9 +100,6 @@ void VoIPAudio::init(void) {
     const PaDeviceInfo *inputDeviceInfo = Pa_GetDeviceInfo(defaultInputDevice);
     if (inputDeviceInfo == nullptr)
         throw std::runtime_error("Failed to get input device info.");
-
-    // if(m_sampleRate != static_cast<size_t>(inputDeviceInfo->defaultSampleRate))
-    //     std::cerr << "VoIP: Your default sample rate is not 48kHz, this may cause issues." << std::endl;
 
     m_numChannel = inputDeviceInfo->maxInputChannels;
 
@@ -206,60 +195,6 @@ void VoIPAudio::processSoundInput(void) {
                 m_outputBuffers[playerId].insert(m_outputBuffers[playerId].end(), buffer.begin(), buffer.end());
             }
         }
-
-        // std::vector<float> mixedBuffer(FRAME_SIZE, 0.0f);
-
-        // for (const auto &decodedBuffer : decodeVecs) {
-        //     // std::transform(decodedBuffer.begin(), decodedBuffer.end(), mixedBuffer.begin(), mixedBuffer.begin(),
-        //     // std::plus<float>());
-        //     std::transform(decodedBuffer.begin(), decodedBuffer.end(), mixedBuffer.begin(), mixedBuffer.begin(),
-        //                    [decodeVecs](float a, float b) { return (a + b) / float(decodeVecs.size()); });
-        // }
-
-        // // m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
-        // {
-        //     std::lock_guard<std::mutex> lock(m_sndmutex);
-        //     if (m_outputBuffer.empty() || m_outputBuffer.size() < FRAME_SIZE * 2) {
-        //         m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
-        //         continue;
-        //     }
-        //     // if (m_outputBuffer.size() < mixedBuffer.size()) {
-        //     //     std::cout << "jojo" << std::endl;
-        //     //     m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin(), mixedBuffer.end());
-        //     //     continue;
-        //     // }
-        //     std::cout << m_outputBuffer.size() << " b" << std::endl;
-        //     std::transform(mixedBuffer.begin(), mixedBuffer.end(), m_outputBuffer.begin() + FRAME_SIZE,
-        //                    m_outputBuffer.begin() + FRAME_SIZE, [](float a, float b) { return (a + b / 2.f); });
-        // }
-        // }
-        // if (mixedBuffer.size() > m_outputBuffer.size())
-        //     m_outputBuffer.insert(m_outputBuffer.end(), mixedBuffer.begin() + m_outputBuffer.size(),
-        //     mixedBuffer.end());
-        // }
-
-        // if (m_outputBuffer.empty())
-        //     m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
-        // else {
-        //     // std::cout << "fuck" << std::endl;
-        //     if (vecs.size() == 1) {
-        //         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin(), decodedBuffer.end());
-        //         continue;
-        //     }
-
-        //     std::cout << "buf" << std::endl;
-        //     std::transform(decodedBuffer.begin(), decodedBuffer.end(), m_outputBuffer.begin(),
-        //     m_outputBuffer.begin(), [](float a, float b) {
-        //         return (a + b);
-        //     });
-        //     if (decodedBuffer.size() > m_outputBuffer.size())
-        //         m_outputBuffer.insert(m_outputBuffer.end(), decodedBuffer.begin() + m_outputBuffer.size(),
-        //         decodedBuffer.end());
-        // }
-        // Encode captured audio using Opus
-
-        // Add decoded audio to playback buffer
-        // m_outputBuffer.insert(m_outputBuffer.end(), finalBuffer.begin(), finalBuffer.end());
     }
 }
 

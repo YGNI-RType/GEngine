@@ -41,7 +41,8 @@ void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
         size_t bufferSize = msg.getSize() - readCount;
         msg.readData(buffer.data(), readCount, bufferSize);
 
-        if (msgSend.getSize() + sizeof(Network::UDPG_VoIPSegment) + bufferSize > 1400) { /* this shit is too big, sending the actual n=message now */
+        /* this shit is too big, sending the actual message now */
+        if (msgSend.getSize() + sizeof(Network::UDPG_VoIPSegment) + bufferSize > 1400) {
             udpMsgs.push_back(msgSend);
             msgSend = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);
         }

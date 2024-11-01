@@ -20,8 +20,8 @@
 namespace gengine::interface::network::system {
 
 class VoIPManager : public System<VoIPManager, interface::component::RemoteLocal,
-                               gengine::interface::network::system::ServerClientsHandler>,
-                 public RemoteSystem {
+                                  gengine::interface::network::system::ServerClientsHandler>,
+                    public RemoteSystem {
 
 public:
     void init(void) override;

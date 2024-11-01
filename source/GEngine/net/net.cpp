@@ -67,7 +67,8 @@ NetWait NET::mg_wait;
 Event::Manager NET::mg_eventManager;
 NetServer NET::mg_server(mg_socketUdp, mg_socketUdpV6);
 CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_socketUdp,
-                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent(), mg_record);
+                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent(),
+                           mg_record);
 
 std::vector<IP> NET::g_localIPs;
 

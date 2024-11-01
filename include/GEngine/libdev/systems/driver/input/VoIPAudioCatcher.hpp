@@ -13,8 +13,8 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
+#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include <vector>

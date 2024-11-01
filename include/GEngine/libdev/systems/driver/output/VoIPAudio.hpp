@@ -16,11 +16,11 @@
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
-#include <thread>
-#include <mutex>
 #include <atomic>
-#include <vector>
+#include <mutex>
+#include <thread>
 #include <unordered_map>
+#include <vector>
 
 namespace gengine::system::driver::output {
 
@@ -40,7 +40,6 @@ public:
         return m_outputBuffers;
     }
 
-
     float getVolume(void) const {
         return volume;
     }
@@ -55,7 +54,6 @@ public:
     std::mutex &getSndMutex(void) {
         return m_sndmutex;
     }
-
 
 private:
     void processSoundInput(void);
@@ -77,4 +75,4 @@ private:
     mutable std::mutex m_sndmutex;
 };
 
-} // namespace gengine::system::driver::input
+} // namespace gengine::system::driver::output

@@ -64,9 +64,6 @@ void VoIPAudioCatcher::init(void) {
     if (inputDeviceInfo == nullptr)
         throw std::runtime_error("Failed to get input device info.");
 
-    // if(m_sampleRate != static_cast<size_t>(inputDeviceInfo->defaultSampleRate))
-    //     std::cerr << "VoIP: Your default sample rate is not 48kHz, this may cause issues." << std::endl;
-
     m_numChannel = inputDeviceInfo->maxInputChannels;
 
     encoder = opus_encoder_create(SAMPLE_RATE, 1, OPUS_APPLICATION_AUDIO, &iErr);
@@ -83,7 +80,8 @@ void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
         return;
 
     Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::FAST_RETRANSMISSION, Network::CL_VOIP);
-    msg.appendData((const void *)m_captureBuffer.data(), CF_NET_MIN(1400 - sizeof(Network::UDPG_NetChannelHeader), m_captureBuffer.size()));
+    msg.appendData((const void *)m_captureBuffer.data(),
+                   CF_NET_MIN(1400 - sizeof(Network::UDPG_NetChannelHeader), m_captureBuffer.size()));
 
     Network::NET::getClient().pushData(msg);
 

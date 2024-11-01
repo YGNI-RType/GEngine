@@ -7,13 +7,13 @@
 
 #pragma once
 
+#include "msg.hpp"
+
 #include <atomic>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <fstream>
-
-#include "msg.hpp"
+#include <mutex>
+#include <thread>
 
 namespace Network {
 constexpr uint64_t MAGIC_NUMBER = 0x4d4544474547;

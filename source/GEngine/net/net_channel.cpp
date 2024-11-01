@@ -143,9 +143,8 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
         m_udpACKClientLastACK = header.ack;
         m_droppedPackets = header.sequence - udpInSequence + 1;
 
-        if (msg.isFullAck()) {
+        if (msg.isFullAck())
             m_reloadingAck = false;
-        }
 
         /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */
 

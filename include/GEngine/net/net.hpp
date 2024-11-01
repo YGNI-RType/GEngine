@@ -13,10 +13,10 @@
 #include "net_client.hpp"
 #include "net_common.hpp"
 #include "net_event.hpp"
+#include "net_record.hpp"
 #include "net_server.hpp"
 #include "net_socket.hpp"
 #include "net_wait.hpp"
-#include "net_record.hpp"
 
 #include "GEngine/utils/libapi.hpp"
 

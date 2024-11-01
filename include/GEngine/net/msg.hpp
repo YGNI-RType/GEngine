@@ -7,13 +7,13 @@
 
 #pragma once
 
+#include "GEngine/utils/libapi.hpp"
 #include "net_common.hpp"
 #include "net_huffman.hpp"
 #include "structs/msg_all_structs.hpp"
 #include "structs/msg_tcp_structs.hpp"
 #include "structs/msg_udp_structs.hpp"
 #include "utils/pack.hpp"
-#include "GEngine/utils/libapi.hpp"
 
 #include "msg_error.hpp"
 
@@ -35,7 +35,6 @@ PACK(struct SerializedMessage {
     uint8_t flag;
     byte_t data[MAX_TCP_MSGLEN];
 });
-
 
 PACK(struct UDPSerializedMessage {
     uint8_t type;

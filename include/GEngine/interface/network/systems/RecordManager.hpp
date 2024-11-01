@@ -17,14 +17,14 @@
 
 namespace gengine::interface::network::system {
 
-class RecordManager : public System<RecordManager>,
-                 public LocalSystem {
+class RecordManager : public System<RecordManager>, public LocalSystem {
 
 public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
 
     void toggleCapture(gengine::system::driver::input::KeyPEvent &e);
+
 private:
     bool m_started = false;
 };

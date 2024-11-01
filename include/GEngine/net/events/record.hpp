@@ -9,16 +9,16 @@
 
 #include <string>
 
-namespace Network::Event
-{
+namespace Network::Event {
 struct RecordInfo {
 
-    enum Mode { RECORD, WATCH, STOP};
+    enum Mode { RECORD, WATCH, STOP };
 
     std::string demoFile;
     Mode mode;
 
     RecordInfo(Mode recordMode)
-        : mode(recordMode) {}
+        : mode(recordMode) {
+    }
 };
-} // namespace Network
+} // namespace Network::Event

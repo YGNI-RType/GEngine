@@ -85,7 +85,7 @@ void UDPMessage::setFullAck(bool fullack) {
     if (fullack)
         m_flags |= FULL_ACK;
     else
-        m_flags &= ~FULL_ACK;;
+        m_flags &= ~FULL_ACK;
 }
 
 void UDPMessage::setAck(bool ack) {

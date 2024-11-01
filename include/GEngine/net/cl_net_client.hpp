@@ -11,8 +11,8 @@
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
-#include "net_wait.hpp"
 #include "net_record.hpp"
+#include "net_wait.hpp"
 
 #include <memory>
 #include <vector>
@@ -123,7 +123,7 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 2, 1400> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 2, 1400> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 

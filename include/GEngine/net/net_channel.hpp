@@ -182,6 +182,7 @@ public:
 
 public:
     void reloadAck(void);
+
 private:
     bool m_reloadingAck = false;
 
