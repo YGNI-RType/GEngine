@@ -13,7 +13,16 @@
 
 namespace Network {
 
-enum MsgType { CL_BROADCAST_PING, SV_BROADCAST_PING, CL_SENDCMD, SV_SNAPSHOT, CL_EVENT, CL_SV_FRAGMENT };
+enum MsgType {
+    CL_BROADCAST_PING,
+    SV_BROADCAST_PING,
+    CL_SENDCMD,
+    SV_SNAPSHOT,
+    CL_EVENT,
+    CL_SV_FRAGMENT,
+    CL_VOIP,
+    SV_VOIP
+};
 
 struct UDPSV_PingResponse {
     uint16_t tcpv4Port;
@@ -61,5 +70,14 @@ PACK(struct UDPG_FragmentHeaderTo {
 });
 
 /*********************************/
+
+/*********** VoIP ***********/
+
+/* -1 is the end ! */
+PACK(struct UDPG_VoIPSegment {
+    uint64_t playerIndex1;
+    uint64_t playerIndex2;
+    uint16_t size;
+});
 
 } // namespace Network

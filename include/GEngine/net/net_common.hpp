@@ -64,7 +64,7 @@ typedef unsigned short sa_family_t;
 /* Due to MTU possible fragmentation, making the request even slower */
 #define MAX_UDP_PACKET_LENGTH 1450 /* wi-fi : ~1472 / ethernet : 1500 */
 
-#define MAX_UDP_MSGLEN 16384
+#define MAX_UDP_MSGLEN 21000 // 16384
 #define MAX_TCP_MSGLEN 32768
 
 /* in milliseconds */

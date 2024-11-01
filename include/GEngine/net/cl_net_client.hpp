@@ -11,6 +11,7 @@
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
+#include "net_record.hpp"
 #include "net_wait.hpp"
 
 #include <memory>
@@ -26,10 +27,11 @@ struct PingResponse {
 class CLNetClient {
 
 public:
-    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent)
+    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent, NetRecord &record)
         : m_socketUdp(socketUdp)
         , m_addrType(type)
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
+        , m_netRecord(record)
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
         , m_packInDataAck(socketEvent)
@@ -39,6 +41,9 @@ public:
 
     void init(void);
     void stop(void);
+    bool isEnabled(void) const {
+        return m_enabled;
+    }
 
     /* index of the pinged servers */
     bool connectToServer(size_t index);
@@ -51,6 +56,7 @@ public:
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    bool handleServerUDPSanitized(const UDPMessage &msg, size_t readOffset);
     bool handleServerTCP(const TCPMessage &msg);
 
     void checkTimeouts(void);
@@ -69,6 +75,8 @@ public:
     bool isConnected(void) const {
         return m_connectionState >= CON_AUTHORIZING;
     }
+
+    void refreshSnapshots(void);
 
 public:
     bool sendPackets(void);
@@ -107,6 +115,7 @@ private:
     bool pushIncommingDataAck(const UDPMessage &msg, size_t readCount);
     bool pushIncommingStream(const TCPMessage &msg, size_t readCount);
 
+private:
     int m_challenge = -1;
 
     bool m_enabled = false;
@@ -114,7 +123,7 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 1, 160> m_packOutData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 2, 1400> m_packOutData;    /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packInData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 2, 17000> m_packInDataAck; /* snapshot */
 
@@ -125,6 +134,7 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
+    NetRecord &m_netRecord;
 
     std::vector<PingResponse> m_pingedServers;
     uint64_t m_pingSendTime = 0;

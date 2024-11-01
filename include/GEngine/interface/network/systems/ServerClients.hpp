@@ -13,12 +13,15 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
-#include "GEngine/net/net.hpp"
 
 #include <map>
 #include <memory>
 #include <mutex>
 #include <vector>
+
+namespace Network {
+class NetClient;
+} // namespace Network
 
 namespace gengine::interface::network::system {
 class ServerClient {
