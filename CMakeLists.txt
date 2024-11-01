@@ -58,12 +58,15 @@ find_package(portaudio CONFIG REQUIRED)
 find_package(Opus REQUIRED)
 find_package(BZip2 REQUIRED)
 
+find_package(stduuid CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+
 if(WIN32)
     target_link_libraries(GEngine portaudio ${OPUS_LIBRARIES} BZip2::BZip2 raylib) #TODO suppr glfw
 else()
     target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw) #TODO suppr glfw
 endif()
-target_link_libraries(GEngine_static) #TODO suppr glfw
+target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json) #TODO suppr glfw
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)
 target_compile_definitions(GEngine_static PRIVATE GENGINE_BUILD)
