@@ -17,7 +17,7 @@ build_project
 
 echo "Running server..."
 mkfifo pipe
-./r-type_serverd > pipe &
+./poc3d_serverd > pipe &
 SERVER_PID=$!
 tee server_output.log < pipe &
 TEE_PID=$!
@@ -37,7 +37,7 @@ trap cleanup SIGINT
 sleep 1
 
 echo "Running client..."
-./r-type_clientd
+./poc3d_clientd
 
 kill $SERVER_PID 2>/dev/null
 kill $TEE_PID 2>/dev/null

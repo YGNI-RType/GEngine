@@ -18,6 +18,8 @@
 
 #include "Constants.hpp"
 #include "systems/BackgroundMotion.hpp"
+#include "systems/ChangePlayerModel.hpp"
+#include "systems/Guess.hpp"
 #include "systems/Init.hpp"
 #include "systems/InputsToGameEvents.hpp"
 #include "systems/PlayerMotion.hpp"
@@ -36,6 +38,7 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::driver::output::DrawModel>();
     r->registerSystem<gengine::system::driver::output::DrawText>();
     r->registerSystem<gengine::system::driver::output::DrawRectangle>();
+    r->registerSystem<gengine::system::driver::output::DrawCircle>();
 
     r->registerSystem<gengine::system::driver::output::TextureManager>("../assets/sprites");
     r->registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
@@ -55,16 +58,20 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<poc3d::system::Start>();
     r->registerSystem<poc3d::system::BackgroundMotion>();
     r->registerSystem<poc3d::system::PlayerMotion>();
+    r->registerSystem<poc3d::system::ChangePlayerModel>();
+    r->registerSystem<poc3d::system::Guess>();
     r->registerSystem<poc3d::system::Init>();
 
     r->registerSystem<gengine::interface::system::HandleRemoteLocal>();
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::GuessEvent, poc3d::event::ChangePlayerModelEvent, poc3d::event::Sprint,
         gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump,
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::GuessEvent, poc3d::event::ChangePlayerModelEvent, poc3d::event::Sprint,
         gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     // TODO auto register ↓

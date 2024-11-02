@@ -84,6 +84,7 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/GEngineConfig.cmake"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
 "find_dependency(portaudio REQUIRED)\n"
 "find_dependency(Opus REQUIRED)\n"
+"find_dependency(BZip2 REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/GEngineTargets.cmake\")\n"
 )
 

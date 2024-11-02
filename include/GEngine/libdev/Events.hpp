@@ -35,6 +35,7 @@ using CLINewInput = gengine::system::event::CLINewInput;
 #include "GEngine/libdev/systems/events/driver/output/Sound.hpp"
 
 namespace geg::event::io {
+using KeyPressedEvent = gengine::system::event::driver::input::KeyPressed;
 using KeyApostropheEvent = gengine::system::event::driver::input::Key_Apostrophe;
 using KeyCommaEvent = gengine::system::event::driver::input::Key_Comma;
 using KeyMinusEvent = gengine::system::event::driver::input::Key_Minus;
@@ -141,10 +142,11 @@ using KeyKPAddEvent = gengine::system::event::driver::input::Key_KP_Add;
 using KeyKPEnterEvent = gengine::system::event::driver::input::Key_KP_Enter;
 using KeyKPEqualEvent = gengine::system::event::driver::input::Key_KP_Equal;
 
-using MouseButton = gengine::system::event::driver::input::MouseButton;
-using MouseLeft = gengine::system::event::driver::input::Mouse_Left;
-using MouseRight = gengine::system::event::driver::input::Mouse_Right;
-using MouseMiddle = gengine::system::event::driver::input::Mouse_Middle;
+using MouseMoveEvent = gengine::system::event::driver::input::MouseMove;
+using MouseButtonEvent = gengine::system::event::driver::input::MouseButton;
+using MouseLeft = gengine::system::event::driver::input::MouseLeft;
+using MouseRight = gengine::system::event::driver::input::MouseRight;
+using MouseMiddle = gengine::system::event::driver::input::MouseMiddle;
 
 using InputState = gengine::system::event::driver::input::state_t;
 

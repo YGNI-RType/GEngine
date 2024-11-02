@@ -13,50 +13,60 @@
 
 #pragma once
 
-#include "module/raylib_safe.h"
-
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/driver/input/State.hpp"
+#include "GEngine/libdev/tools/Math.hpp"
 
 namespace gengine::system::event::driver::input {
 class MouseButton : public Event {
 public:
-    MouseButton(state_t state, const Vector2 &cursorPos)
+    MouseButton(state_t state, const Vect2 &cursorPos)
         : state(state)
         , cursorPos(cursorPos) {
     }
-    MouseButton(state_t state, const Vector2 &&cursorPos)
+    MouseButton(state_t state, const Vect2 &&cursorPos)
         : state(state)
         , cursorPos(cursorPos) {
     }
     state_t state;
-    Vector2 cursorPos;
+    Vect2 cursorPos;
 };
 
-class Mouse_Left : public MouseButton {
+class MouseMove : public Event {
 public:
-    Mouse_Left(state_t state, const Vector2 &cursorPos)
+    MouseMove(const Vect2 &cursorPos)
+        : cursorPos(cursorPos) {
+    }
+    MouseMove(const Vect2 &&cursorPos)
+        : cursorPos(cursorPos) {
+    }
+    Vect2 cursorPos;
+};
+
+class MouseLeft : public MouseButton {
+public:
+    MouseLeft(state_t state, const Vect2 &cursorPos)
         : MouseButton(state, cursorPos) {
     }
-    Mouse_Left(state_t state, const Vector2 &&cursorPos)
+    MouseLeft(state_t state, const Vect2 &&cursorPos)
         : MouseButton(state, cursorPos) {
     }
 };
-class Mouse_Right : public MouseButton {
+class MouseRight : public MouseButton {
 public:
-    Mouse_Right(state_t state, const Vector2 &cursorPos)
+    MouseRight(state_t state, const Vect2 &cursorPos)
         : MouseButton(state, cursorPos) {
     }
-    Mouse_Right(state_t state, const Vector2 &&cursorPos)
+    MouseRight(state_t state, const Vect2 &&cursorPos)
         : MouseButton(state, cursorPos) {
     }
 };
-class Mouse_Middle : public MouseButton {
+class MouseMiddle : public MouseButton {
 public:
-    Mouse_Middle(state_t state, const Vector2 &cursorPos)
+    MouseMiddle(state_t state, const Vect2 &cursorPos)
         : MouseButton(state, cursorPos) {
     }
-    Mouse_Middle(state_t state, const Vector2 &&cursorPos)
+    MouseMiddle(state_t state, const Vect2 &&cursorPos)
         : MouseButton(state, cursorPos) {
     }
 };

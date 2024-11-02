@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required (VERSION 3.12)
+
+include(cmake/define-compilers.cmake)
 
 if(WIN32)
     set(VCPKG_FALLBACK_ROOT ${CMAKE_CURRENT_BINARY_DIR}/vcpkg CACHE STRING "vcpkg configuration directory to use if vcpkg was not installed on the system before")
@@ -32,25 +34,17 @@ endif()
 
 # Installs a new copy of Vcpkg or updates an existing one
 macro(vcpkg_bootstrap)
-    _install_or_update_vcpkg()
-
-    # Find out whether the user supplied their own VCPKG toolchain file
-    if(NOT DEFINED ${CMAKE_TOOLCHAIN_FILE})
-        if (APPLE)
-            set(CMAKE_OSX_ARCHITECTURES arm64)
-        endif()
-
-        # We know this wasn't set before so we need point the toolchain file to the newly found VCPKG_ROOT
-        set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "")
-
-        # Just setting vcpkg.cmake as toolchain file does not seem to actually pull in the code
-        include(${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
-
-        set(AUTOMATE_VCPKG_USE_SYSTEM_VCPKG OFF)
-    else()
-        # VCPKG_ROOT has been defined by the toolchain file already
-        set(AUTOMATE_VCPKG_USE_SYSTEM_VCPKG ON)
+    if(NOT VCPKG_SHOULD_NOT_UPDATE)
+        _install_or_update_vcpkg()
     endif()
+
+    # We know this wasn't set before so we need point the toolchain file to the newly found VCPKG_ROOT
+    set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "")
+
+    # Just setting vcpkg.cmake as toolchain file does not seem to actually pull in the code
+    include(${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+
+    set(AUTOMATE_VCPKG_USE_SYSTEM_VCPKG OFF)
 
     message(STATUS "Automate VCPKG status:")
     message(STATUS "  VCPKG_ROOT.....: ${VCPKG_ROOT}")
@@ -97,7 +91,7 @@ macro(vcpkg_install_gengine)
     endif()
 
     execute_process(
-        COMMAND ${VCPKG_EXEC} install gengine --overlay-ports=${CMAKE_CURRENT_SOURCE_DIR}/overlay-ports --head
+        COMMAND ${VCPKG_EXEC} install gengine --allow-unsupported --overlay-ports=${CMAKE_CURRENT_SOURCE_DIR}/overlay-ports --head
         WORKING_DIRECTORY ${VCPKG_ROOT}
     )
 endmacro()
