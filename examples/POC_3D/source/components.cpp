@@ -29,6 +29,7 @@ void GEngineDeclareComponents(Registry *r) {
     r->registerComponent<geg::component::io::Model>();
     r->registerComponent<geg::component::io::Text>();
     r->registerComponent<geg::component::io::Rectangle>();
+    r->registerComponent<geg::component::io::Circle>();
 
     r->registerComponent<poc3d::component::Player>();
     r->registerComponent<poc3d::component::Background>();

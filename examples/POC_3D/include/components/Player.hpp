@@ -20,9 +20,11 @@ enum class PlayerState {
 };
 struct Player : public gengine::Component<Player> {
     float speed;
+    float defaultSpeed;
 
-    Player(float newSpeed = DEFAULT_SPEED)
-        : speed(newSpeed) {
+    Player(float defaultSpeed = DEFAULT_SPEED)
+        : speed(defaultSpeed)
+        , defaultSpeed(defaultSpeed) {
     }
 };
 

@@ -106,6 +106,10 @@ public:
         return !(*this == other);
     }
 
+    operator std::string() const {
+        return std::string(c_str());
+    }
+
 private:
     std::array<char, Size> m_array;
 };
