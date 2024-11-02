@@ -9,14 +9,9 @@
 #include "GEngine/GEngine.hpp"
 #include "GEngine/interface/network/Networked.hpp"
 
-int main(int argc, char **argv) {
-    std::string ip;
-    if (argc > 1)
-        ip = std::string(argv[1]);
-    else
-        ip = "127.0.0.1";
+int main(int argc, const char **argv) {
 
-    GEngine::init();
+    GEngine::init(argc, argv);
     gengine::interface::network::Networked interface(GEngine::getLocal(), GEngine::getRemote(), true);
 
     interface.run();

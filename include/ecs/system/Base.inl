@@ -90,8 +90,8 @@ void Base<Derived, DependTypes...>::registerComponent(void) {
 
 template <class Derived, class... DependTypes>
 template <typename... Components>
-void Base<Derived, DependTypes...>::spawnEntity(Components &&...components) {
-    m_ecs->get().spawnEntity(std::forward<Components>(components)...);
+entity::Entity Base<Derived, DependTypes...>::spawnEntity(Components &&...components) {
+    return m_ecs->get().spawnEntity(std::forward<Components>(components)...);
 }
 
 template <class Derived, class... DependTypes>

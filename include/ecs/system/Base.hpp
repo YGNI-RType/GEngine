@@ -66,7 +66,7 @@ public:
     void registerComponent(void);
 
     template <typename... Components>
-    void spawnEntity(Components &&...components);
+    entity::Entity spawnEntity(Components &&...components);
 
     void killEntity(entity::Entity entity);
 

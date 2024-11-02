@@ -116,6 +116,16 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
     return true;
 }
 
+void NetChannel::reloadAck(void) {
+    if (!m_enabled)
+        return;
+
+    m_udpPoolRecv.clear();
+    /* this will be corrected by the server, not now but eventually. */
+    m_udpACKFullInSequence = 0;
+    m_reloadingAck = true;
+}
+
 bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset) {
     UDPG_NetChannelHeader header;
     msg.readHeader(header, readOffset);
@@ -132,6 +142,9 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
     if (msg.shouldAck()) { /* only care about reliable packets */
         m_udpACKClientLastACK = header.ack;
         m_droppedPackets = header.sequence - udpInSequence + 1;
+
+        if (msg.isFullAck())
+            m_reloadingAck = false;
 
         /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */
 
@@ -186,12 +199,14 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             readOffset = 0;
             bool res = readDatagram(socket, msg, readOffset);
             m_udpPoolRecv.deleteSequence(fragSequence);
-            m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
+            if (!m_reloadingAck)
+                m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
             return res;
         }
         return false;
     } else if (msg.shouldAck() && !msg.wasFragmented()) {
-        m_udpACKFullInSequence = header.sequence;
+        if (!m_reloadingAck)
+            m_udpACKFullInSequence = header.sequence;
     }
 
     udpInSequence = header.sequence;

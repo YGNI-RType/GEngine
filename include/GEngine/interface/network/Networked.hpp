@@ -38,10 +38,9 @@ namespace gengine::interface::network {
 
 class Networked : public Base {
 public:
-    Networked(BaseEngine &driverEngine, BaseEngine &gameEngine, bool block = false)
+    Networked(BaseEngine &driverEngine, BaseEngine &gameEngine)
         : m_remote(gameEngine)
-        , m_local(driverEngine)
-        , m_block(block) {
+        , m_local(driverEngine) {
         m_local.setFirstEntity(ENTITY_ID_START_CLIENT);
         Network::NET::init();
 #ifdef GEngine_Server
@@ -82,7 +81,6 @@ private:
     BaseEngine &m_local;
     // const std::string m_ip;
     // uint16_t m_port;
-    bool m_block;
 };
 
 } // namespace gengine::interface::network

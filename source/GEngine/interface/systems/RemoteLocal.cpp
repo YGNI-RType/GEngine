@@ -39,7 +39,6 @@ void HandleLocal::onGameLoop(geg::event::GameLoop &e [[maybe_unused]]) {
         if (remote.getWhoIAm() == m_whoIAm) {
             m_whoIAm = remote.getUUIDBytes();
 
-            std::cout << "me:" << uuids::to_string(m_whoIAm) << std::endl;
             publishEvent<event::ItsMe>(m_whoIAm);
             // TODO unsubscribe ??
             m_stop = true;

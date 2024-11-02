@@ -13,9 +13,12 @@
 #include "net_client.hpp"
 #include "net_common.hpp"
 #include "net_event.hpp"
+#include "net_record.hpp"
 #include "net_server.hpp"
 #include "net_socket.hpp"
 #include "net_wait.hpp"
+
+#include "GEngine/utils/libapi.hpp"
 
 #include <thread>
 #include <vector>
@@ -24,25 +27,27 @@ namespace Network {
 
 class NET {
 private:
-    static NetWait mg_wait;
+    API static NetWait mg_wait;
 
     static SocketUDP mg_socketUdp;
     static SocketTCPMaster mg_socketListenTcp;
     static SocketUDP mg_socketUdpV6;
     static SocketTCPMaster mg_socketListenTcpV6;
 
-    static NetServer mg_server;
-    static CLNetClient mg_client;
+    API static NetRecord mg_record;
+
+    API static NetServer mg_server;
+    API static CLNetClient mg_client;
 
     static std::vector<IP> g_localIPs;
 
-    static std::atomic_bool mg_aEnable;
+    API static std::atomic_bool mg_aEnable;
     static std::mutex mg_mutex;
     static std::thread mg_networkThread;
 
-    static uint16_t mg_currentUnusedPort;
+    API static uint16_t mg_currentUnusedPort;
 
-    static Event::Manager mg_eventManager;
+    API static Event::Manager mg_eventManager;
 
     /* Init everything */
 public:
@@ -84,6 +89,10 @@ public:
 
     static Event::Manager &getEventManager(void) {
         return mg_eventManager;
+    }
+
+    static NetRecord &getRecord(void) {
+        return mg_record;
     }
 
 public:
