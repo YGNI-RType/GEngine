@@ -20,6 +20,12 @@ struct Transform2D : public Component<Transform2D> {
     Vect2 pos;
     Vect2 scale;
     float rotation; // degree
+
+    Transform2D()
+        : pos{0, 0}
+        , scale{1, 1}
+        , rotation(0) {
+    }
     Transform2D(const Vect2 &pos, const Vect2 &scale = {1, 1}, float rotation = 0.f)
         : pos(pos)
         , scale(scale)
@@ -32,8 +38,8 @@ struct Transform2D : public Component<Transform2D> {
 struct Transform3D : public Component<Transform3D> {
     Vect3 pos;
     Vect3 scale;
-    float rotation;
-    Transform3D(const Vect3 &pos, const Vect3 &scale = {1, 1}, float rotation = 0.f)
+    Vect3 rotation;
+    Transform3D(const Vect3 &pos, const Vect3 &scale = {1, 1, 1}, Vect3 rotation = {0, 0, 0})
         : pos(pos)
         , scale(scale)
         , rotation(rotation) {

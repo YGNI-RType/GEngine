@@ -23,13 +23,9 @@
 #include "GEngine/interface/components/RemoteLocal.hpp"
 #include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/network/components/NetSend.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 
 #define MAX_SNAPSHOT 60
-
-namespace Network {
-class NetClient;
-} // namespace Network
 
 namespace gengine::interface::network::system {
 

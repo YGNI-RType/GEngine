@@ -44,6 +44,9 @@ public:
     T &getSystem(void);
 
     template <typename T>
+    bool hasSystem(void);
+
+    template <typename T>
     component::SparseArray<T> &getComponents(void);
 
     template <typename T>
@@ -63,7 +66,7 @@ public:
     void registerComponent(void);
 
     template <typename... Components>
-    void spawnEntity(Components &&...components);
+    entity::Entity spawnEntity(Components &&...components);
 
     void killEntity(entity::Entity entity);
 

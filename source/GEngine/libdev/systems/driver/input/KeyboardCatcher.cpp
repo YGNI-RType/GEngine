@@ -10,15 +10,17 @@
 
 namespace gengine::system::driver::input {
 void KeyboardCatcher::init(void) {
-    subscribeToEvent<gengine::system::event::RenderLoop>(&KeyboardCatcher::onMainLoop);
+    subscribeToEvent<gengine::system::event::RenderLoop>(&KeyboardCatcher::onRenderLoop);
 }
 
-void KeyboardCatcher::onMainLoop(gengine::system::event::RenderLoop &e) {
+void KeyboardCatcher::onRenderLoop(gengine::system::event::RenderLoop &e) {
     for (KeyboardKey key = KEY_SPACE; key != KEY_NULL; ++key) {
         if (IsKeyReleased(key))
             processKeyInput(key, InputState::RELEASE);
-        if (IsKeyPressed(key))
+        if (IsKeyPressed(key)) {
+            publishEvent(KeyPressedEvent(key));
             processKeyInput(key, InputState::PRESSED);
+        }
         if (IsKeyDown(key))
             processKeyInput(key, InputState::DOWN);
     }

@@ -7,6 +7,9 @@
 
 #include "GEngine/net/cl_net_client.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/time/time.hpp"
+
+#include "GEngine/net/events/ping_result.hpp"
 
 #include <iostream> // todo : remove
 
@@ -91,7 +94,6 @@ bool CLNetClient::handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Addr
     switch (msg.getType()) {
     case SV_BROADCAST_PING:
         getPingResponse(msg, addr);
-        // std::cout << "CL: got ping response !!" << std::endl;
         return true;
     default:
         m_state = CS_ACTIVE;
@@ -106,18 +108,24 @@ bool CLNetClient::handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Addr
         addr != m_netChannel.getAddressUDP()) // why sending udp packets to the client ? who are you ?
         return false;
 
-    if (!m_netChannel.readDatagram(socket, msg, readOffset))
+    if (m_netRecord.isWatching() || !m_netChannel.readDatagram(socket, msg, readOffset))
         return true;
 
+    if (m_netRecord.isRecording())
+        m_netRecord.update(msg);
+
+    return handleServerUDPSanitized(msg, readOffset);
+}
+
+bool CLNetClient::handleServerUDPSanitized(const UDPMessage &msg, size_t readOffset) {
     switch (msg.getType()) {
     case SV_SNAPSHOT:
         pushIncommingDataAck(msg, readOffset);
-        /* todo : add warning if queue il full ? */
         break;
     default:
+        pushIncommingData(msg, readOffset);
         break;
     }
-    /* todo : add things here */
     return true;
 }
 
@@ -126,18 +134,25 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
         return false;
 
     auto &sock = m_netChannel.getTcpSocket();
-    if (set.isSignaled(sock)) {
-        TCPMessage msg(0);
-        if (!m_netChannel.readStream(msg))
-            return false;
+    if (!set.isSignaled(sock))
+        return false;
 
-        if (m_netChannel.isDisconnected()) {
-            disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
-            return true;
-        }
-        return handleServerTCP(msg);
+    TCPMessage msg(0);
+    if (!m_netChannel.readStream(msg))
+        return false;
+
+    if (m_netRecord.isWatching())
+        return true;
+
+    if (m_netChannel.isDisconnected()) {
+        disconnectFromServer(Event::DT_WANTED); /* ensure proper disconnection */
+        return true;
     }
-    return false;
+
+    if (m_netRecord.isRecording())
+        m_netRecord.update(msg);
+
+    return handleServerTCP(msg);
 }
 
 bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
@@ -193,11 +208,20 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     else if (addr.getType() == AT_IPV6)
         addrPtr = std::make_unique<AddressV6>(static_cast<const AddressV6 &>(addr));
 
+    Event::PingInfo pinginfo = {addrPtr->toString(),
+                                addrPtr->getPort(),
+                                data.currentPlayers,
+                                data.maxPlayers,
+                                data.os,
+                                Time::Clock::milliseconds() - m_pingSendTime};
+    NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
+
     m_pingedServers.push_back({data, std::move(addrPtr)});
 }
 
 void CLNetClient::pingLanServers(void) {
     m_pingedServers.clear();
+    m_pingSendTime = Time::Clock::milliseconds();
 
     for (uint16_t port = DEFAULT_PORT; port < DEFAULT_PORT + MAX_TRY_PORTS; port++) {
         auto message = UDPMessage(0, CL_BROADCAST_PING);
@@ -257,7 +281,7 @@ bool CLNetClient::pushIncommingStream(const TCPMessage &msg, size_t readCount) {
 /***************/
 
 bool CLNetClient::sendPackets(void) {
-    if (!m_enabled || !m_netChannel.isEnabled())
+    if (!m_enabled || !m_netChannel.isEnabled() || !m_netChannel.canCommunicate())
         return false;
 
     size_t byteSent = 0;
@@ -287,4 +311,12 @@ bool CLNetClient::sendPackets(void) {
     }
     return true;
 }
+
+void CLNetClient::refreshSnapshots(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return;
+
+    m_netChannel.reloadAck();
+}
+
 } // namespace Network

@@ -3,9 +3,11 @@ project(GEngine)
 
 include(GNUInstallDirs)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
-vcpkg_install_packages(raylib stduuid nlohmann-json)
+vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
 
 file(GLOB_RECURSE SOURCES source/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/deprecated/.*")
@@ -28,11 +30,6 @@ endif()
 add_library(GEngine SHARED ${SOURCES} ${HEADERS})
 add_library(GEngine_static STATIC ${SOURCES} ${HEADERS})
 
-if(WIN32)
-  target_link_libraries(GEngine wsock32 ws2_32)
-  target_link_libraries(GEngine_static wsock32 ws2_32)
-endif()
-
 set(CMAKE_DEBUG_POSTFIX d)
 set_target_properties(GEngine PROPERTIES
     CXX_STANDARD 20
@@ -52,9 +49,20 @@ set_target_properties(GEngine_static PROPERTIES
 
 find_package(raylib CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED) #TODO a supp
+find_package(portaudio CONFIG REQUIRED)
+find_package(Opus REQUIRED)
+find_package(BZip2 REQUIRED)
 
-target_link_libraries(GEngine raylib glfw) #TODO suppr glfw
-target_link_libraries(GEngine_static raylib glfw) #TODO suppr glfw
+find_package(stduuid CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+
+if(WIN32)
+    target_link_libraries(GEngine wsock32 ws2_32 portaudio ${OPUS_LIBRARIES} BZip2::BZip2 raylib)
+    target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json PUBLIC wsock32 ws2_32)
+else()
+    target_link_libraries(GEngine portaudio_static ${OPUS_LIBRARIES} BZip2::BZip2 raylib glfw)
+    target_link_libraries(GEngine_static PRIVATE stduuid nlohmann_json::nlohmann_json)
+endif()
 
 target_compile_definitions(GEngine PRIVATE GENGINE_BUILD)
 target_compile_definitions(GEngine_static PRIVATE GENGINE_BUILD)
@@ -74,6 +82,9 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/GEngineConfig.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(raylib CONFIG REQUIRED)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
+"find_dependency(portaudio REQUIRED)\n"
+"find_dependency(Opus REQUIRED)\n"
+"find_dependency(BZip2 REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/GEngineTargets.cmake\")\n"
 )
 

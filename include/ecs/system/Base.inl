@@ -32,6 +32,13 @@ T &Base<Derived, DependTypes...>::getSystem(void) {
 
 template <class Derived, class... DependTypes>
 template <typename T>
+bool Base<Derived, DependTypes...>::hasSystem(void) {
+    static_assert(is_one_of<T, DependTypes...>::value, "SystemType is not in the list of allowed types");
+    return m_ecs->get().template hasSystem<T>();
+}
+
+template <class Derived, class... DependTypes>
+template <typename T>
 component::SparseArray<T> &Base<Derived, DependTypes...>::getComponents(void) {
     static_assert(is_one_of<T, DependTypes...>::value, "ComponentType is not in the list of allowed types");
     return m_ecs->get().template getComponents<T>();
@@ -83,8 +90,8 @@ void Base<Derived, DependTypes...>::registerComponent(void) {
 
 template <class Derived, class... DependTypes>
 template <typename... Components>
-void Base<Derived, DependTypes...>::spawnEntity(Components &&...components) {
-    m_ecs->get().spawnEntity(std::forward<Components>(components)...);
+entity::Entity Base<Derived, DependTypes...>::spawnEntity(Components &&...components) {
+    return m_ecs->get().spawnEntity(std::forward<Components>(components)...);
 }
 
 template <class Derived, class... DependTypes>

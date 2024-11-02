@@ -83,7 +83,7 @@ public:
     void sendStream(const TCPMessage &msg);
 
 public:
-    /** Net Queue **/
+    /** THREAD SAFE **/
 
     bool pushData(const UDPMessage &msg, bool shouldAck);
     bool pushStream(const TCPMessage &msg);
@@ -91,6 +91,11 @@ public:
     bool popIncommingStream(TCPMessage &msg, size_t &readCount);
     size_t getSizeIncommingData(void) const {
         return m_packInData.size();
+    }
+
+    /* Thread safe to get the net_client's ping */
+    uint16_t getPing_TS(void) const {
+        return m_channel.getPing_TS();
     }
 
 private:
@@ -109,7 +114,7 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 1, 160> m_packInData;       /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 24, 1400> m_packInData;     /* todo : get the size of Usercmd + own voip / */
     NetQueue<UDPMessage, 32, 1400> m_packOutData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 1, 17000> m_packOutDataAck; /* snapshot */
 

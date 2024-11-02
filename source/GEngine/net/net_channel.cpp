@@ -16,6 +16,8 @@
 
 namespace Network {
 
+std::mutex NetChannel::mg_mutex;
+
 NetChannel::NetChannel(bool isServer, std::unique_ptr<Address> clientAddress, SocketTCP &&socket)
     : m_enabled(true)
     , m_toTCPAddress(std::move(clientAddress))
@@ -39,7 +41,7 @@ void NetChannel::createUdpAddress(uint16_t udpport) {
 
 bool NetChannel::sendDatagrams(SocketUDP &socket, uint32_t sequence,
                                const std::vector<const Network::PacketPoolUdp::chunk_t *> &fragments) {
-    auto [msgType, flags, maxSize, lastChunkSz, _mask, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
+    auto [msgType, flags, maxSize, lastChunkSz, _mask, _offset, _] = m_udpPoolSend.getMsgSequenceInfo(sequence);
     uint8_t i = 0;
 
     /* todo : add rate limit and all, only do it once though */
@@ -114,6 +116,16 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
     return true;
 }
 
+void NetChannel::reloadAck(void) {
+    if (!m_enabled)
+        return;
+
+    m_udpPoolRecv.clear();
+    /* this will be corrected by the server, not now but eventually. */
+    m_udpACKFullInSequence = 0;
+    m_reloadingAck = true;
+}
+
 bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOffset) {
     UDPG_NetChannelHeader header;
     msg.readHeader(header, readOffset);
@@ -130,6 +142,16 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
     if (msg.shouldAck()) { /* only care about reliable packets */
         m_udpACKClientLastACK = header.ack;
         m_droppedPackets = header.sequence - udpInSequence + 1;
+
+        if (msg.isFullAck())
+            m_reloadingAck = false;
+
+        /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */
+
+        {
+            std::lock_guard<std::mutex> lock(mg_mutex);
+            m_pingPool[m_pingPoolSize++ % PING_POOL_SIZE] = m_udpACKOutSequence - m_udpACKClientLastACK;
+        }
     }
 
     /****** At this point, the packet is valid *******/
@@ -177,12 +199,14 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
             readOffset = 0;
             bool res = readDatagram(socket, msg, readOffset);
             m_udpPoolRecv.deleteSequence(fragSequence);
-            m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
+            if (!m_reloadingAck)
+                m_udpACKFullInSequence = CF_NET_MAX(sequence, m_udpACKFullInSequence);
             return res;
         }
         return false;
     } else if (msg.shouldAck() && !msg.wasFragmented()) {
-        m_udpACKFullInSequence = header.sequence;
+        if (!m_reloadingAck)
+            m_udpACKFullInSequence = header.sequence;
     }
 
     udpInSequence = header.sequence;
@@ -212,6 +236,26 @@ bool NetChannel::readStream(TCPMessage &msg) {
 
 bool NetChannel::isTimeout() const {
     return Time::Clock::milliseconds() - m_udplastrecv > CVar::net_kick_timeout.getIntValue();
+}
+
+uint16_t NetChannel::getPing_TS(void) const {
+    std::lock_guard<std::mutex> lock(mg_mutex);
+    size_t sz;
+    if (m_pingPoolSize == 0)
+        return 999;
+
+    sz = m_pingPoolSize < PING_POOL_SIZE ? m_pingPoolSize : m_pingPool.size();
+    if (sz == 0)
+        return 999;
+
+    size_t totalPing = 0;
+    for (size_t i = 0; i < sz; i++)
+        totalPing += m_pingPool[i];
+
+    auto res = totalPing / sz;
+    if (res > 999)
+        return 999;
+    return static_cast<uint16_t>(res);
 }
 
 } // namespace Network

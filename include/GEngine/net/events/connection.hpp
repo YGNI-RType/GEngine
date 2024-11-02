@@ -14,10 +14,12 @@ namespace Network::Event {
 struct ConnectInfo {
     std::string ip;
     uint16_t port;
+    bool record;
 
-    ConnectInfo(const std::string &ip, uint16_t port)
+    ConnectInfo(const std::string &ip, uint16_t port, bool record = false)
         : ip(ip)
-        , port(port) {};
+        , port(port)
+        , record(record) {};
     size_t pingIndex = -1;
 };
 

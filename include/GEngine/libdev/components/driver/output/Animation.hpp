@@ -35,18 +35,26 @@ struct AnimationTrack {
     }
 };
 struct Animation : public Component<Animation> {
-    Network::NetString<32> trackName; // Name of the current track (no std::string)
-    size_t currentFrameIndex;         // Index of the current frame in the track
-    float frameDuration;              // Duration of each frame (in seconds)
-    float currentTime;                // Time accumulated to track frame switching
+    Network::NetString<32> trackName;    // Name of the current track (no std::string)
+    size_t currentFrameIndex;            // Index of the current frame in the track
+    float frameDuration;                 // Duration of each frame (in seconds)
+    float currentTime;                   // Time accumulated to track frame switching
+    AnimationTrack::PlaybackMode m_mode; // Playback mode (Forward, Reverse, PingPong, Idling)
 
+    Animation()
+        : trackName("")
+        , currentFrameIndex(0)
+        , frameDuration(0)
+        , currentTime(0)
+        , m_mode(AnimationTrack::PlaybackMode::Forward) {
+    }
     Animation(const std::string &initialTrackName, float frameDuration,
               AnimationTrack::PlaybackMode mode = AnimationTrack::PlaybackMode::Forward, size_t startingFrame = 0)
         : trackName(initialTrackName)
-        , m_mode(mode)
         , currentFrameIndex(startingFrame)
         , frameDuration(frameDuration)
-        , currentTime(0) {
+        , currentTime(0)
+        , m_mode(mode) {
     }
 
     bool operator==(const Animation &) const = default;
@@ -61,8 +69,5 @@ struct Animation : public Component<Animation> {
     AnimationTrack::PlaybackMode getPlaybackMode(void) const {
         return m_mode;
     }
-
-private:
-    AnimationTrack::PlaybackMode m_mode; // Playback mode (Forward, Reverse, PingPong, Idling)
 };
 } // namespace gengine::component::driver::output

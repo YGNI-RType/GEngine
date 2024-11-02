@@ -58,7 +58,7 @@ bool TCPManager::processMessage(void) {
     bool newMessageComplete = false;
     size_t oldOffset = m_curMessageInOffset;
     bool hasMinimum = m_socket.receivePartial(m_curMessageIn, nbBytesToRecv, m_curMessageInOffset);
-    if (hasMinimum && m_curMessageInOffset < m_curMessageInOffset == m_curMessageIn.curSize)
+    if (hasMinimum && m_curMessageInOffset == m_curMessageIn.curSize)
         newMessageComplete = true;
 
     /* Sending */

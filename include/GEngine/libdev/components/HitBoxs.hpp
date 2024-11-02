@@ -18,6 +18,11 @@
 namespace gengine::component {
 struct HitBoxSquare2D : public Component<HitBoxSquare2D> {
     int width, height;
+
+    HitBoxSquare2D()
+        : width(0)
+        , height(0) {
+    }
     HitBoxSquare2D(int width, int height)
         : width(width)
         , height(height) {
@@ -28,9 +33,16 @@ struct HitBoxSquare2D : public Component<HitBoxSquare2D> {
 
 struct HitBoxSquare3D : public Component<HitBoxSquare3D> {
     int width, height, depth;
-    HitBoxSquare3D(int width, int height)
+
+    HitBoxSquare3D()
+        : width(0)
+        , height(0)
+        , depth(0) {
+    }
+    HitBoxSquare3D(int width, int height, int depth)
         : width(width)
-        , height(height) {
+        , height(height)
+        , depth(depth) {
     }
 
     bool operator==(const HitBoxSquare3D &) const = default;
@@ -38,6 +50,10 @@ struct HitBoxSquare3D : public Component<HitBoxSquare3D> {
 
 struct HitBoxCircle2D : public Component<HitBoxCircle2D> {
     int radius;
+
+    HitBoxCircle2D()
+        : radius(0) {
+    }
     HitBoxCircle2D(int radius)
         : radius(radius) {
     }

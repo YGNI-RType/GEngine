@@ -13,13 +13,14 @@ SoundManager::SoundManager(const std::string &folder)
 }
 
 void SoundManager::init(void) {
-    InitAudioDevice();
     subscribeToEvent<gengine::system::event::StartEngine>(&SoundManager::onStartEngine);
     subscribeToEvent<gengine::system::event::StopEngine>(&SoundManager::onStopEngine);
     subscribeToEvent<gengine::system::event::driver::output::Sound>(&SoundManager::onSound);
 }
 
 void SoundManager::onStartEngine(gengine::system::event::StartEngine &e) {
+    SetTraceLogLevel(LOG_WARNING);
+    InitAudioDevice();
     for (const auto &entry : std::filesystem::recursive_directory_iterator(m_folder)) {
         if (entry.is_regular_file()) {
             std::string filePath = entry.path().string();
@@ -44,7 +45,7 @@ void SoundManager::onStopEngine(gengine::system::event::StopEngine &e) {
 const Sound &SoundManager::get(const std::string &path) {
     const auto &sound = m_soundTable.find(path);
     if (sound == m_soundTable.cend())
-        THROW_ERROR("Out of range: This sound does not exist.");
+        THROW_ERROR("Out of range: This sound does not exist. PATH: " + path);
 
     return sound->second;
 }

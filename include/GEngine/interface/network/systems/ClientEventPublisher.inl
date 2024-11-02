@@ -15,7 +15,7 @@ template <class... Events>
 void gengine::interface::network::system::ClientEventPublisher<Events...>::init(void) {
     this->template subscribeToEvent<gengine::system::event::StartEngine>(&ClientEventPublisher::onStartEngine);
     this->template subscribeToEvent<gengine::system::event::GameLoop>(&ClientEventPublisher::onGameLoop);
-    this->template subscribeToEvent<event::ItsMe>(&ClientEventPublisher::setMe);
+    this->template subscribeToEvent<interface::event::ItsMe>(&ClientEventPublisher::setMe);
     (dynamicSubscribe<Events>(), ...);
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<int>(Network::Event::CT_OnServerReady, [this](int) -> void {
@@ -46,7 +46,7 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::onGam
 }
 
 template <class... Events>
-void gengine::interface::network::system::ClientEventPublisher<Events...>::setMe(event::ItsMe &e) {
+void gengine::interface::network::system::ClientEventPublisher<Events...>::setMe(interface::event::ItsMe &e) {
     m_me = e.myUUID;
 }
 
@@ -61,8 +61,8 @@ void gengine::interface::network::system::ClientEventPublisher<Events...>::dynam
         m_msg.appendData<T>(event);
         m_eventCount++;
         if (!m_me.is_nil()) {
-            event::SharedEvent<T> sharedEvent(event, m_me);
-            this->template publishEvent<event::SharedEvent<T>>(sharedEvent);
+            interface::event::SharedEvent<T> sharedEvent(event, m_me);
+            this->template publishEvent<interface::event::SharedEvent<T>>(sharedEvent);
         }
     });
     m_id++;

@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/net/msg.hpp"
+#include "GEngine/net/msg_error.hpp"
 
 namespace Network {
 
@@ -16,20 +17,26 @@ AMessage::AMessage(uint8_t type, uint8_t flags)
     , m_flags(flags) {
 }
 
-void AMessage::appendData(const void *data, std::size_t size) {
+size_t AMessage::appendData(const void *data, std::size_t size, size_t *sizeCompressWatcher) {
     if (m_compressNow) {
         if (m_curSize + size > getMaxMsgSize())
-            return;
+            return size;
         m_huffman.compressContinuous(*this, m_curSize, (const byte_t *)data, size);
-        return;
+        if (sizeCompressWatcher) {
+            *sizeCompressWatcher += size;
+            if (*sizeCompressWatcher > getMaxMsgSize())
+                throw MsgError("Message is too big to compress");
+        }
+        return size;
     }
 
     if (m_curSize + size > getMaxMsgSize())
-        return;
+        return size;
 
     byte_t *myData = getDataMember();
     std::memcpy(myData + m_curSize, data, size);
     m_curSize += size;
+    return size;
 }
 
 void AMessage::writeData(const void *data, std::size_t size, bool updateSize) {
@@ -47,7 +54,7 @@ void AMessage::writeData(const void *data, std::size_t size, bool updateSize) {
 
 void AMessage::readData(void *data, size_t &offset, std::size_t size) const {
     if (offset + size > m_curSize)
-        throw std::runtime_error("Not enough data to read");
+        throw MsgError("Reading Overflow");
 
     const byte_t *myData = getData();
     std::memcpy(data, myData + offset, size);
@@ -56,10 +63,10 @@ void AMessage::readData(void *data, size_t &offset, std::size_t size) const {
 
 void AMessage::readDataCompressed(void *data, size_t &offset, std::size_t size) {
     if (!isCompressed())
-        throw std::runtime_error("Message is not compressed");
+        throw MsgError("Message should be compressed");
 
     if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize())
-        throw std::runtime_error("Message overflow when reading");
+        throw MsgError("Message overflow when reading");
     m_huffman.decompressContinuous(*this, offset, (byte_t *)data, size);
 }
 
@@ -74,7 +81,7 @@ void AMessage::startCompressingSegment(bool reading) {
 
     auto data = getDataMember();
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size != 0)
         return;
 
@@ -97,7 +104,7 @@ void AMessage::stopCompressingSegment(bool reading) {
     auto data = getDataMember();
     /* todo: using UDP structs in amessage */
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return;
 
@@ -110,7 +117,7 @@ bool AMessage::getCompressingBuffer(void *&data, size_t &bufferSize) {
 
     auto m_data = getDataMember();
     ALL_MessageCompressionHeader *header =
-        reinterpret_cast<ALL_MessageCompressionHeader *>(m_data + hasHeader() ? sizeof(UDPG_NetChannelHeader) : 0);
+        reinterpret_cast<ALL_MessageCompressionHeader *>((m_data + hasHeader()) ? sizeof(UDPG_NetChannelHeader) : 0);
     if (header->size == 0)
         return false;
     data = m_data + header->offset;

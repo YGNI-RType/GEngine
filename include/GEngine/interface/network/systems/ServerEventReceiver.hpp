@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEngine/interface/events/SharedEvent.hpp"
-#include "GEngine/interface/network/systems/ServerClient.hpp"
+#include "GEngine/interface/network/systems/ServerClients.hpp"
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
@@ -33,9 +33,7 @@
 namespace gengine::interface::network::system {
 
 template <class... Events>
-class ServerEventReceiver
-    : public System<ServerEventReceiver<Events...>, gengine::interface::network::system::ServerClientsHandler>,
-      public RemoteSystem {
+class ServerEventReceiver : public System<ServerEventReceiver<Events...>, ServerClientsHandler>, public RemoteSystem {
 public:
     ServerEventReceiver();
 

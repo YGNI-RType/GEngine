@@ -25,6 +25,14 @@ public:
     state_t state;
 };
 
+class KeyPressed : public Event {
+public:
+    KeyPressed(int key)
+        : key(key) {
+    }
+    int key;
+};
+
 class Key_Apostrophe : public KeyboardKey {
 public:
     Key_Apostrophe(state_t state)

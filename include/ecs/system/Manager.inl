@@ -28,6 +28,11 @@ T &Manager::getSystem(void) {
 }
 
 template <class T>
+bool Manager::hasSystem(void) {
+    return m_systemTable.find(std::type_index(typeid(T))) != m_systemTable.end();
+}
+
+template <class T>
 void Manager::publishEvent(T &event) {
     m_eventBus.publish<T>(event);
 }
