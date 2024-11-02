@@ -18,10 +18,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(/D_ITERATOR_DEBUG_LEVEL=0)
     endif()
     # The static permits to enter the functions, avoid settings the path to a .dll etc...
-    find_library(GEngine_LIB NAMES GEngine-sd PATHS ../../build/Debug ../../build)
+    find_library(GEngine_LIB NAMES GEngined PATHS ../../build/Debug ../../build)
     # find_library(GEngine_LIB NAMES GEngined PATHS ../../build/Debug ../../build)
 else()
-    find_library(GEngine_LIB NAMES GEngine-sd PATHS ../../build/Release ../../build)
+    find_library(GEngine_LIB NAMES GEngined PATHS ../../build/Release ../../build)
 endif()
 
 file(GLOB_RECURSE SOURCES source/*.cpp)
