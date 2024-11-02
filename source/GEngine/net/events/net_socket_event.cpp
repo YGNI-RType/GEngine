@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/net/events/socket_event.hpp"
+#include "GEngine/net/net_exception.hpp"
 #include "GEngine/net/net_wait.hpp"
 
 #include <stdexcept>
@@ -27,7 +28,7 @@ SocketEvent::SocketEvent() {
 #if defined(__APPLE__) || defined(__unix__)
     int pipefd[2];
     if (pipe(pipefd) == -1)
-        throw std::runtime_error("Failed to create pipe");
+        throw NetException("Failed to create pipe", EL_SOCKET);
 
     int flags = fcntl(pipefd[1], F_GETFL, 0);
     fcntl(pipefd[1], F_SETFL, flags | O_NONBLOCK);
@@ -41,7 +42,7 @@ SocketEvent::SocketEvent() {
 #else
     m_sock = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (m_sock == -1)
-        throw std::runtime_error("Failed to create eventfd");
+        throw NetException("Failed to create eventfd", EL_SOCKET);
 #endif
     NetWait::addSocketPool(*this);
 #else

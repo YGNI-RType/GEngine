@@ -8,9 +8,11 @@
 #pragma once
 
 #include "events/socket_event.hpp"
+#include "net_exception.hpp"
 #include "net_wait.hpp"
 
 #include <any>
+#include <condition_variable>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -20,6 +22,7 @@
 
 namespace Network::Event {
 enum Type { CONNECT, DISCONNECT, PING_LAN, RECORD, WATCH };
+enum Result { OK, KO, NO_RESULT };
 
 enum CallbackType {
     CT_OnClientConnect,
@@ -47,20 +50,26 @@ public:
 
     /* game engine thread */
     template <typename T>
-    void addEvent(Type type, const T &data) {
+    size_t addEvent(Type type, const T &data) {
         std::unique_ptr<Info<T>> info = std::make_unique<Info<T>>();
 
         info->type = type;
         info->data = std::make_unique<T>(data);
-        storeEvent(std::move(info));
+        auto ticket = m_resultTicket++;
+        storeEvent(std::move(info), ticket);
         m_socketEvent.signal();
+        return ticket;
     }
 
     void createSets(NetWaitSet &set);
     bool handleEvent(const NetWaitSet &set);
 
-    void storeEvent(std::unique_ptr<InfoHeader> info);
     void sendPackets(void);
+
+    Result getLastResult(size_t idTicket, bool wait);
+    ExceptionLocation getLastResult(void);
+    void pushResult(Result result, size_t ticket);
+    void pushResult(ExceptionLocation result, bool ended = false);
 
     SocketEvent &getSocketEvent() {
         return m_socketEvent;
@@ -94,13 +103,30 @@ public:
         }
     }
 
+    void setEnded(bool ended) {
+        m_ended = ended;
+    }
+    bool isEnded() const {
+        return m_ended;
+    }
+
 private:
-    void handleNewEngineReq(InfoHeader &header);
+    void storeEvent(std::unique_ptr<InfoHeader> info, size_t ticket);
+
+    void handleNewEngineReq(InfoHeader &header, size_t ticket);
 
     SocketEvent m_socketEvent;
+    bool m_ended = false;
 
     mutable std::mutex m_mutex;
-    std::queue<std::unique_ptr<InfoHeader>> m_events;
+    std::condition_variable m_conditionVar;
+
+    std::queue<std::pair<size_t, std::unique_ptr<InfoHeader>>> m_events;
+
+    std::unordered_map<size_t, Result> m_results;
+    std::queue<ExceptionLocation> m_resultsUnattended;
+    size_t m_resultTicket = 0;
+
     CallbackMap m_callbacks;
 };
 } // namespace Network::Event

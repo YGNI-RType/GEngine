@@ -139,6 +139,8 @@ private:
     std::vector<PingResponse> m_pingedServers;
     uint64_t m_pingSendTime = 0;
 
+    size_t m_lastConnectTime = 0;
+
     /* in bytes from data (header do not count), can be updated via cvar */
     size_t m_maxRate = 10000;
 };

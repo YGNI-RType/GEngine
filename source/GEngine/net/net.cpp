@@ -109,8 +109,19 @@ bool NET::start(void) {
         return false;
 
     mg_networkThread = std::thread([]() {
-        while (mg_aEnable)
-            sleep(NET_SLEEP_DURATION);
+        while (mg_aEnable) {
+            try {
+                sleep(NET_SLEEP_DURATION);
+            } catch (const NetException &e) {
+                std::cerr << "FATAL: Network thread exception: " << e.what() << std::endl;
+
+                auto &eventManager = NET::getEventManager();
+                eventManager.pushResult(e.getLocation(), !e.shouldRetry());
+                if (e.shouldRetry())
+                    continue;
+                break;
+            }
+        }
     });
 
     if (mg_client.isEnabled())

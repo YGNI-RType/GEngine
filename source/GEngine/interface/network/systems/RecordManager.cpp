@@ -17,15 +17,21 @@ void RecordManager::init(void) {
 
 void RecordManager::toggleCapture(gengine::system::driver::input::KeyPEvent &e) {
     auto &em = Network::NET::getEventManager();
+    size_t ticket;
+    bool result;
 
     switch (e.state) {
     case gengine::system::driver::input::InputState::PRESSED:
         if (m_started) {
             m_started = false;
-            em.addEvent(Network::Event::RECORD, Network::Event::RecordInfo(Network::Event::RecordInfo::Mode::STOP));
+            ticket =
+                em.addEvent(Network::Event::RECORD, Network::Event::RecordInfo(Network::Event::RecordInfo::Mode::STOP));
+            result = em.getLastResult(ticket, true);
         } else {
             m_started = true;
-            em.addEvent(Network::Event::RECORD, Network::Event::RecordInfo(Network::Event::RecordInfo::Mode::RECORD));
+            ticket = em.addEvent(Network::Event::RECORD,
+                                 Network::Event::RecordInfo(Network::Event::RecordInfo::Mode::RECORD));
+            result = em.getLastResult(ticket, false);
         }
         break;
     case gengine::system::driver::input::InputState::RELEASE:

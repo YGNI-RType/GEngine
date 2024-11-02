@@ -7,6 +7,7 @@
 
 #include "GEngine/net/net_huffman.hpp"
 #include "GEngine/net/msg.hpp"
+#include "GEngine/net/net_exception.hpp"
 
 namespace Network::Compression {
 
@@ -46,7 +47,7 @@ size_t AHC::compressContinuous(AMessage &msg, size_t offset, const byte_t *pushD
 
     for (size_t i = 0; i < size; i++)
         if (!m_compress.writeSymbol(pushData[i], msgData, msgSize, msg.getBitBuffer()))
-            throw std::runtime_error("Message Overflow");
+            throw NetException("Message Overflow", EL_COMPRESSION);
 
     auto diff = msg.getBitBuffer() - oldBitBuffer;
     return diff / 8 + 1;
@@ -58,7 +59,7 @@ size_t AHC::decompressContinuous(AMessage &msg, size_t offset, byte_t *pushData,
     size_t old = msg.getBitBuffer();
 
     if (!m_decompress.readSymbol(msg.getData() + offset, pushData, size, msgSize, msg.getBitBuffer()))
-        throw std::runtime_error("Message Overflow");
+        throw NetException("Message Overflow", EL_COMPRESSION);
 
     auto diff = msg.getBitBuffer() - old;
     return diff;

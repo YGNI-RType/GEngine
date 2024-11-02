@@ -69,6 +69,7 @@ private:
     bool m_watchThreadRunning = false;
 
     std::thread m_watchThread;
+    std::thread m_compressionThread;
     std::mutex m_watchMutex;
     std::condition_variable m_watchCV;
 

@@ -227,7 +227,9 @@ bool NetChannel::sendStream(const TCPMessage &msg) {
 bool NetChannel::readStream(TCPMessage &msg) {
     try {
         m_tcpSocket.receive(msg);
-    } catch (const SocketDisconnected &e) {
+    } catch (const SocketException &e) {
+        if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr)
+            std::cerr << "Socket exception: " << e.what() << std::endl;
         m_disconnect = true;
         return true;
     }
