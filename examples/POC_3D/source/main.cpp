@@ -12,7 +12,7 @@
 int main(int argc, const char **argv) {
 
     GEngine::init(argc, argv);
-    gengine::interface::network::Networked interface(GEngine::getLocal(), GEngine::getRemote(), true);
+    gengine::interface::network::Networked interface(GEngine::getLocal(), GEngine::getRemote());
 
     interface.run();
 }
