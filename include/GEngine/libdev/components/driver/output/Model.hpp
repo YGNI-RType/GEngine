@@ -25,7 +25,7 @@ struct Model : public Component<Model> {
     Network::NetString<32> txtPath; // The texture of the model
     Clr tint;
 
-    Model(const std::string &txtPathstr, const Clr &tint = RAYWHITE)
+    Model(const std::string &txtPathstr, const Clr &tint = WHITE)
         : txtPath(txtPathstr)
         , tint(tint) {
     }
