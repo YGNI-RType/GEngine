@@ -27,7 +27,7 @@ struct Cube : public Component<Cube> {
     float length;
     Clr tint;
 
-    Cube(float width, float height, float length, const Clr &tint = RAYWHITE)
+    Cube(float width, float height, float length, const Clr &tint = WHITE)
         : width(width)
         , height(height)
         , length(length)

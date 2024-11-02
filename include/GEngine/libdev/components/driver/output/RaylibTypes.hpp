@@ -21,6 +21,12 @@ struct Clr {
     unsigned char b; // Color blue value
     unsigned char a; // Color alpha value
 
+    Clr()
+        : r(0)
+        , g(0)
+        , b(0)
+        , a(255) {
+    }
     Clr(const Color &color)
         : r(color.r)
         , g(color.g)
@@ -41,6 +47,12 @@ struct Rect {
     float width;  // Rectangle width
     float height; // Rectangle height
 
+    Rect()
+        : x(0)
+        , y(0)
+        , width(0)
+        , height(0) {
+    }
     Rect(const ::Rectangle &rect)
         : x(rect.x)
         , y(rect.y)

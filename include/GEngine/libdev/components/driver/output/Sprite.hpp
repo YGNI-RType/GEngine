@@ -26,6 +26,11 @@ struct Sprite : public Component<Sprite> {
     Rect src;                       // The portion of the texture to render (for sprite sheets/atlases)
     Clr tint;
 
+    Sprite()
+        : txtPath("")
+        , src()
+        , tint() {
+    }
     Sprite(const std::string &txtPathstr, const Rect &src, const Clr &tint = WHITE)
         : txtPath(txtPathstr)
         , src(src)

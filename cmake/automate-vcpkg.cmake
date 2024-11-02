@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.12)
 
+include(cmake/define-compilers.cmake)
+
 if(WIN32)
     set(VCPKG_FALLBACK_ROOT ${CMAKE_CURRENT_BINARY_DIR}/vcpkg CACHE STRING "vcpkg configuration directory to use if vcpkg was not installed on the system before")
 else()
