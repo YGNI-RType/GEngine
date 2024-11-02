@@ -75,7 +75,7 @@ void ConnectAtStart::init(void) {
 }
 
 void ConnectAtStart::onStartEngine(gengine::system::event::StartEngine &e) {
-    for (auto p = e.params.begin();  p != e.params.end(); p++) {
+    for (auto p = e.params.begin(); p != e.params.end(); p++) {
         if (*p == "--ip" && (p + 1) != e.params.end())
             m_serverIp = *(p + 1);
         if (*p == "--port" && (p + 1) != e.params.end())
