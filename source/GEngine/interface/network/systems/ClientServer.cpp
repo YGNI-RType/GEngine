@@ -8,11 +8,6 @@
 #include "GEngine/interface/network/systems/ClientServer.hpp"
 
 namespace gengine::interface::network::system {
-ClientServer::ClientServer(const std::string &ip, uint16_t port)
-    : m_serverIp(ip)
-    , m_serverPort(port) {
-}
-
 void ClientServer::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&ClientServer::onStartEngine);
     subscribeToEvent<event::ConnectToServer>(&ClientServer::onConnect);
@@ -21,9 +16,6 @@ void ClientServer::init(void) {
 }
 
 void ClientServer::onStartEngine(gengine::system::event::StartEngine &e) {
-    if (!(m_serverIp.empty() && m_serverPort == 0))
-        publishEvent(event::ConnectToServer(m_serverIp, m_serverPort));
-
     auto &eventManager = Network::NET::getEventManager();
     eventManager.registerCallback<Network::Event::PingInfo>(Network::Event::CT_OnPingResult,
                                                             [this](Network::Event::PingInfo info) -> void {
@@ -71,5 +63,24 @@ std::vector<Network::Event::PingInfo> ClientServer::getPingInfos(void) const {
     std::lock_guard<std::mutex> lock(m_netMutex);
 
     return m_pingInfos;
+}
+
+ConnectAtStart::ConnectAtStart(const std::string &ip, uint16_t port)
+    : m_serverIp(ip)
+    , m_serverPort(port) {
+}
+
+void ConnectAtStart::init(void) {
+    subscribeToEvent<gengine::system::event::StartEngine>(&ConnectAtStart::onStartEngine);
+}
+
+void ConnectAtStart::onStartEngine(gengine::system::event::StartEngine &e) {
+    for (auto p = e.params.begin(); p != e.params.end(); p++) {
+        if (*p == "--ip" && (p + 1) != e.params.end())
+            m_serverIp = *(p + 1);
+        if (*p == "--port" && (p + 1) != e.params.end())
+            m_serverPort = std::atoi((p + 1)->c_str());
+    }
+    publishEvent(event::ConnectToServer(m_serverIp, m_serverPort));
 }
 } // namespace gengine::interface::network::system

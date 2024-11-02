@@ -29,9 +29,6 @@ class ClientServer : public System<ClientServer>, public LocalSystem {
 public:
     ClientServer() = default;
 
-    // Constructor if you want to connect at StartEngine
-    ClientServer(const std::string &ip, uint16_t port);
-
     void init(void) override;
 
     void onStartEngine(gengine::system::event::StartEngine &);
@@ -57,5 +54,18 @@ private:
     std::vector<Network::Event::PingInfo> m_pingInfos;
 
     mutable std::mutex m_netMutex;
+};
+
+class ConnectAtStart : public System<ConnectAtStart>, public LocalSystem {
+public:
+    ConnectAtStart(const std::string &ip, uint16_t port);
+
+    void init(void) override;
+
+    void onStartEngine(gengine::system::event::StartEngine &);
+
+private:
+    std::string m_serverIp = "";
+    uint16_t m_serverPort = 0;
 };
 } // namespace gengine::interface::network::system
