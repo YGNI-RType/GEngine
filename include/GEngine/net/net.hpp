@@ -34,8 +34,6 @@ private:
     static SocketUDP mg_socketUdpV6;
     static SocketTCPMaster mg_socketListenTcpV6;
 
-    API static NetRecord mg_record;
-
     API static NetServer mg_server;
     API static CLNetClient mg_client;
 
@@ -92,7 +90,7 @@ public:
     }
 
     static NetRecord &getRecord(void) {
-        return mg_record;
+        return mg_client.getRecord();
     }
 
 public:

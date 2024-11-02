@@ -61,14 +61,11 @@ SocketTCPMaster NET::mg_socketListenTcp;
 SocketUDP NET::mg_socketUdpV6;
 SocketTCPMaster NET::mg_socketListenTcpV6;
 
-NetRecord NET::mg_record;
-
 NetWait NET::mg_wait;
 Event::Manager NET::mg_eventManager;
 NetServer NET::mg_server(mg_socketUdp, mg_socketUdpV6);
 CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_socketUdp,
-                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent(),
-                           mg_record);
+                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent());
 
 std::vector<IP> NET::g_localIPs;
 
@@ -125,7 +122,7 @@ bool NET::start(void) {
     });
 
     if (mg_client.isEnabled())
-        mg_record.startWatchThread();
+        mg_client.getRecord().startWatchThread();
     return true;
 }
 

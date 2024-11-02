@@ -27,11 +27,10 @@ struct PingResponse {
 class CLNetClient {
 
 public:
-    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent, NetRecord &record)
+    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent)
         : m_socketUdp(socketUdp)
         , m_addrType(type)
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
-        , m_netRecord(record)
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
         , m_packInDataAck(socketEvent)
@@ -43,6 +42,9 @@ public:
     void stop(void);
     bool isEnabled(void) const {
         return m_enabled;
+    }
+    NetRecord &getRecord(void) {
+        return m_netRecord;
     }
 
     /* index of the pinged servers */
@@ -134,7 +136,7 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
-    NetRecord &m_netRecord;
+    NetRecord m_netRecord;
 
     std::vector<PingResponse> m_pingedServers;
     uint64_t m_pingSendTime = 0;

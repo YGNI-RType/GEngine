@@ -245,6 +245,9 @@ bool NetRecord::updateWatch(SerializedMessage &msg, uint8_t classType, uint32_t 
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
     auto &client = NET::getClient();
 
+    if (!m_watching || !m_alive)
+        return false;
+
     if (classType == 'T') {
         TCPMessage tcpMsg(0);
         tcpMsg.setSerialize(reinterpret_cast<const TCPSerializedMessage &>(msg));
