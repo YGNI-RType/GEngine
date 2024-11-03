@@ -15,8 +15,10 @@ void KeyboardCatcher::init(void) {
 
 void KeyboardCatcher::onRenderLoop(gengine::system::event::RenderLoop &e) {
     for (KeyboardKey key = KEY_SPACE; key != KEY_NULL; ++key) {
-        if (IsKeyReleased(key))
+        if (IsKeyReleased(key)) {
+            publishEvent(KeyReleasedEvent(key));
             processKeyInput(key, InputState::RELEASE);
+        }
         if (IsKeyPressed(key)) {
             publishEvent(KeyPressedEvent(key));
             processKeyInput(key, InputState::PRESSED);
