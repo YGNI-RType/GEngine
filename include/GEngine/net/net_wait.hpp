@@ -8,6 +8,8 @@
 #include "net_common.hpp"
 #include "net_socket.hpp"
 
+#include <functional>
+
 #pragma once
 
 namespace Network {
@@ -18,7 +20,8 @@ public:
 
 public:
     bool isSignaled(const ASocket &socket) const;
-    void setAlert(const ASocket &socket);
+
+    void setAlert(const ASocket &socket, std::function<bool(void)> &&callback);
 
     void reset(void);
 
@@ -40,10 +43,15 @@ public:
         m_resIndex = res;
     }
 
+    void applyCallback(void) const {
+        return m_callbacks[m_resIndex]();
+    }
+
 private:
     static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;
 
     std::array<HANDLE, MAX_SOCKETS> m_events;
+    std::array<std::function<bool(void)>, MAX_SOCKETS> m_callbacks;
     size_t m_resIndex = -1;
     size_t m_count = 0;
     WSANETWORKEVENTS m_netEvents;

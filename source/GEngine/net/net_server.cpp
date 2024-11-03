@@ -40,17 +40,12 @@ void NetServer::createSets(NetWaitSet &set) {
     if (!isRunning())
         return;
 
-    for (const auto &client : m_clients) {
-        auto &socket = client->getChannel().getTcpSocket();
-        auto eventType = socket.getEventType();
+    for (auto &client : m_clients)
+        client->createSets(set);
 
-        if (eventType == SocketTCP::EventType::READ)
-            set.setAlert(socket);
-    }
-
-    set.setAlert(m_socketv4);
+    set.setAlert(m_socketv4, [this]() { handleNewClient(m_socketv4); return true; });
     if (CVar::net_ipv6.getIntValue())
-        set.setAlert(m_socketv6);
+        set.setAlert(m_socketv6, [this]() { handleNewClient(m_socketv6); return true; });
 }
 
 void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, const Address &addr) {

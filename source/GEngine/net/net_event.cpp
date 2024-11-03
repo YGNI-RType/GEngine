@@ -12,13 +12,10 @@
 
 namespace Network::Event {
 void Manager::createSets(NetWaitSet &set) {
-    set.setAlert(m_socketEvent);
+    set.setAlert(m_socketEvent, [this]() { return handleEvent(); });
 }
 
-bool Manager::handleEvent(const NetWaitSet &set) {
-    if (!set.isSignaled(m_socketEvent))
-        return false;
-
+bool Manager::handleEvent(void) {
     size_t size;
     {
         std::lock_guard<std::mutex> lock(m_mutex);

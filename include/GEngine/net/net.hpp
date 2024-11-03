@@ -68,6 +68,8 @@ public:
     static bool sleep(uint32_t ms);
     static bool handleEvents(const NetWaitSet &set);
     static bool handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    static bool handleUdpIPv4(void);
+    static bool handleUdpIPv6(void);
     static void handleTimeouts(void);
 
 private:

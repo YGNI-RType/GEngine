@@ -71,6 +71,8 @@ public:
         return m_channel.isDisconnected();
     }
 
+    void createSets(NetWaitSet &readSet);
+
     bool isTimeout(void) const;
 
     bool handleTCPEvents(const NetWaitSet &set);

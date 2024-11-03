@@ -134,11 +134,6 @@ void SVCommandManager::onGameLoop(gengine::system::event::GameLoop &) {
     }
 }
 
-// void SVCommandManager::onStartEngine(gengine::system::event::StartEngine &e) {
-//     CommandManager::onStartEngine(e);
-//     // todo
-// }
-
 void SVCommandManager::onCLI(gengine::system::event::CLINewInput &e) {
     if (e.prompt.size() == 0)
         return;
@@ -184,10 +179,6 @@ void CLCommandManager::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&CLCommandManager::onGameLoop);
     subscribeToEvent<gengine::system::event::CLINewInput>(&CLCommandManager::onCLI);
 }
-
-// void CLCommandManager::onStartEngine(gengine::system::event::StartEngine &e) {
-//     CommandManager::onStartEngine(e);
-// }
 
 void CLCommandManager::onCLI(gengine::system::event::CLINewInput &e) {
     if (e.prompt.size() == 0)

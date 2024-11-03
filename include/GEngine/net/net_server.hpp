@@ -32,6 +32,7 @@ public:
     void createSets(NetWaitSet &readSet);
 
     bool handleTCPEvent(const NetWaitSet &readSet);
+    bool handleTCPEvent(void);
     bool handleUDPEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     const SocketTCPMaster &getSocketV4(void) const {

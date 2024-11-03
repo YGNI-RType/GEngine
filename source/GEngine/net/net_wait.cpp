@@ -38,12 +38,12 @@ bool NetWaitSet::isSignaled(const ASocket &socket) const {
 #endif
 }
 
-void NetWaitSet::setAlert(const ASocket &socket) {
+void NetWaitSet::setAlert(const ASocket &socket, std::function<bool(void)> &&callback) {
 #ifdef NET_USE_HANDLE
     if (m_count >= MAX_SOCKETS)
         return;
 
-    m_events[m_count++] = socket.getHandle();
+    m_events[m_count++] = callback;
 #else
     FD_SET(socket.getSocket(), &m_readSet);
 #endif

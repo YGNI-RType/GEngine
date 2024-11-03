@@ -62,7 +62,7 @@ public:
     }
 
     void createSets(NetWaitSet &set);
-    bool handleEvent(const NetWaitSet &set);
+    bool handleEvent(void);
 
     void sendPackets(void);
 

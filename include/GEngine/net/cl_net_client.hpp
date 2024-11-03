@@ -55,6 +55,7 @@ public:
     void createSets(NetWaitSet &readSet);
 
     bool handleTCPEvents(const NetWaitSet &readSet);
+    bool handleTCPEvents(void);
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
 
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
