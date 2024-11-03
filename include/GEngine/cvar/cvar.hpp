@@ -27,7 +27,7 @@ public:
         SERVER = 0x10,     // Server commands, needs to transmit to the server
         CLIENT = 0x20,     // Client commands, based on self process
         NET_CLIENT = 0x40, // Linked to the client that is asking to change the value
-        CALLBACK = 0x80    // Callback function
+        CON_CALLBACK = 0x80    // Callback function
     };
 
 public:

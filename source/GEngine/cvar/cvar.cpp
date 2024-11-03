@@ -41,7 +41,7 @@ ConVar::ConVar(const std::string &name, const std::function<std::string(const st
 void ConVar::setValue(const std::string &value, bool isUserInput) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (isUserInput) {
-        if (m_flags & ROM || m_flags & CMD || m_flags & CALLBACK)
+        if (m_flags & ROM || m_flags & CMD || m_flags & CON_CALLBACK)
             return;
     }
 

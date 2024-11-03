@@ -44,7 +44,7 @@ void CommandManager::onStartEngine(gengine::system::event::StartEngine &e) {
 SVCommandManager::SVCommandManager(const std::string &path)
     : m_status(
           "status", [this](const std::string &value) { return com_status(value); },
-          CVar::ConVar::SERVER | CVar::ConVar::CALLBACK) {
+          CVar::ConVar::SERVER | CVar::ConVar::CON_CALLBACK) {
     loadConfig(path);
 }
 
@@ -124,7 +124,7 @@ void SVCommandManager::onGameLoop(gengine::system::event::GameLoop &) {
         }
 
         sendCvar.result = OK;
-        if (flags & CVar::ConVar::CALLBACK) {
+        if (flags & CVar::ConVar::CON_CALLBACK) {
             std::string value = convar->applyCallback(cvar.value);
             std::memcpy(sendCvar.output, value.c_str(), CF_NET_MIN(Network::MAX_CONCOMMAND_OUTPUT_LEN, value.size()));
         } else
@@ -151,7 +151,7 @@ void SVCommandManager::onCLI(gengine::system::event::CLINewInput &e) {
     if (!(flags & CVar::ConVar::SERVER))
         return;
 
-    if (flags & CVar::ConVar::CALLBACK)
+    if (flags & CVar::ConVar::CON_CALLBACK)
         std::cout << convar->applyCallback(e.prompt[1]) << std::endl;
     else
         convar->setValue(e.prompt[1], true);
