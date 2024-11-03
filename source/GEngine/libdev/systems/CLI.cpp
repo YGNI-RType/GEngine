@@ -20,12 +20,11 @@ void CLI::init(void) {
 
 void CLI::onStartEngine(gengine::system::event::StartEngine &e [[maybe_unused]]) {
     inputThread = std::thread(&CLI::getInputs, this);
+    inputThread.detach();
 }
 
 void CLI::onStopEngine(gengine::system::event::StopEngine &e [[maybe_unused]]) {
     stopReading = true;
-    if (inputThread.joinable())
-        inputThread.join();
 }
 
 void CLI::onMainLoop(gengine::system::event::MainLoop &e [[maybe_unused]]) {
