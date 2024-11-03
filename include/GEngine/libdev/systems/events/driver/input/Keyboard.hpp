@@ -25,6 +25,14 @@ public:
     state_t state;
 };
 
+class KeyReleased : public Event {
+public:
+    KeyReleased(int key)
+        : key(key) {
+    }
+    int key;
+};
+
 class KeyPressed : public Event {
 public:
     KeyPressed(int key)
