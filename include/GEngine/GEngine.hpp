@@ -121,8 +121,8 @@ public:
     static void init(int size, const char **argv) {
         std::call_once(initFlag, [size, argv]() {
             instance.reset(new GEngine());
-            instance->getLocal().setParams(argv, size);
-            instance->getRemote().setParams(argv, size);
+            instance->getLocal().setParams(argv + 1, size - 1);
+            instance->getRemote().setParams(argv + 1, size - 1);
             instance->registerElements();
         });
     }
@@ -173,6 +173,10 @@ public:
         if (!instance)
             init(0, NULL);
         return instance->m_remote;
+    }
+
+    const std::vector<std::string> &getArgs(void) const {
+        return getLocal().getParams();
     }
 
 private:

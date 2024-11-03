@@ -39,6 +39,10 @@ public:
 
     void setParams(const char **argv, int size);
 
+    const std::vector<std::string> &getParams(void) const {
+        return params;
+    }
+
 private:
     ecs::ECS m_ecs;
     std::vector<std::string> params;
