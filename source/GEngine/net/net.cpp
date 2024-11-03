@@ -97,7 +97,7 @@ bool NET::initServer(void) {
     if (!NET::mg_aEnable)
         return false;
 
-    mg_currentUnusedPort = NET::mg_server.start(CVar::sv_maxplayers.getIntValue(), mg_currentUnusedPort);
+    mg_currentUnusedPort = NET::mg_server.start(mg_currentUnusedPort);
     return true;
 }
 

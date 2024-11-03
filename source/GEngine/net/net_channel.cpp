@@ -260,4 +260,12 @@ uint16_t NetChannel::getPing_TS(void) const {
     return static_cast<uint16_t>(res);
 }
 
+std::string NetChannel::getAddress_TS(void) const {
+    /* there is no need mutex here, since it's created and not modifiable, the other thread got the netclient already
+     * with the net_channel created */
+    if (m_toTCPAddress == nullptr)
+        return "";
+    return m_toTCPAddress->toString();
+}
+
 } // namespace Network

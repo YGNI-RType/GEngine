@@ -202,6 +202,7 @@ public:
 
 public: /* THREAD SAFE */
     uint16_t getPing_TS(void) const;
+    std::string getAddress_TS(void) const;
 
 private:
     static constexpr size_t PING_POOL_SIZE = 30;

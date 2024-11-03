@@ -25,8 +25,8 @@ public:
     /* todo : add to support loopback client for listen servers */
     ~NetServer() = default;
 
-    uint16_t start(size_t maxClients, const std::vector<IP> &g_localIPs, uint16_t currentUnusedPort);
-    uint16_t start(size_t maxClients, uint16_t &currentUnusedPort);
+    uint16_t start(const std::vector<IP> &g_localIPs, uint16_t currentUnusedPort);
+    uint16_t start(uint16_t &currentUnusedPort);
     void stop(void);
 
     void createSets(NetWaitSet &readSet);
@@ -44,9 +44,7 @@ public:
     uint32_t getNumClients(void) const {
         return m_clients.size();
     }
-    uint32_t getMaxClients(void) const {
-        return m_maxClients;
-    };
+    uint32_t getMaxClients(void) const;
 
     bool isRunning(void) const {
         return m_isRunning;
@@ -73,7 +71,6 @@ private:
     SocketUDP &m_socketUdpV4;
     SocketUDP &m_socketUdpV6;
 
-    size_t m_maxClients;
     std::vector<std::shared_ptr<NetClient>> m_clients;
 };
 

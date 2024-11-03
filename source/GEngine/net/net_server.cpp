@@ -17,7 +17,7 @@
 
 namespace Network {
 
-uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
+uint16_t NetServer::start(uint16_t &currentUnusedPort) {
     // TODO : cloes everything if already initted
     if (m_isRunning)
         return currentUnusedPort;
@@ -27,7 +27,6 @@ uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
     if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
 
-    m_maxClients = maxClients;
     m_isRunning = true;
     return currentUnusedPort;
 }
@@ -151,6 +150,10 @@ bool NetServer::handleTCPEvent(const NetWaitSet &set) {
         }
 
     return false;
+}
+
+uint32_t NetServer::getMaxClients(void) const {
+    return CVar::sv_maxplayers.getIntValue();
 }
 
 bool NetServer::sendPackets(void) {

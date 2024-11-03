@@ -97,6 +97,9 @@ public:
     uint16_t getPing_TS(void) const {
         return m_channel.getPing_TS();
     }
+    std::string getAddress_TS(void) const {
+        return m_channel.getAddress_TS();
+    }
 
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
