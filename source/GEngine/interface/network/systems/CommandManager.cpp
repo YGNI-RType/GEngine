@@ -105,6 +105,7 @@ void SVCommandManager::onGameLoop(gengine::system::event::GameLoop &) {
 
         Network::TCPMessage sendMsg(Network::SV_CVAR);
         Network::TCPSV_CVar sendCvar;
+        std::memset(&sendCvar, 0, sizeof(sendCvar));
 
         auto convar = CVar::ConVar::findCvar(cvar.name);
         if (!convar) {
