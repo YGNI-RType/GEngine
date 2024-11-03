@@ -36,6 +36,7 @@ using CLINewInput = gengine::system::event::CLINewInput;
 
 namespace geg::event::io {
 using KeyPressedEvent = gengine::system::event::driver::input::KeyPressed;
+using KeyReleasedEvent = gengine::system::event::driver::input::KeyReleased;
 using KeyApostropheEvent = gengine::system::event::driver::input::Key_Apostrophe;
 using KeyCommaEvent = gengine::system::event::driver::input::Key_Comma;
 using KeyMinusEvent = gengine::system::event::driver::input::Key_Minus;
