@@ -62,7 +62,8 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
                 gengine::component::driver::output::Model("coraline.glb"), geg::component::network::NetSend());
     // spawnEntity(component::Prop(), geg::component::Transform3D({4.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
     //             gengine::component::driver::output::Drawable(2),
-    //             gengine::component::driver::output::Model("props/mechanical_shark.glb"), geg::component::network::NetSend());
+    //             gengine::component::driver::output::Model("props/mechanical_shark.glb"),
+    //             geg::component::network::NetSend());
 }
 
 void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &e) {
