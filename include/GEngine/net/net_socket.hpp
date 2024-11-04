@@ -270,7 +270,7 @@ public:
      *
      * @param msg A reference to a TCPMessage object where the received message will be stored.
      */
-    void receive(TCPMessage &msg) const;
+    void receive(TCPMessage &msg, TCPSerializedMessage &tmpBuffer, size_t &recvSz) const;
     /**
      * @brief Sends a partial TCP message.
      *
@@ -316,7 +316,7 @@ private:
      * @param offset The offset in the buffer where the received data should be stored.
      * @return The number of bytes successfully received and stored in the buffer.
      */
-    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size, size_t offset) const;
+    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size, size_t offset, size_t &receivedTotal) const;
     /**
      * @brief Sends a reliable TCP message.
      *

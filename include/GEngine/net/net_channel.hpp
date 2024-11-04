@@ -305,6 +305,8 @@ private:
     /* TCP */
 
     SocketTCP m_tcpSocket;
+    TCPSerializedMessage m_tcpBuffer;
+    size_t m_sizeBuffer = 0;
 
     /**
      * @brief A static mutex used for synchronizing access to shared resources
