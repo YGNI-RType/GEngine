@@ -12,7 +12,13 @@ execute_process (
     OUTPUT_VARIABLE outVarGit
 )
 
+execute_process (
+    COMMAND bash -c "/mingw64/bin/git --version"
+    OUTPUT_VARIABLE outVarGit2
+)
+
 message(STATUS "outVarGit: ${outVarGit}")
+message(STATUS "outVarGit2: ${outVarGit2}")
 
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
