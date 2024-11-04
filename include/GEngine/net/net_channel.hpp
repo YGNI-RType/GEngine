@@ -13,6 +13,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 
 // UN udp message / tcp message ne doit pas être envoyé brut,
 // il doit être envoyé à travers une pool, qui en fonction du ratelimit enverront tout ça
