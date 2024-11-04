@@ -53,10 +53,10 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
                 geg::component::network::NetSend());
 
     // Props
-    // spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
-    //             gengine::component::driver::output::Drawable(2),
-    //             gengine::component::driver::output::Model("props/antique_cabinet.glb"),
-    //             geg::component::network::NetSend());
+    spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
+                gengine::component::driver::output::Drawable(2),
+                gengine::component::driver::output::Model("props/antique_cabinet.glb"),
+                geg::component::network::NetSend());
     spawnEntity(component::Prop(), geg::component::Transform3D({20.0f, 0.0f, 0.0f}, {20, 20, 20}, {0, 0, 0}),
                 gengine::component::driver::output::Drawable(2),
                 gengine::component::driver::output::Model("coraline.glb"), geg::component::network::NetSend());
