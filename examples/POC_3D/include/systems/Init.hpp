@@ -20,11 +20,11 @@ namespace poc3d::system {
 class Init : public gengine::OnEventSystem<Init, gengine::system::event::StartEngine>, public gengine::LocalSystem {
 public:
     void onEvent(gengine::system::event::StartEngine &e) {
-        std::cout << "!!! Init " << e.params.size() << " with params: " << e.params[1] << std::endl;
         std::string endpoint = e.params.size() > 1 ? e.params[1] : "127.0.0.1";
         publishEvent(gengine::interface::network::event::ConnectToServer(endpoint, 4243));
 
         // Crosshair
+        DisableCursor();
         float crosshairSize = 3;
         float crosshairBorder = 0.7;
         Color whiteTransp = {255, 255, 255, 100};
