@@ -44,8 +44,5 @@ public:
     void changeCameraModePlayer(gengine::interface::event::SharedEvent<event::ChangeCameraMode> &e);
     void sprintPlayer(gengine::interface::event::SharedEvent<event::Sprint> &e);
     void lockPlayer(gengine::interface::event::SharedEvent<event::LockPlayerEvent> &e);
-
-private:
-    bool isPlayerLocked = false;
 };
 } // namespace poc3d::system
