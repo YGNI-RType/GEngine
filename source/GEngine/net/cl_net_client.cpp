@@ -138,6 +138,9 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
 }
 
 bool CLNetClient::handleTCPEvents(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return false;
+
     TCPMessage msg(0);
     if (!m_netChannel.readStream(msg))
         return false;

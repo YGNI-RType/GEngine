@@ -43,9 +43,7 @@ public:
         m_resIndex = res;
     }
 
-    void applyCallback(void) const {
-        return m_callbacks[m_resIndex]();
-    }
+    bool applyCallback(void) const;
 
 private:
     static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;
