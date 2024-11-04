@@ -25,6 +25,17 @@
 
 namespace Network {
 
+/**
+ * @class NET
+ * @brief The NET class provides network functionalities including server and client initialization,
+ *        handling network events, and managing local IP addresses. Very similar to quake3's network.
+ *
+ * This class encapsulates various network operations such as initializing servers and clients,
+ * handling UDP and TCP sockets, managing network events, and pinging servers. It also provides
+ * utility functions to manage local IP addresses and handle network timeouts.
+ *
+ * @note This class contains both public and private static members and methods to manage network operations.
+ */
 class NET {
 private:
     API static NetWait mg_wait;

@@ -12,6 +12,16 @@
 
 namespace Network {
 
+/**
+ * @class NetWaitSet
+ * @brief A class that manages network wait sets for handling socket events.
+ *
+ * The NetWaitSet class provides methods to manage and monitor multiple socket events.
+ * It supports both handle-based and fd_set-based implementations, depending on the
+ * platform and configuration.
+ *
+ * @note The class uses conditional compilation to support different platforms.
+ */
 class NetWaitSet {
 public:
     static constexpr size_t IS_QUEUE = 0;
@@ -58,6 +68,17 @@ private:
 #endif
 };
 
+/**
+ * @class NetWait
+ * @brief A class to manage network wait operations.
+ *
+ * The NetWait class provides functionality to wait for network events on a set of sockets.
+ * It also manages a pool of sockets and provides utility functions to add or remove sockets
+ * from this pool.
+ * So this is used to encapsulate select and WSAWaitForMultipleEvents.
+ *
+ * @note This class uses different implementations based on whether NET_USE_HANDLE is defined.
+ */
 class NetWait {
 public:
     NetWait();

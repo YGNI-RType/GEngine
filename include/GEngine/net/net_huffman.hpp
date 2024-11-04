@@ -19,6 +19,12 @@ class AMessage;
 
 namespace Network::Compression {
 
+/*
+We use the Adaptive Huffman Compression algorithm to compress the data using predefined table for the udp/tcp packets
+using segments of compressed data. We get an average 20% compression rate on the data.
+https://en.wikipedia.org/wiki/Adaptive_Huffman_coding
+*/
+
 #define HMAX 256 /* Maximum symbol */
 
 #define NYT HMAX /* Not Yet Transmitted */
@@ -37,6 +43,15 @@ public:
     void swapLL(Node *other);
 };
 
+/**
+ * @class HuffTable
+ * @brief A class representing a Huffman coding table.
+ *
+ * This class provides functionalities to add symbols to the Huffman table,
+ * write symbols to a data buffer, and read symbols from a data buffer.
+ * 
+ * @warning The table should be complete with all the symbols, otherwise we get undefined behavior (UB).
+ */
 class HuffTable {
 public:
     HuffTable();
@@ -70,7 +85,13 @@ private:
     Node *m_head = nullptr;
 };
 
-/* Adaptative Huffman Compression */
+/**
+ * @class AHC
+ * @brief Adaptive Huffman Coding class for compressing and decompressing messages.
+ *
+ * This class provides methods to compress and decompress messages using Adaptive Huffman Coding.
+ * It supports both segment-based and continuous compression and decompression.
+ */
 class AHC {
 public:
     AHC(bool dpcm = false);

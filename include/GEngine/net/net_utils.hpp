@@ -10,6 +10,10 @@
 #include "net_common.hpp"
 
 namespace Network {
+/**
+ * @class NetUtils
+ * @brief A utility class for network-related functions and operations.
+ */
 class NetUtils {
 public:
 };

@@ -17,6 +17,19 @@
 #include <unordered_map>
 
 namespace Network {
+/**
+ * @class NetQueue
+ * @brief A thread-safe network message queue for handling incoming and outgoing messages.
+ *
+ * The NetQueue class manages a queue of network messages, providing thread-safe
+ * operations for pushing and popping messages. It ensures that messages are
+ * processed in a FIFO (First In, First Out) manner and supports operations for
+ * handling full queues.
+ * This is used for UDP messages, where we have a predefined size of packets, so it's much faster since we don't have to
+ * allocate memory.
+ *
+ * @tparam MSGTYPE The type of the messages to be stored in the queue.
+ */
 template <typename MSGTYPE, size_t NB_PACKETS, size_t MAX_PACKET_SIZE>
 class NetQueue {
 private:
@@ -214,7 +227,6 @@ private:
     }
 
 private:
-    // std::queue<T> m_data;
     std::array<byte_t, NB_PACKETS * MAX_PACKET_SIZE> m_data;
     std::array<bool, NB_PACKETS> m_isUsed = {0};
     std::atomic_size_t m_nbUsed = 0;
@@ -222,8 +234,6 @@ private:
 
     mutable std::mutex m_mutex;
     Event::SocketEvent &m_socketEvent;
-    // std::condition_variable m_cvNotEmpty;
-    // std::condition_variable m_cvNotFull;
 };
 
 } // namespace Network

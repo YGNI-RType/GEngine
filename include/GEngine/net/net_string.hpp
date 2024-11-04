@@ -15,6 +15,17 @@
 namespace Network {
 
 template <size_t Size>
+/**
+ * @class NetString
+ * @brief A fixed-size string class for network communication.
+ *
+ * The NetString class provides a fixed-size string implementation that is
+ * suitable for network communication. It ensures that strings do not exceed
+ * a predefined size and provides various utility functions for string
+ * manipulation and comparison.
+ *
+ * @tparam Size The maximum size of the string.
+ */
 class NetString {
 public:
     NetString() {

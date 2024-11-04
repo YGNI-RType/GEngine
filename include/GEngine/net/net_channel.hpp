@@ -9,7 +9,6 @@
 
 #include "net_msg.hpp"
 #include "net_socket.hpp"
-#include "net_tcp.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -53,6 +52,26 @@ typedef enum {
     CON_CINEMATIC     // playing a cinematic or a static pic, not connected to a server
 } connectionState;
 
+/**
+ * @class PacketPoolUdp
+ * @brief Manages a pool of UDP packets for sending and receiving fragmented messages.
+ *
+ * This class provides functionality to handle UDP packet fragmentation and reassembly.
+ * It maintains a pool of packet sequences and allows adding, retrieving, and reconstructing
+ * messages from these sequences.
+ *
+ * @details
+ * The PacketPoolUdp class is responsible for:
+ * - Adding messages to the pool.
+ * - Retrieving missing fragments of a message.
+ * - Constructing and reconstructing messages from fragments.
+ * - Managing the sequence information of messages.
+ * - Cleaning up old sequences and maintaining the pool size.
+ *
+ * @note
+ * The class uses a fixed chunk size for packet fragments, which is determined by the maximum
+ * UDP packet length and the sizes of the fragment and net channel headers.
+ */
 class PacketPoolUdp {
 
     static const size_t CHUNK_SIZE =
@@ -61,6 +80,13 @@ class PacketPoolUdp {
     static constexpr size_t MAX_NB_RECV_FRAG = 5;
 
 public:
+    /**
+     * @typedef chunk_t
+     * @brief Defines a type alias for a fixed-size array of bytes.
+     *
+     * This type alias represents a chunk of data with a size defined by the constant CHUNK_SIZE.
+     * It is used to handle fixed-size blocks of byte data within the network channel.
+     */
     typedef std::array<byte_t, CHUNK_SIZE> chunk_t;
 
 private:
@@ -106,6 +132,13 @@ public:
     void reconstructMessage(uint32_t sequence, UDPMessage &msg);
 
     bool deleteSequence(uint32_t sequence);
+    /**
+     * @brief Clears the network channel.
+     *
+     * This function resets the state of the network channel, removing any
+     * pending data or state information. It is typically used to prepare
+     * the channel for a refresh of the acknowledgment sequence.
+     */
     void clear(void);
 
     PoolSequence getMsgSequenceInfo(uint32_t sequence) const {
@@ -123,13 +156,18 @@ private:
     size_t m_poolSize = 0;
 };
 
-/*
-    server : used for each NetClient
-    client : used only to send cmd in server
-*/
+/**
+ * @class NetChannel
+ * @brief Manages network communication channels for both TCP and UDP protocols.
+ *
+ * The NetChannel class provides functionalities to handle network communication
+ * over TCP and UDP. It supports operations such as reading and sending datagrams
+ * and streams, managing connection states, and handling packet sequences.
+ *
+ * @note This class is not copyable but is movable.
+ */
 class NetChannel {
 public:
-    // NetChannel() = default;
     NetChannel(bool isServer, std::unique_ptr<Address> addr, SocketTCP &&socket);
     NetChannel(const NetChannel &other) = delete;
     NetChannel &operator=(const NetChannel &other) = delete;
@@ -201,7 +239,24 @@ public:
     bool isTimeout(void) const;
 
 public: /* THREAD SAFE */
+    /**
+     * @brief Retrieves the current ping time stamp.
+     *
+     * This function returns the current ping time stamp, which is typically used
+     * to measure the round-trip time for network communication.
+     *
+     * @return uint16_t The current ping time stamp.
+     */
     uint16_t getPing_TS(void) const;
+    /**
+     * @brief Retrieves the address in a thread-safe manner.
+     *
+     * This function returns the address as a string. It ensures that the
+     * operation is performed in a thread-safe manner, preventing data races
+     * and ensuring consistency.
+     *
+     * @return std::string The address as a string.
+     */
     std::string getAddress_TS(void) const;
 
 private:
@@ -217,9 +272,6 @@ private:
     std::unique_ptr<Address> m_toUDPAddress; /* the recast to v6 or v4 is done later */
 
     /* UDP */
-
-    /* TODO : add delay (?) */
-    // PacketPoolUdp m_udpPoolUnsent;
 
     uint32_t m_challenge = -1;
 
@@ -252,12 +304,18 @@ private:
 
     /* TCP */
 
-    // TCPManager m_tcpManager;
     SocketTCP m_tcpSocket;
 
+    /**
+     * @brief A static mutex used for synchronizing access to shared resources
+     *        in the GEngine network channel.
+     *
+     * This mutex ensures that multiple threads can safely communicate with the
+     * GEngine without causing data races or inconsistencies. It is particularly
+     * useful for protecting critical sections of code that involve network
+     * communication under the _TS methods.
+     */
     static std::mutex mg_mutex;
-    /* unsent data (mostly rather small data, downloads are another story)*/
-    // PacketPoolTcp m_tcpPool;
 
     /*******/
 };

@@ -21,6 +21,15 @@ enum ExceptionLocation {
     EL_SOCKET_WRONG_ADDRESS,
 };
 
+/**
+ * @class NetException
+ * @brief Custom exception class for network-related errors.
+ *
+ * This class extends the standard std::exception to provide additional
+ * information about network-related errors, including an error message,
+ * the location of the exception, and whether the error is fatal.
+ * This tells if the network operation should be fatal, and if it should be
+ */
 class NetException : public std::exception {
 public:
     NetException(const std::string &message, ExceptionLocation location = EL_UNDEFINED, bool fatal = false)

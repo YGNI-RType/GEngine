@@ -11,6 +11,13 @@
 
 namespace Network {
 
+/**
+ * @class SocketException
+ * @brief Exception class for socket-related errors.
+ *
+ * This class represents an exception that is thrown when a socket error occurs.
+ * It provides an error message and a flag indicating whether the operation should be retried.
+ */
 class SocketException : public std::exception {
 public:
     SocketException(const char *msg, bool shouldRetry = true)
@@ -35,6 +42,13 @@ private:
     bool m_shouldRetry;
 };
 
+/**
+ * @class SocketDisconnected
+ * @brief Exception class for handling socket disconnection errors.
+ *
+ * This class represents an exception that is thrown when an incoming socket gets disconnected.
+ * It inherits from the SocketException class.
+ */
 class SocketDisconnected : public SocketException {
 public:
     SocketDisconnected()

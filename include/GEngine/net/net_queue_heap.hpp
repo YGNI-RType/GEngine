@@ -17,6 +17,17 @@
 #include <unordered_map>
 
 namespace Network {
+/**
+ * @class NetQueueHeap
+ * @brief A thread-safe message queue heap for network events.
+ *
+ * This class manages a collection of message queues, each identified by a unique type.
+ * It provides thread-safe operations to push and pop messages, and signals a socket event
+ * when messages are added.
+ * Veyr useful when it's not used that much, likely for TCP messages.
+ *
+ * @tparam MSGTYPE The type of messages stored in the queue.
+ */
 template <typename MSGTYPE, size_t MAX_MSGS>
 class NetQueueHeap {
 public:
