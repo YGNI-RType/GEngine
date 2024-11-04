@@ -39,7 +39,8 @@ void Guess::guessWho(gengine::interface::event::SharedEvent<event::GuessEvent> &
     for (auto [entity, model, player, remote, transform] : gengine::Zip(models, players, remotes, transforms)) {
         if (remote.getUUIDBytes() == e.remoteUUID) // check if its the same remote (zip)
             continue;
-        collision = gengine::GetMouseRayCollisionModel(modelMan.get(model.txtPath), transform, draw.camera);
+        collision = gengine::GetRayCollisionModel({WINDOW_WIDTH / 2, (WINDOW_TOTAL_HEIGHT) / 2},
+                                                  modelMan.get(model.txtPath), transform, draw.camera);
         if (collision.hit)
             publishEvent(event::Jump(0.4, remote.getUUIDBytes()));
 

@@ -26,29 +26,17 @@ void MorphToProp::morphPlayer(gengine::interface::event::SharedEvent<event::Morp
     if (!hasSystem<gengine::system::driver::output::DrawModel>())
         return;
 
-    auto &models = getComponents<gengine::component::driver::output::Model>();
-    auto &players = getComponents<component::Player>();
-    auto &transforms = getComponents<geg::component::Transform3D>();
-    auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
-
+    auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
     auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
 
-    auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
-
-    gengine::Entity playerEntity = 0;
-
-    for (auto [entity, player, remote, transform] : gengine::Zip(players, remotes, transforms)) {
-        if (remote.getUUIDBytes() == e.remoteUUID) { // check if its the same remote (zip)
-            playerEntity = entity;
-            break;
-        }
-    }
-
+    auto &models = getComponents<gengine::component::driver::output::Model>();
+    auto &transforms = getComponents<geg::component::Transform3D>();
     auto &props = getComponents<component::Prop>();
     RayCollision collision = {0};
 
     for (auto [entity, prop, model, transform] : gengine::Zip(props, models, transforms)) {
-        collision = gengine::GetMouseRayCollisionModel(modelMan.get(model.txtPath), transform, draw.camera);
+        collision = gengine::GetRayCollisionModel({WINDOW_WIDTH / 2, (WINDOW_TOTAL_HEIGHT) / 2},
+                                                  modelMan.get(model.txtPath), transform, draw.camera);
         if (collision.hit)
             publishEvent(event::ChangePlayerModelEvent(model.txtPath));
     }

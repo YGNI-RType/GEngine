@@ -8,7 +8,6 @@
 #include "GEngine/libdev/tools/Raylib.hpp"
 
 namespace gengine {
-
 void setModelTransform(Model &model, component::Transform3D &transform) {
     model.transform = MatrixIdentity();
     model.transform =
@@ -46,7 +45,8 @@ BoundingBox TransformBoundingBox(BoundingBox box, const Matrix &transform) {
     return transformedBox;
 }
 
-RayCollision GetMouseRayCollisionModel(Model model, component::Transform3D &modelTransform, Camera &camera) {
+RayCollision GetRayCollisionModel(Vector2 screenPos, Model model, component::Transform3D &modelTransform,
+                                  Camera &camera) {
     setModelTransform(model, modelTransform);
 
     // BoundingBox box = GetMeshBoundingBox(model.meshes[0]);
@@ -59,7 +59,7 @@ RayCollision GetMouseRayCollisionModel(Model model, component::Transform3D &mode
     BoundingBox box = GetMeshBoundingBox(model.meshes[0]);
     BoundingBox transformedBox = TransformBoundingBox(box, model.transform);
 
-    Ray ray = GetMouseRay(GetMousePosition(), camera);
+    Ray ray = GetMouseRay(screenPos, camera);
     RayCollision collision = GetRayCollisionBox(ray, transformedBox);
     if (collision.hit) {
         RayCollision meshHitInfo = {0};

@@ -139,29 +139,8 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
         auto &modelMan = getSystem<ModelManager>();
         auto &[path, color] = models.get(e.entity);
         auto &transform = transforms.get(e.entity);
-        // LoadMaterials();
-        // camera.position = (Vector3){0.0f, 0.0f, 0.0f}; // Camera position
-        // camera.target = (Vector3){0.0f, 0.0f, 1.0f};   // Camera looking at point
-        // camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-        // camera.fovy = 60.0f;                                // Camera field-of-view Y
-        // camera.projection = CAMERA_PERSPECTIVE;
-        // ::Matrix
-
-        //* Camera Movement
-        // if (cameraMode == CAMERA_THIRD_PERSON)
-        //     UpdateCamera(&camera, CAMERA_THIRD_PERSON); // Camera projection type
-        // float moveSpeedVertical = 0.05f;
-        // if (IsKeyDown(KEY_SPACE)) {
-        //     camera.position.y += moveSpeedVertical;
-        //     camera.target.y += moveSpeedVertical;
-        // }
-        // if (IsKeyDown(KEY_LEFT_SHIFT)) {
-        //     camera.position.y -= moveSpeedVertical;
-        //     camera.target.y -= moveSpeedVertical;
-        // }
 
         BeginMode3D(camera);
-
         Model model = modelMan.get(path.c_str());
         setModelTransform(model, transform);
 
