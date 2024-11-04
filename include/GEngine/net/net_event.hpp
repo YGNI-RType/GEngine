@@ -115,13 +115,13 @@ public:
     /**
      * @brief Retrieves the last result of a network operation.
      *
-     * This function returns an ExceptionLocation object that contains
+     * This function returns an NetUnexpectedEvent object that contains
      * information about the last network operation result. It can be used
      * to diagnose issues or errors that occurred during network communication.
      *
-     * @return ExceptionLocation The last result of a network operation.
+     * @return NetUnexpectedEvent The last result of a network operation.
      */
-    ExceptionLocation getLastResult(void);
+    NetUnexpectedEvent getLastResult(void);
     /**
      * @brief Pushes a result into the event queue, awaited by the GEG thread via a ticket.
      *
@@ -135,7 +135,7 @@ public:
      * @param result The location of the exception that occurred.
      * @param ended Indicates whether the event has ended. Defaults to false.
      */
-    void pushResult(ExceptionLocation result, bool ended = false);
+    void pushResult(NetUnexpectedEvent result, bool ended = false);
 
     SocketEvent &getSocketEvent() {
         return m_socketEvent;
@@ -229,7 +229,7 @@ private:
     std::queue<std::pair<size_t, std::unique_ptr<InfoHeader>>> m_events;
 
     std::unordered_map<size_t, Result> m_results;
-    std::queue<ExceptionLocation> m_resultsUnattended;
+    std::queue<NetUnexpectedEvent> m_resultsUnattended;
     size_t m_resultTicket = 0;
 
     CallbackMap m_callbacks;

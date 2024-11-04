@@ -87,7 +87,7 @@ void Manager::handleNewEngineReq(InfoHeader &header, size_t ticket) {
                     break;
                 return pushResult(Result::OK, ticket);
             } else if (record.isWatching()) {
-                if (record.endWatch())
+                if (record.endWatch(true))
                     break;
                 return pushResult(Result::OK, ticket);
             }
@@ -147,7 +147,7 @@ void Manager::pushResult(Result result, size_t ticket) {
     m_conditionVar.notify_all();
 }
 
-void Manager::pushResult(ExceptionLocation result, bool ended) {
+void Manager::pushResult(NetUnexpectedEvent result, bool ended) {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_resultsUnattended.push(result);
@@ -168,10 +168,10 @@ Result Manager::getLastResult(size_t ticket, bool wait) {
     return result;
 }
 
-ExceptionLocation Manager::getLastResult(void) {
+NetUnexpectedEvent Manager::getLastResult(void) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_resultsUnattended.empty())
-        return ExceptionLocation::EL_NONE;
+        return NetUnexpectedEvent::EL_NONE;
 
     auto result = m_resultsUnattended.front();
     m_resultsUnattended.pop();

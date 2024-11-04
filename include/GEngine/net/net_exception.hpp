@@ -12,13 +12,14 @@
 
 namespace Network {
 
-enum ExceptionLocation {
+enum NetUnexpectedEvent {
     EL_NONE,
-    EL_UNDEFINED,
-    EL_COMPRESSION,
-    EL_RECORDING,
-    EL_SOCKET,
-    EL_SOCKET_WRONG_ADDRESS,
+    EL_ERR_UNDEFINED,
+    EL_ERR_COMPRESSION,
+    EL_ERR_RECORDING,
+    EL_ERR_SOCKET,
+    EL_ERR_SOCKET_WRONG_ADDRESS,
+    EL_RECORDING_END
 };
 
 /**
@@ -32,7 +33,7 @@ enum ExceptionLocation {
  */
 class NetException : public std::exception {
 public:
-    NetException(const std::string &message, ExceptionLocation location = EL_UNDEFINED, bool fatal = false)
+    NetException(const std::string &message, NetUnexpectedEvent location = EL_ERR_UNDEFINED, bool fatal = false)
         : m_message(message)
         , m_location(location)
         , m_fatal(fatal) {
@@ -43,7 +44,7 @@ public:
         return m_message.c_str();
     }
 
-    ExceptionLocation getLocation(void) const {
+    NetUnexpectedEvent getLocation(void) const {
         return m_location;
     }
 
@@ -53,7 +54,7 @@ public:
 
 private:
     std::string m_message;
-    ExceptionLocation m_location;
+    NetUnexpectedEvent m_location;
     bool m_fatal;
 };
 } // namespace Network

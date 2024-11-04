@@ -167,7 +167,7 @@ void ANetSocket::translateAutomaticAddressing(struct sockaddr_storage &addr_stor
 SocketTCPMaster::SocketTCPMaster(const IP &ip, uint16_t port) {
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_sock == -1)
-        throw NetException("(TCP) Failed to create socket", EL_SOCKET);
+        throw NetException("(TCP) Failed to create socket", EL_ERR_SOCKET);
 
     unsigned int opt = 1;
     if (setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&opt), sizeof(opt)) < 0)
@@ -191,7 +191,7 @@ SocketTCPMaster::SocketTCPMaster(const IP &ip, uint16_t port) {
 SocketTCPMaster::SocketTCPMaster(uint16_t port, bool ipv6) {
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_sock == -1)
-        throw NetException("(TCP) Failed to create socket", EL_SOCKET);
+        throw NetException("(TCP) Failed to create socket", EL_ERR_SOCKET);
 
     unsigned int opt = 1;
     if (setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&opt), sizeof(opt)) < 0)
@@ -241,7 +241,7 @@ SocketTCP::SocketTCP(const AddressV4 &addr, uint16_t tcpPort, bool block) {
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     setBlocking(block);
     if (m_sock == -1)
-        throw NetException("(TCP) Failed to create socket", EL_SOCKET);
+        throw NetException("(TCP) Failed to create socket", EL_ERR_SOCKET);
 
     m_port = tcpPort;
     struct sockaddr_in address;
@@ -269,7 +269,7 @@ SocketTCP::SocketTCP(const AddressV6 &addr, uint16_t tcpPort, bool block) {
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     setBlocking(block);
     if (m_sock == -1)
-        throw NetException("(TCP) Failed to create socket", EL_SOCKET);
+        throw NetException("(TCP) Failed to create socket", EL_ERR_SOCKET);
 
     m_port = tcpPort;
     struct sockaddr_in6 address;
@@ -414,21 +414,21 @@ size_t SocketTCP::sendReliant(const TCPSerializedMessage *msg, size_t msgDataSiz
 void SocketUDP::init(bool block, uint16_t port) {
     m_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (m_sock == -1)
-        throw NetException("(UDP) Failed to create socket", EL_SOCKET);
+        throw NetException("(UDP) Failed to create socket", EL_ERR_SOCKET);
 
     m_port = port;
     setBlocking(block);
 
     unsigned int opt = 1;
     if (setsockopt(m_sock, SOL_SOCKET, SO_BROADCAST, (char *)&opt, sizeof(opt)))
-        throw NetException("(UDP) Failed to set socket options (SO_BROADCAST)", EL_SOCKET);
+        throw NetException("(UDP) Failed to set socket options (SO_BROADCAST)", EL_ERR_SOCKET);
 #ifdef NET_DONT_FRAG
 #if defined(__FreeBSD__) || defined(__APPLE__)
     if (setsockopt(m_sock, IPPROTO_IP, IP_DONTFRAG, &opt, sizeof(opt)))
 #else
     if (setsockopt(m_sock, IPPROTO_IP, IP_MTU_DISCOVER, &opt, sizeof(opt)))
 #endif
-        throw NetException("(UDP) Failed to set socket options (IP_DONTFRAG)", EL_SOCKET);
+        throw NetException("(UDP) Failed to set socket options (IP_DONTFRAG)", EL_ERR_SOCKET);
 #endif
 }
 
@@ -492,7 +492,7 @@ size_t SocketUDP::send(const UDPMessage &msg, const Address &addr) const {
         int e = socketError;
         if (e == WSAEWOULDBLOCK || e == WSATRY_AGAIN)
             return 0;
-        throw NetException("Failed to send message (invalid , EL_SOCKETaddress)");
+        throw NetException("Failed to send message (invalid , EL_ERR_SOCKETaddress)");
     }
     return sent;
 }
@@ -560,7 +560,7 @@ SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort) {
             continue;
         }
     }
-    throw NetException("Failed to open TCP socket", EL_SOCKET);
+    throw NetException("Failed to open TCP socket", EL_ERR_SOCKET);
 }
 
 SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort) {
@@ -573,7 +573,7 @@ SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort) {
             continue;
         }
     }
-    throw NetException("Failed to open UDP socket", EL_SOCKET);
+    throw NetException("Failed to open UDP socket", EL_ERR_SOCKET);
 }
 
 SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6) {
@@ -586,7 +586,7 @@ SocketTCPMaster openSocketTcp(uint16_t &wantedPort, bool ipv6) {
             continue;
         }
     }
-    throw NetException("Failed to open TCP socket", EL_SOCKET);
+    throw NetException("Failed to open TCP socket", EL_ERR_SOCKET);
 }
 
 SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6) {
@@ -599,7 +599,7 @@ SocketUDP openSocketUdp(uint16_t &wantedPort, bool ipv6) {
             continue;
         }
     }
-    throw NetException("Failed to open UDP socket", EL_SOCKET);
+    throw NetException("Failed to open UDP socket", EL_ERR_SOCKET);
 }
 
 } // namespace Network

@@ -53,7 +53,7 @@ public:
     bool endRecord(void);
 
     bool startWatch(const std::string &filePath);
-    bool endWatch(void);
+    bool endWatch(bool wanted);
     void startWatchThread(void);
     void startWatchFakeNet(void);
 
