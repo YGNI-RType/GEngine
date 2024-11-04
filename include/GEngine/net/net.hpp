@@ -43,7 +43,8 @@ private:
     static std::mutex mg_mutex;
     static std::thread mg_networkThread;
 
-    API static uint16_t mg_currentUnusedPort;
+    API static uint16_t mg_currentUnusedPortTCP;
+    API static uint16_t mg_currentUnusedPortUDP;
 
     API static Event::Manager mg_eventManager;
 

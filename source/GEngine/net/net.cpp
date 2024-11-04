@@ -71,7 +71,8 @@ std::vector<IP> NET::g_localIPs;
 
 std::thread NET::mg_networkThread;
 
-std::uint16_t NET::mg_currentUnusedPort = DEFAULT_PORT;
+std::uint16_t NET::mg_currentUnusedPortTCP = DEFAULT_PORT;
+std::uint16_t NET::mg_currentUnusedPortUDP = DEFAULT_PORT;
 
 std::atomic_bool NET::mg_aEnable = false;
 std::mutex NET::mg_mutex;
@@ -86,9 +87,9 @@ bool NET::init(void) {
     std::lock_guard<std::mutex> lock(mg_mutex);
     ASocket::initLibs();
 
-    mg_socketUdp = openSocketUdp(mg_currentUnusedPort, false);
+    mg_socketUdp = openSocketUdp(mg_currentUnusedPortUDP, false);
     if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
-        mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPort, true);
+        mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPortUDP, true);
     return true;
 }
 
@@ -97,7 +98,7 @@ bool NET::initServer(void) {
     if (!NET::mg_aEnable)
         return false;
 
-    mg_currentUnusedPort = NET::mg_server.start(mg_currentUnusedPort);
+    mg_currentUnusedPortTCP = NET::mg_server.start(mg_currentUnusedPortTCP);
     return true;
 }
 
