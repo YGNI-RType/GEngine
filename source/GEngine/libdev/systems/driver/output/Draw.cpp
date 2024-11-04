@@ -6,6 +6,7 @@
 */
 
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
+#include "GEngine/libdev/tools/Raylib.hpp"
 #include <iostream>
 #include <raymath.h>
 #include <rlgl.h>
@@ -137,7 +138,7 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
     if (models.contains(e.entity) && transforms.contains(e.entity)) {
         auto &modelMan = getSystem<ModelManager>();
         auto &[path, color] = models.get(e.entity);
-        auto &[pos, scale, rotation] = transforms.get(e.entity);
+        auto &transform = transforms.get(e.entity);
         // LoadMaterials();
         // camera.position = (Vector3){0.0f, 0.0f, 0.0f}; // Camera position
         // camera.target = (Vector3){0.0f, 0.0f, 1.0f};   // Camera looking at point
@@ -159,31 +160,15 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
         //     camera.target.y -= moveSpeedVertical;
         // }
 
-        ::DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
-                               std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
-                       .c_str(),
-                   10, 10, 20, WHITE);
-        ::DrawText(std::string("Camera target: " + std::to_string(camera.target.x) + " " +
-                               std::to_string(camera.target.y) + " " + std::to_string(camera.target.z))
-                       .c_str(),
-                   10, 30, 20, WHITE);
-        ::DrawText(std::string("Camera up: " + std::to_string(camera.up.x) + " " + std::to_string(camera.up.y) + " " +
-                               std::to_string(camera.up.z))
-                       .c_str(),
-                   10, 50, 20, WHITE);
-        ::DrawText(std::string("Camera fovy: " + std::to_string(camera.fovy)).c_str(), 10, 70, 20, WHITE);
-        ::DrawText(std::string("Camera projection: " + std::to_string(camera.projection)).c_str(), 10, 90, 20, WHITE);
-
         BeginMode3D(camera);
 
         Model model = modelMan.get(path.c_str());
-        model.transform = MatrixIdentity();
-        model.transform = MatrixMultiply(model.transform, MatrixScale(scale.x, scale.y, scale.z));
-        model.transform = MatrixMultiply(
-            model.transform, MatrixRotateXYZ({rotation.x * DEG2RAD, rotation.y * DEG2RAD, rotation.z * DEG2RAD}));
-        model.transform = MatrixMultiply(model.transform, MatrixTranslate(pos.x, pos.y, pos.z));
+        setModelTransform(model, transform);
 
         ::DrawModel(model, {0, 0, 0}, 1, color);
+        BoundingBox box = TransformBoundingBox(GetMeshBoundingBox(model.meshes[0]), model.transform);
+
+        ::DrawBoundingBox(box, RED);
         EndMode3D();
     }
 }

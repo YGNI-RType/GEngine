@@ -8,7 +8,6 @@
 #pragma once
 
 #include "GEngine/libdev/Component.hpp"
-#include <string>
 
 #define DEFAULT_SPEED 0.06
 
@@ -21,6 +20,7 @@ enum class PlayerState {
 struct Player : public gengine::Component<Player> {
     float speed;
     float defaultSpeed;
+    bool isLocked = false;
 
     Player(float defaultSpeed = DEFAULT_SPEED)
         : speed(defaultSpeed)

@@ -23,6 +23,7 @@
 
 #include "events/ChangeCameraMode.hpp"
 #include "events/Jump.hpp"
+#include "events/LockPlayerEvent.hpp"
 #include "events/Movement.hpp"
 #include "events/Rotation.hpp"
 #include "events/Sprint.hpp"
@@ -42,8 +43,9 @@ public:
     void jumpPlayer(gengine::interface::event::SharedEvent<event::Jump> &e);
     void changeCameraModePlayer(gengine::interface::event::SharedEvent<event::ChangeCameraMode> &e);
     void sprintPlayer(gengine::interface::event::SharedEvent<event::Sprint> &e);
+    void lockPlayer(gengine::interface::event::SharedEvent<event::LockPlayerEvent> &e);
 
 private:
-    void moveCamera(geg::component::Transform3D &transform, gengine::Vect3 &forward);
+    bool isPlayerLocked = false;
 };
 } // namespace poc3d::system

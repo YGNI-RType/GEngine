@@ -11,6 +11,7 @@
 
 #include "components/Background.hpp"
 #include "components/Player.hpp"
+#include "components/Prop.hpp"
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
 
@@ -32,6 +33,7 @@ void GEngineDeclareComponents(Registry *r) {
     r->registerComponent<geg::component::io::Circle>();
 
     r->registerComponent<poc3d::component::Player>();
+    r->registerComponent<poc3d::component::Prop>();
     r->registerComponent<poc3d::component::Background>();
 
     r->registerComponent<gengine::interface::component::RemoteLocal>();
