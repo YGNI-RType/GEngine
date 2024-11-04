@@ -14,11 +14,12 @@
 #include "GEngine/libdev/Component.hpp"
 
 namespace gengine::component::driver::output {
-struct Sound: public gengine::Component<Sound> {
+struct Sound : public gengine::Component<Sound> {
     std::uint64_t soundId;
     std::uint64_t _ack = 0;
 
-    Sound(std::uint64_t soundId): soundId(soundId) {
+    Sound(std::uint64_t soundId)
+        : soundId(soundId) {
     }
 };
-}
+} // namespace gengine::component::driver::output

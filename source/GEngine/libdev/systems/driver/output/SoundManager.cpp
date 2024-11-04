@@ -28,9 +28,8 @@ void SoundManager::onStartEngine(gengine::system::event::StartEngine &e) {
 }
 
 void SoundManager::onStopEngine(gengine::system::event::StopEngine &e) {
-    for (auto &[path, sound] : m_soundTable) {
+    for (auto &[path, sound] : m_soundTable)
         UnloadSound(sound.second);
-    }
 }
 
 const Sound &SoundManager::get(const std::string &path) {
@@ -46,22 +45,22 @@ void SoundManager::onMainLoop(geg::event::MainLoop &e) {
 
     static std::set<gengine::Entity> m_soundsPlayed;
 
-    for (auto &[e, sound]: sounds) {
+    for (auto &[e, sound] : sounds) {
         if (m_soundsPlayed.find(e) == m_soundsPlayed.end()) {
             m_soundsPlayed.insert(e);
             playSoundById(sound.soundId);
         }
         publishEvent(gengine::system::event::driver::output::SoundPlayed(sound.soundId));
     }
-    for (auto it = m_soundsPlayed.begin(); it != m_soundsPlayed.end(); ) {
+    for (auto it = m_soundsPlayed.begin(); it != m_soundsPlayed.end();)
         if (!sounds.contains(*it))
             it = m_soundsPlayed.erase(it);
         else
             ++it;
-    }
 }
 
-void SoundManager::onSoundPlayed(gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed> &e) {
+void SoundManager::onSoundPlayed(
+    gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed> &e) {
     static std::unordered_map<std::uint64_t, std::set<uuids::uuid>> m_soundsAck;
     auto &remoteLocals = getComponents<gengine::interface::component::RemoteLocal>();
     auto &sounds = getComponents<gengine::component::driver::output::Sound>();
@@ -70,7 +69,7 @@ void SoundManager::onSoundPlayed(gengine::interface::event::SharedEvent<gengine:
         m_soundsAck.insert({e->soundId, std::set<uuids::uuid>()});
     m_soundsAck[e->soundId].insert(e.remoteUUID);
 
-    for (auto &[entity, s]: sounds) {
+    for (auto &[entity, s] : sounds) {
         if (s.soundId == e->soundId && m_soundsAck[e->soundId].size() == remoteLocals.size())
             killEntity(entity);
         m_soundsAck.erase(e->soundId);
@@ -87,7 +86,7 @@ std::uint64_t SoundManager::getIdByPath(const std::string &path) const {
 }
 
 void SoundManager::playSoundById(std::uint64_t id) {
-    for (auto &[_, pair]: m_soundTable) {
+    for (auto &[_, pair] : m_soundTable) {
         if (pair.first == id) {
             PlaySound(pair.second);
             return;
@@ -96,7 +95,7 @@ void SoundManager::playSoundById(std::uint64_t id) {
 }
 
 SoundManagerLocal::SoundManagerLocal(const std::string &folder)
-: SoundManager(folder) {
+    : SoundManager(folder) {
 }
 
 void SoundManagerLocal::init(void) {
@@ -105,13 +104,15 @@ void SoundManagerLocal::init(void) {
     subscribeToEvent<geg::event::MainLoop>(&SoundManager::onMainLoop);
 }
 
-SoundManagerRemote::SoundManagerRemote(const std::string &folder): SoundManager(folder) {
+SoundManagerRemote::SoundManagerRemote(const std::string &folder)
+    : SoundManager(folder) {
 }
 
 void SoundManagerRemote::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&SoundManager::onStartEngine);
     subscribeToEvent<gengine::system::event::StopEngine>(&SoundManager::onStopEngine);
     subscribeToEvent<gengine::system::event::driver::output::Sound>(&SoundManager::onSound);
-    subscribeToEvent<gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed>>(&SoundManager::onSoundPlayed);
+    subscribeToEvent<gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed>>(
+        &SoundManager::onSoundPlayed);
 }
-}
+} // namespace gengine::system::driver::output

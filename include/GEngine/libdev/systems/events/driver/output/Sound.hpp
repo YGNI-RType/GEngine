@@ -31,10 +31,11 @@ private:
     const std::string m_path;
 };
 
-struct SoundPlayed: public Event {
+struct SoundPlayed : public Event {
     std::uint64_t soundId;
 
-    SoundPlayed(std::uint64_t soundId): soundId(soundId) {
+    SoundPlayed(std::uint64_t soundId)
+        : soundId(soundId) {
     }
 };
 } // namespace gengine::system::event::driver::output
