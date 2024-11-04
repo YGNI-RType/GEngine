@@ -5,21 +5,6 @@ include(GNUInstallDirs)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-message(STATUS "Je suis sur la bonne branch")
-
-execute_process (
-    COMMAND bash -c "which git"
-    OUTPUT_VARIABLE outVarGit
-)
-
-execute_process (
-    COMMAND bash -c "/mingw64/bin/git --version"
-    OUTPUT_VARIABLE outVarGit2
-)
-
-message(STATUS "outVarGit: ${outVarGit}")
-message(STATUS "outVarGit2: ${outVarGit2}")
-
 include(cmake/automate-vcpkg.cmake)
 vcpkg_bootstrap()
 vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
