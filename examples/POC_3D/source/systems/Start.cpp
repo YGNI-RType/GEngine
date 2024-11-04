@@ -20,6 +20,7 @@
 
 #include "components/Background.hpp"
 #include "components/Player.hpp"
+#include "components/Prop.hpp"
 
 #include "Constants.hpp"
 
@@ -48,8 +49,20 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
     // 3D Scene
     spawnEntity(gengine::component::driver::output::Model("gmApart.glb"),
                 gengine::component::driver::output::Drawable(1),
-                gengine::component::Transform3D({0.0f, 0.0f, 0.0f}, {1, 1, 1}, {-90.f, 0.f, 90.f}),
+                gengine::component::Transform3D({0.0f, -0.1f, 0.0f}, {1, 1, 1}, {-90.f, 0.f, 90.f}),
                 geg::component::network::NetSend());
+
+    // Props
+    spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
+                gengine::component::driver::output::Drawable(2),
+                gengine::component::driver::output::Model("antique_cabinet.glb"), geg::component::network::NetSend());
+    spawnEntity(component::Prop(), geg::component::Transform3D({20.0f, 0.0f, 0.0f}, {20, 20, 20}, {0, 0, 0}),
+                gengine::component::driver::output::Drawable(2),
+                gengine::component::driver::output::Model("coraline.glb"), geg::component::network::NetSend());
+    // spawnEntity(component::Prop(), geg::component::Transform3D({4.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
+    //             gengine::component::driver::output::Drawable(2),
+    //             gengine::component::driver::output::Model("props/mechanical_shark.glb"),
+    //             geg::component::network::NetSend());
 }
 
 void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &e) {

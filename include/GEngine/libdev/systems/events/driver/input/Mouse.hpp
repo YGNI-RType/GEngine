@@ -40,7 +40,16 @@ public:
     MouseMove(const Vect2 &&cursorPos)
         : cursorPos(cursorPos) {
     }
+    MouseMove(const Vect2 &cursorPos, const Vect2 &delta)
+        : cursorPos(cursorPos)
+        , delta(delta) {
+    }
+    MouseMove(const Vect2 &&cursorPos, const Vect2 &&delta)
+        : cursorPos(cursorPos)
+        , delta(delta) {
+    }
     Vect2 cursorPos;
+    Vect2 delta;
 };
 
 class MouseLeft : public MouseButton {

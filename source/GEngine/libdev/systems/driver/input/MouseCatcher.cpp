@@ -35,7 +35,10 @@ void MouseCatcher::onRenderLoop(gengine::system::event::RenderLoop &e) {
         ++button;
     } while (button != MOUSE_BUTTON_LEFT);
     if (mousePos != m_prevMousePos) {
-        publishEvent(MouseMoveEvent(mousePos));
+        Vect2 delta = mousePos;
+        delta.x -= m_prevMousePos.x;
+        delta.y -= m_prevMousePos.y;
+        publishEvent(MouseMoveEvent(mousePos, delta));
         m_prevMousePos = mousePos;
     }
 }

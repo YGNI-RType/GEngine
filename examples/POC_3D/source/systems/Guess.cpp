@@ -10,7 +10,8 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#include "GEngine/libdev/Component.hpp" // gengine::Zip
+#include "GEngine/libdev/Component.hpp"    // gengine::Zip
+#include "GEngine/libdev/tools/Raylib.hpp" // setModelTransform
 
 #include "Constants.hpp"
 
@@ -30,38 +31,22 @@ void Guess::guessWho(gengine::interface::event::SharedEvent<event::GuessEvent> &
     auto &transforms = getComponents<geg::component::Transform3D>();
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
 
-    Ray ray = {0};
     auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
     RayCollision collision = {0};
-    BoundingBox box = {0};
 
     auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
-
-    std::cout << "Guessing" << std::endl;
 
     for (auto [entity, model, player, remote, transform] : gengine::Zip(models, players, remotes, transforms)) {
         if (remote.getUUIDBytes() == e.remoteUUID) // check if its the same remote (zip)
             continue;
-        Model modelRaylib = modelMan.get(model.txtPath);
+        collision = gengine::GetRayCollisionModel({WINDOW_WIDTH / 2, (WINDOW_TOTAL_HEIGHT) / 2},
+                                                  modelMan.get(model.txtPath), transform, draw.camera);
+        if (collision.hit)
+            publishEvent(event::Jump(0.4, remote.getUUIDBytes()));
 
-        box = GetMeshBoundingBox(modelRaylib.meshes[0]);
-        box.min.x += transform.pos.x;
-        box.min.y += transform.pos.y;
-        box.min.z += transform.pos.z;
-        box.max.x += transform.pos.x;
-        box.max.y += transform.pos.y;
-        box.max.z += transform.pos.z;
+        // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
 
-        ray = GetMouseRay(GetMousePosition(), draw.camera);
-        collision = GetRayCollisionBox(ray, box);
-        if (collision.hit) {
-            // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
-            // player.speed = 0;
-            // player.defaultSpeed = 0; //TODO Why is it not working?
-            publishEvent(event::Jump());
-            std::cout << "HIT" << std::endl;
-        } else
-            std::cout << "MISS" << std::endl;
+        // std::cout << "MISS" << std::endl;
     }
 }
 } // namespace poc3d::system
