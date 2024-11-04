@@ -6,8 +6,8 @@
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 
-#include "GEngine/interface/network/systems/Updater.hpp"
 #include "GEngine/interface/network/systems/ClientServer.hpp"
+#include "GEngine/interface/network/systems/Updater.hpp"
 
 #include "GEngine/net/events/disconnection.hpp"
 #include "GEngine/net/events/record.hpp"
@@ -15,13 +15,13 @@
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <type_traits>
 #include <typeindex>
 #include <unordered_map>
-#include <filesystem>
 
 #define ENTITY_ID_START_CLIENT (uint64_t(-1) / 2)
 
