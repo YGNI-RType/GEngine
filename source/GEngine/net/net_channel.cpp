@@ -84,7 +84,8 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
     uint64_t currentTime = Time::Clock::milliseconds();
     if (currentTime - lastTime >= 1000) {
         size_t meanSize = totalSent / totalPackets;
-        std::cout << "Mean packet size in the last second: " << meanSize << " bytes (nb: " << totalPackets << ")" << std::endl;
+        std::cout << "Mean packet size in the last second: " << meanSize << " bytes (nb: " << totalPackets << ")"
+                  << std::endl;
         lastTime = currentTime;
         totalSent = 0;
         totalPackets = 0;

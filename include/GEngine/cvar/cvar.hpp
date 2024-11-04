@@ -20,14 +20,14 @@ class ConVar {
 public:
     enum flag {
         NONE = 0x00,
-        CHEAT = 0x01,      // used only when cheat enabled
-        CMD = 0x02,        // only in cmd (starting the software)
-        ROM = 0x04,        // nobody can change the value
-        SYSTEM = 0x08,     // System commands
-        SERVER = 0x10,     // Server commands, needs to transmit to the server
-        CLIENT = 0x20,     // Client commands, based on self process
-        NET_CLIENT = 0x40, // Linked to the client that is asking to change the value
-        CON_CALLBACK = 0x80    // Callback function
+        CHEAT = 0x01,       // used only when cheat enabled
+        CMD = 0x02,         // only in cmd (starting the software)
+        ROM = 0x04,         // nobody can change the value
+        SYSTEM = 0x08,      // System commands
+        SERVER = 0x10,      // Server commands, needs to transmit to the server
+        CLIENT = 0x20,      // Client commands, based on self process
+        NET_CLIENT = 0x40,  // Linked to the client that is asking to change the value
+        CON_CALLBACK = 0x80 // Callback function
     };
 
 public:

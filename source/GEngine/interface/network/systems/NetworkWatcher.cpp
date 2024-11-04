@@ -6,8 +6,8 @@
 */
 
 #include "GEngine/interface/network/systems/NetworkWatcher.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
 
 #include "GEngine/net/net.hpp"
 
@@ -31,4 +31,4 @@ void NetworkWatcher::onGameLoop(gengine::system::event::GameLoop &) {
         return;
     }
 }
-} // namespace gengine::interface::network
+} // namespace gengine::interface::network::system

@@ -261,10 +261,10 @@ public: /* THREAD SAFE */
 
     /**
      * @brief Retrieves the port number in a thread-safe manner.
-     * 
+     *
      * This function returns the port number associated with the network channel.
      * It ensures that the access to the port number is thread-safe.
-     * 
+     *
      * @return uint16_t The port number.
      */
     uint16_t getPort_TS(void) const;

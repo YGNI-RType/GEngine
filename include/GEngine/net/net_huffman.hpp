@@ -49,7 +49,7 @@ public:
  *
  * This class provides functionalities to add symbols to the Huffman table,
  * write symbols to a data buffer, and read symbols from a data buffer.
- * 
+ *
  * @warning The table should be complete with all the symbols, otherwise we get undefined behavior (UB).
  */
 class HuffTable {

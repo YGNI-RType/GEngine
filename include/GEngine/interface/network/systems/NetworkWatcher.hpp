@@ -20,4 +20,4 @@ public:
     void onGameLoop(gengine::system::event::GameLoop &);
 };
 
-} // namespace gengine::interface::network
+} // namespace gengine::interface::network::system

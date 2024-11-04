@@ -115,7 +115,6 @@ void Snapshot::getAndSendDeltaDiff(void) {
         } catch (std::bad_any_cast &e) {
             continue;
         }
-
     }
 }
 

@@ -316,7 +316,8 @@ private:
      * @param offset The offset in the buffer where the received data should be stored.
      * @return The number of bytes successfully received and stored in the buffer.
      */
-    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size, size_t offset, size_t &receivedTotal) const;
+    std::size_t receiveReliant(TCPSerializedMessage *buffer, std::size_t size, size_t offset,
+                               size_t &receivedTotal) const;
     /**
      * @brief Sends a reliable TCP message.
      *
