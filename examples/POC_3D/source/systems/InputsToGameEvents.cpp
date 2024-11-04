@@ -12,6 +12,7 @@ namespace poc3d::system {
 void InputsToGameEvents::init(void) {
     // Send movements + rotation
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);
+    subscribeToEvent<geg::event::io::MouseMoveEvent>(&InputsToGameEvents::rotatePlayer);
     subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
     // Movements
     subscribeToEvent<geg::event::io::KeyWEvent>(&InputsToGameEvents::moveFwd);
@@ -34,16 +35,13 @@ void InputsToGameEvents::init(void) {
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
     publishEvent(event::Movement(getMovementState()));
+}
 
-    // Player Direction
-    const Vector2 mouseDelta = GetMouseDelta();
-    DisableCursor();
+void InputsToGameEvents::rotatePlayer(geg::event::io::MouseMoveEvent &e) {
     gengine::Vect3 rotation = {0, 0, 0};
-    if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
-        rotation.y -= MOUSE_SENSITIVITY * mouseDelta.x;
-        rotation.z -= MOUSE_SENSITIVITY * mouseDelta.y;
-        publishEvent<event::Rotation>(rotation);
-    }
+    rotation.y -= MOUSE_SENSITIVITY * e.delta.x;
+    rotation.z -= MOUSE_SENSITIVITY * e.delta.y;
+    publishEvent(event::Rotation(rotation));
 }
 
 void InputsToGameEvents::changeCameraMode(geg::event::io::KeyF5Event &e) {

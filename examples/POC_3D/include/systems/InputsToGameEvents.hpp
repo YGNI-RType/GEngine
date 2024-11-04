@@ -29,6 +29,7 @@ public:
     void init(void) override;
     void sendEvents(geg::event::GameLoop &e);
 
+    void rotatePlayer(geg::event::io::MouseMoveEvent &e);
     void changeCameraMode(geg::event::io::KeyF5Event &e);
 
     void moveFwd(geg::event::io::KeyWEvent &e);
