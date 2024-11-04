@@ -68,49 +68,54 @@ void Snapshot::getAndSendDeltaDiff(void) {
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
         auto &last = fullSnapshot ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
 
-        auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
-            last[std::type_index(typeid(component::NetSend))]);
+        try {
+            auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
+                last[std::type_index(typeid(component::NetSend))]);
 
-        Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
-                                    Network::UDPMessage::COMPRESSED,
-                                Network::SV_SNAPSHOT);
-        msg.setFullAck(fullSnapshot);
+            Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
+                                        Network::UDPMessage::COMPRESSED,
+                                    Network::SV_SNAPSHOT);
+            msg.setFullAck(fullSnapshot);
 
-        uint32_t nbEntity = 0;
-        msg.appendData(nbEntity);
-        msg.startCompressingSegment(false);
-        for (auto [entity, currentNetSend] : currentNetSends) {
-            if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
-                auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes)
-                    msg.appendData(byte);
-                for (auto &[typeId, comp] : comps) {
-                    auto &type = getTypeindex(typeId);
-                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+            uint32_t nbEntity = 0;
+            msg.appendData(nbEntity);
+            msg.startCompressingSegment(false);
+            for (auto [entity, currentNetSend] : currentNetSends) {
+                if (!lastNetSends.contains(entity) || lastNetSends.get(entity) != currentNetSend) {
+                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                    msg.appendData(uint32_t(entity));
+                    for (auto &byte : bytes)
+                        msg.appendData(byte);
+                    for (auto &[typeId, comp] : comps) {
+                        auto &type = getTypeindex(typeId);
+                        msg.appendData(toVoid(type, comp), getComponentSize(type));
+                    }
+                    nbEntity++;
                 }
-                nbEntity++;
             }
-        }
-        for (auto [entity, lastNetSend] : lastNetSends) {
-            if (!currentNetSends.contains(entity)) {
-                auto [bytes, comps] = getDeltaDiff(entity, current, last);
-                msg.appendData(uint32_t(entity));
-                for (auto &byte : bytes)
-                    msg.appendData(byte);
-                for (auto &[typeId, comp] : comps) {
-                    auto &type = getTypeindex(typeId);
-                    msg.appendData(toVoid(type, comp), getComponentSize(type));
+            for (auto [entity, lastNetSend] : lastNetSends) {
+                if (!currentNetSends.contains(entity)) {
+                    auto [bytes, comps] = getDeltaDiff(entity, current, last);
+                    msg.appendData(uint32_t(entity));
+                    for (auto &byte : bytes)
+                        msg.appendData(byte);
+                    for (auto &[typeId, comp] : comps) {
+                        auto &type = getTypeindex(typeId);
+                        msg.appendData(toVoid(type, comp), getComponentSize(type));
+                    }
+                    nbEntity++;
                 }
-                nbEntity++;
-            }
-        } // TODO cleaner
-        msg.stopCompressingSegment(false);
-        msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
+            } // TODO cleaner
+            msg.stopCompressingSegment(false);
+            msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
 
-        if (!server.isRunning())
+            if (!server.isRunning())
+                continue;
+            client.getNet()->pushData(msg, true);
+        } catch (std::bad_any_cast &e) {
             continue;
-        client.getNet()->pushData(msg, true);
+        }
+
     }
 }
 

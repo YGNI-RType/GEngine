@@ -124,12 +124,14 @@ void SVCommandManager::onGameLoop(gengine::system::event::GameLoop &) {
         }
 
         sendCvar.result = OK;
+        size_t size = 0;
         if (flags & CVar::ConVar::CON_CALLBACK) {
             std::string value = convar->applyCallback(cvar.value);
-            std::memcpy(sendCvar.output, value.c_str(), CF_NET_MIN(Network::MAX_CONCOMMAND_OUTPUT_LEN, value.size()));
+            size =  CF_NET_MIN(Network::MAX_CONCOMMAND_OUTPUT_LEN, value.size());
+            std::memcpy(sendCvar.output, value.c_str(), size);
         } else
             convar->setValue(cvar.value, false);
-        sendMsg.writeData(sendCvar);
+        sendMsg.writeData((const void *)(&sendCvar), size);
         client.getNet()->pushStream(sendMsg);
     }
 }
@@ -215,7 +217,7 @@ void CLCommandManager::onGameLoop(gengine::system::event::GameLoop &e) {
         return;
 
     Network::TCPSV_CVar cvar;
-    recvMsg.readData(cvar);
+    recvMsg.readData((void *)(&cvar), readCount, recvMsg.getSize());
 
     if (cvar.result == NOT_FOUND)
         std::cerr << "Convar not found" << std::endl;

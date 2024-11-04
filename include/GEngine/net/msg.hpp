@@ -422,8 +422,6 @@ private:
         return m_data;
     };
 
-    bool m_isFinished = true;
-
     /* always set field to last, this is not a header !!!*/
     byte_t m_data[MAX_TCP_MSGLEN];
 };

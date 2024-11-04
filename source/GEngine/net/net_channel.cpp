@@ -228,10 +228,11 @@ bool NetChannel::readStream(TCPMessage &msg) {
     try {
         m_tcpSocket.receive(msg);
     } catch (const SocketException &e) {
-        if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr)
+        if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr) {
+            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN)
+                return false;
             std::cerr << "Socket exception: " << e.what() << std::endl;
-        if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN)
-            return false;
+        }
         m_disconnect = true;
         return true;
     }
