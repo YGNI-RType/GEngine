@@ -100,6 +100,7 @@ public:
      * @return true if the event handling was successful, false otherwise.
      */
     bool handleEvent(const NetWaitSet &set);
+    bool handleEvent(void);
 
     void sendPackets(void);
 

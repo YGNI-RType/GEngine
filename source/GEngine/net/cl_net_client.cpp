@@ -74,7 +74,7 @@ void CLNetClient::createSets(NetWaitSet &set) {
     if (!m_enabled || !m_netChannel.canCommunicate())
         return;
 
-    set.setAlert(m_netChannel.getTcpSocket());
+    set.setAlert(m_netChannel.getTcpSocket(), [this]() { return handleTCPEvents(); });
 }
 
 void CLNetClient::init(void) {
@@ -133,6 +133,12 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
 
     auto &sock = m_netChannel.getTcpSocket();
     if (!set.isSignaled(sock))
+        return false;
+    return handleTCPEvents();
+}
+
+bool CLNetClient::handleTCPEvents(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
         return false;
 
     TCPMessage msg(0);

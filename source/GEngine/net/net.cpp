@@ -282,9 +282,9 @@ void NET::createSets(NetWaitSet &set) {
     mg_server.createSets(set);
     mg_client.createSets(set);
 
-    set.setAlert(mg_socketUdp);
+    set.setAlert(mg_socketUdp, []() { return NET::handleUdpIPv4(); });
     if (CVar::net_ipv6.getIntValue())
-        set.setAlert(mg_socketUdpV6);
+        set.setAlert(mg_socketUdpV6, []() { return NET::handleUdpIPv6(); });
 }
 
 bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr) {
@@ -294,37 +294,48 @@ bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr
     return mg_client.handleUDPEvents(socket, msg, addr);
 }
 
-bool NET::handleEvents(const NetWaitSet &set) {
-    if (mg_eventManager.handleEvent(set))
-        return true;
+bool NET::handleUdpIPv4(void) {
+    UDPMessage msg(0, 0);
+    while (true) {
+        AddressV4 addr(AT_IPV4, 0);
+        bool shouldContinue = mg_socketUdp.receiveV4(msg, addr);
+        if (!shouldContinue)
+            break;
+        handleUdpEvent(mg_socketUdp, msg, addr);
+    }
+    return true;
+}
 
-    if (set.isSignaled(mg_socketUdp)) {
-        UDPMessage msg(0, 0);
-        while (true) {
-            AddressV4 addr(AT_IPV6, 0);
-            bool shouldContinue = mg_socketUdp.receiveV4(msg, addr);
-            if (!shouldContinue)
-                break;
-            handleUdpEvent(mg_socketUdp, msg, addr);
-        }
-        return true;
+bool NET::handleUdpIPv6(void) {
+    UDPMessage msg(0, 0);
+    while (true) {
+        AddressV6 addr(AT_IPV6, 0);
+        bool shouldContinue = mg_socketUdp.receiveV6(msg, addr);
+        if (!shouldContinue)
+            break;
+        handleUdpEvent(mg_socketUdp, msg, addr);
     }
-    if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6)) {
-        UDPMessage msg(0, 0);
-        while (true) {
-            AddressV6 addr(AT_IPV6, 0);
-            bool shouldContinue = mg_socketUdp.receiveV6(msg, addr);
-            if (!shouldContinue)
-                break;
-            handleUdpEvent(mg_socketUdp, msg, addr);
-        }
-        return true;
-    }
+    return true;
+}
+
+bool NET::handleEvents(const NetWaitSet &set) {
+#ifdef NET_USE_HANDLE
+    set.applyCallback();
+    return true;
+#else
+    if (set.isSignaled(mg_eventManager.getSocketEvent()))
+        return mg_eventManager.handleEvent();
+
+    if (set.isSignaled(mg_socketUdp))
+        return handleUdpIPv4();
+    if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6))
+        return handleUdpIPv6();
 
     if (mg_server.handleTCPEvent(set))
         return true;
 
     return mg_client.handleTCPEvents(set);
+#endif
 }
 
 void NET::handleTimeouts(void) {

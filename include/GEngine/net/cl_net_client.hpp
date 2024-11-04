@@ -128,6 +128,7 @@ public:
      * @return true if the event was handled successfully, false otherwise.
      */
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    bool handleTCPEvents(void);
 
     /**
      * @brief Handles incoming UDP messages from the server.

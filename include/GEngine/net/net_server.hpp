@@ -95,6 +95,7 @@ public:
      * @return true if the event was handled successfully, false otherwise.
      */
     bool handleTCPEvent(const NetWaitSet &readSet);
+    bool handleTCPEvent(void);
     /**
      * @brief Handles an incoming UDP event.
      *

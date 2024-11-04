@@ -11,6 +11,8 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 namespace Network {
 
 bool NetWaitSet::isSignaled(const ASocket &socket) const {
@@ -38,11 +40,12 @@ bool NetWaitSet::isSignaled(const ASocket &socket) const {
 #endif
 }
 
-void NetWaitSet::setAlert(const ASocket &socket) {
+void NetWaitSet::setAlert(const ASocket &socket, std::function<bool(void)> &&callback) {
 #ifdef NET_USE_HANDLE
     if (m_count >= MAX_SOCKETS)
         return;
 
+    m_callbacks[m_count] = callback;
     m_events[m_count++] = socket.getHandle();
 #else
     FD_SET(socket.getSocket(), &m_readSet);
@@ -59,6 +62,16 @@ void NetWaitSet::reset(void) {
     FD_ZERO(&m_readSet);
 #endif
 }
+
+#ifdef NET_USE_HANDLE
+bool NetWaitSet::applyCallback(void) const {
+    auto callbackRes = m_callbacks[m_resIndex]();
+    BOOL res = WSAResetEvent(m_events[m_resIndex - WSA_WAIT_EVENT_0]);
+    if (!res)
+        wprintf(L"WSAResetEvent failed with error = %d\n", WSAGetLastError());
+    return callbackRes;
+}
+#endif
 
 /************************************************************/
 
@@ -89,7 +102,7 @@ bool NetWait::wait(uint32_t ms, NetWaitSet &set) {
         return false;
     }
 
-    set.setResultIndex(dwEvent);
+    set.setResultIndex(dwEvent - WSA_WAIT_EVENT_0);
 #else
     SOCKET highest = NetWait::getHighestSocket();
     struct timeval timeout = {.tv_sec = static_cast<long>(ms / 1000u), .tv_usec = static_cast<int>((ms % 1000) * 1000)};

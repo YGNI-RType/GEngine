@@ -9,6 +9,13 @@
 
 #include <exception>
 
+#ifdef _WIN32
+#define socketErrorStr(code) std::to_string(code)
+#else
+#include <cstring>
+#define socketErrorStr(code) std::strerror(code)
+#endif
+
 namespace Network {
 
 /**
@@ -24,8 +31,9 @@ public:
         : m_msg(msg)
         , m_shouldRetry(shouldRetry) {
     }
-    SocketException(int nb, bool shouldRetry = true)
-        : m_msg(std::to_string(nb))
+    SocketException(int code, bool shouldRetry = true)
+        : m_msg(socketErrorStr(code))
+        , m_code(code)
         , m_shouldRetry(shouldRetry) {
     }
 
@@ -37,9 +45,14 @@ public:
         return m_shouldRetry;
     }
 
+    uint16_t getCode() const {
+        return m_code;
+    }
+
 private:
     std::string m_msg;
     bool m_shouldRetry;
+    int m_code;
 };
 
 /**

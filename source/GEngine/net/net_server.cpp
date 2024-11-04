@@ -39,18 +39,12 @@ void NetServer::stop(void) {
 void NetServer::createSets(NetWaitSet &set) {
     if (!isRunning())
         return;
-
-    for (const auto &client : m_clients) {
-        auto &socket = client->getChannel().getTcpSocket();
-        auto eventType = socket.getEventType();
-
-        if (eventType == SocketTCP::EventType::READ)
-            set.setAlert(socket);
-    }
-
-    set.setAlert(m_socketv4);
+    set.setAlert(m_socketv4, [this]() { handleNewClient(m_socketv4); return true; });
     if (CVar::net_ipv6.getIntValue())
-        set.setAlert(m_socketv6);
+        set.setAlert(m_socketv6, [this]() { handleNewClient(m_socketv6); return true; });
+
+    for (auto &client : m_clients)
+        client->createSets(set);
 }
 
 void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, const Address &addr) {
@@ -119,6 +113,9 @@ bool NetServer::handleUDPEvent(SocketUDP &socket, UDPMessage &msg, const Address
 bool NetServer::handleUdpMessageClients(SocketUDP &socket, UDPMessage &msg, const Address &addr) {
     for (const auto &client : m_clients) {
         auto &channel = client->getChannel();
+        if (!channel.isUDPEnabled())
+            continue;
+
         if (channel.getAddressUDP() != addr)
             continue;
 
