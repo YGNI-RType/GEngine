@@ -13,7 +13,7 @@ class NetClient;
 
 namespace Event {
 
-enum DisonnectType { DT_WANTED, DT_TIMEOUT, DT_RESET };
+enum DisonnectType { DT_WANTED, DT_TIMEOUT, DT_RESET, DT_REDIRECT };
 
 struct DisconnectInfo {
     NetClient *client;

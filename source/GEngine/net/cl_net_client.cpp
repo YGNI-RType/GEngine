@@ -64,7 +64,8 @@ bool CLNetClient::connectToServer(const std::string &ip, uint16_t port, bool blo
 void CLNetClient::disconnectFromServer(Event::DisonnectType disconnectType) {
     m_netChannel.setTcpSocket(SocketTCP());
 
-    NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, disconnectType);
+    if (disconnectType != Event::DT_REDIRECT)
+        NET::getEventManager().invokeCallbacks(Event::CT_OnServerDisconnect, disconnectType);
 
     m_state = CS_FREE;
     m_connectionState = CON_DISCONNECTED;
@@ -185,6 +186,17 @@ bool CLNetClient::handleServerTCP(const TCPMessage &msg) {
         m_connectionState = CON_ACTIVE;
         NET::getEventManager().invokeCallbacks(Event::CT_OnServerReady, 0);
         return true;
+    case SV_REDIRECTION: {
+        TCPSV_Redirection data;
+        msg.readData<TCPSV_Redirection>(data);
+
+        std::string ip = data.ip;
+        if (!connectToServer(ip, data.tcpPort))
+            std::cerr << "CL: couldn't connect to redirected server" << std::endl;
+        return true;
+    }
+    break;
+
     default:
         pushIncommingStream(msg, 0);
         break;

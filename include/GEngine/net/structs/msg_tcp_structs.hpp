@@ -19,7 +19,8 @@ enum {
     SV_YOU_ARE_READY,
     SV_DOWNLOAD,
     SV_UPLOAD, // TODO : add resriction on files (size, type, etc)
-    SV_CVAR
+    SV_CVAR,
+    SV_REDIRECTION
 };
 
 enum {
@@ -49,6 +50,14 @@ PACK(struct TCPCL_CVar {
 PACK(struct TCPSV_CVar {
     uint8_t result;
     char output[MAX_CONCOMMAND_OUTPUT_LEN];
+});
+
+PACK(struct TCPSV_Redirection {
+    bool ipv6;
+    uint64_t scopeId; /* ipv6 */
+
+    char ip[0x64];
+    uint16_t tcpPort;
 });
 
 } // namespace Network
