@@ -25,6 +25,17 @@
 
 namespace Network {
 
+/**
+ * @class NET
+ * @brief The NET class provides network functionalities including server and client initialization,
+ *        handling network events, and managing local IP addresses. Very similar to quake3's network.
+ *
+ * This class encapsulates various network operations such as initializing servers and clients,
+ * handling UDP and TCP sockets, managing network events, and pinging servers. It also provides
+ * utility functions to manage local IP addresses and handle network timeouts.
+ *
+ * @note This class contains both public and private static members and methods to manage network operations.
+ */
 class NET {
 private:
     API static NetWait mg_wait;
@@ -33,8 +44,6 @@ private:
     static SocketTCPMaster mg_socketListenTcp;
     static SocketUDP mg_socketUdpV6;
     static SocketTCPMaster mg_socketListenTcpV6;
-
-    API static NetRecord mg_record;
 
     API static NetServer mg_server;
     API static CLNetClient mg_client;
@@ -45,7 +54,8 @@ private:
     static std::mutex mg_mutex;
     static std::thread mg_networkThread;
 
-    API static uint16_t mg_currentUnusedPort;
+    API static uint16_t mg_currentUnusedPortTCP;
+    API static uint16_t mg_currentUnusedPortUDP;
 
     API static Event::Manager mg_eventManager;
 
@@ -70,6 +80,8 @@ public:
     static bool sleep(uint32_t ms);
     static bool handleEvents(const NetWaitSet &set);
     static bool handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    static bool handleUdpIPv4(void);
+    static bool handleUdpIPv6(void);
     static void handleTimeouts(void);
 
 private:
@@ -92,7 +104,7 @@ public:
     }
 
     static NetRecord &getRecord(void) {
-        return mg_record;
+        return mg_client.getRecord();
     }
 
 public:

@@ -33,10 +33,10 @@ bool CLNetClient::connectToServer(size_t index) {
 
     sock.setBlocking(false);
     m_netChannel = std::move(NetChannel(false, std::move(addr), std::move(sock)));
-    /* todo : some error handling just in case ? */
 
     m_state = CS_CONNECTED;
     m_connectionState = CON_CONNECTING;
+    m_lastConnectTime = Time::Clock::milliseconds();
     return true;
 }
 
@@ -50,16 +50,14 @@ bool CLNetClient::connectToServer(const std::string &ip, uint16_t port, bool blo
     else
         return false;
 
-    /* fix : when the addres is bad, it holds since it blocks, make it unblock by default ? */
     auto sock = m_addrType == AT_IPV4 ? SocketTCP(static_cast<AddressV4 &>(*addr), port, block)
                                       : SocketTCP(static_cast<AddressV6 &>(*addr), port, block);
 
-    // std::cout << "connecting is not ready ?: " << sock.isNotReady() << std::endl;
     m_netChannel = std::move(NetChannel(false, std::move(addr), std::move(sock)));
-    //     /* todo : some error handling just in case ? */
 
     m_state = CS_CONNECTED;
     m_connectionState = CON_CONNECTING;
+    m_lastConnectTime = Time::Clock::milliseconds();
     return true;
 }
 
@@ -76,7 +74,7 @@ void CLNetClient::createSets(NetWaitSet &set) {
     if (!m_enabled || !m_netChannel.canCommunicate())
         return;
 
-    set.setAlert(m_netChannel.getTcpSocket());
+    set.setAlert(m_netChannel.getTcpSocket(), [this]() { return handleTCPEvents(); });
 }
 
 void CLNetClient::init(void) {
@@ -136,6 +134,12 @@ bool CLNetClient::handleTCPEvents(const NetWaitSet &set) {
     auto &sock = m_netChannel.getTcpSocket();
     if (!set.isSignaled(sock))
         return false;
+    return handleTCPEvents();
+}
+
+bool CLNetClient::handleTCPEvents(void) {
+    if (!m_enabled || !m_netChannel.isEnabled())
+        return false;
 
     TCPMessage msg(0);
     if (!m_netChannel.readStream(msg))
@@ -192,7 +196,8 @@ void CLNetClient::checkTimeouts(void) {
     if (!m_enabled || !m_netChannel.isEnabled())
         return;
 
-    if (m_state >= CS_ACTIVE && m_netChannel.isTimeout()) {
+    if ((m_state >= CS_ACTIVE && m_netChannel.isTimeout()) ||
+        (m_connectionState == CON_CONNECTING && Time::Clock::milliseconds() - m_lastConnectTime > 5000)) {
         std::cout << "CL: timeout" << std::endl;
         disconnectFromServer(Event::DT_TIMEOUT);
     }

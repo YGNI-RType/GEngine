@@ -48,7 +48,10 @@ public:
 
         auto recordInfo = Network::Event::RecordInfo(Network::Event::RecordInfo::WATCH);
         recordInfo.demoFile = demoPath;
-        em.addEvent(Network::Event::RECORD, recordInfo);
+        size_t ticket = em.addEvent(Network::Event::RECORD, recordInfo);
+        auto result = em.getLastResult(ticket, true);
+        if (result != Network::Event::Result::OK)
+            throw std::runtime_error("Failed to start replay");
 
         m_remote.registerSystem<gengine::system::AutoMainLoop>();
         m_local.registerSystem<gengine::system::AutoMainLoop>();

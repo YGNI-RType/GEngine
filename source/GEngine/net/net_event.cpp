@@ -12,13 +12,10 @@
 
 namespace Network::Event {
 void Manager::createSets(NetWaitSet &set) {
-    set.setAlert(m_socketEvent);
+    set.setAlert(m_socketEvent, [this]() { return handleEvent(); });
 }
 
-bool Manager::handleEvent(const NetWaitSet &set) {
-    if (!set.isSignaled(m_socketEvent))
-        return false;
-
+bool Manager::handleEvent(void) {
     size_t size;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -31,44 +28,53 @@ bool Manager::handleEvent(const NetWaitSet &set) {
     }
     for (size_t i = 0; i < size; i++) {
         std::unique_ptr<InfoHeader> info;
+        size_t ticket;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             if (m_events.empty())
                 return true;
-            info = std::move(m_events.front());
+            auto &[_ticket, _info] = m_events.front();
+            ticket = _ticket;
+            info = std::move(_info);
             m_events.pop();
         }
 
-        handleNewEngineReq(*info);
+        handleNewEngineReq(*info, ticket);
     }
     return true;
 }
 
 /* game engine thread */
-void Manager::storeEvent(std::unique_ptr<InfoHeader> info) {
+void Manager::storeEvent(std::unique_ptr<InfoHeader> info, size_t ticket) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    m_events.push(std::move(info));
+    m_events.push(std::make_pair(ticket, std::move(info)));
 }
 
-void Manager::handleNewEngineReq(InfoHeader &header) {
+void Manager::handleNewEngineReq(InfoHeader &header, size_t ticket) {
     switch (header.type) {
     case CONNECT: {
         auto &client = NET::getClient();
         auto &dataPtr = reinterpret_cast<Info<ConnectInfo> &>(header).data;
+        bool result;
 
         if (dataPtr->pingIndex != -1) /* this means they found it via pinging LAN */
-            client.connectToServer(dataPtr->pingIndex);
+            result = client.connectToServer(dataPtr->pingIndex);
         else
-            client.connectToServer(dataPtr->ip, dataPtr->port);
+            result = client.connectToServer(dataPtr->ip, dataPtr->port);
+        if (!result)
+            break;
+        return pushResult(Result::OK, ticket);
     } break;
     case DISCONNECT: {
         auto &client = NET::getClient();
 
         client.disconnectFromServer(Event::DT_WANTED);
+        return pushResult(Result::OK, ticket);
     } break;
     case PING_LAN:
         NET::pingServers();
+        return pushResult(Result::OK, ticket);
         break;
     case RECORD: {
         auto &record = NET::getRecord();
@@ -76,9 +82,16 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
         auto &dataPtr = reinterpret_cast<Info<RecordInfo> &>(header).data;
         switch (dataPtr->mode) {
         case RecordInfo::STOP:
-            if (record.isRecording())
-                record.endRecord();
-            /* todo end watching */
+            if (record.isRecording()) {
+                if (!record.endRecord())
+                    break;
+                return pushResult(Result::OK, ticket);
+            } else if (record.isWatching()) {
+                if (record.endWatch(true))
+                    break;
+                return pushResult(Result::OK, ticket);
+            }
+
             break;
         case RecordInfo::RECORD: {
             if (record.isRecording())
@@ -92,6 +105,7 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
 
             auto &client = NET::getClient();
             client.refreshSnapshots();
+            return pushResult(Result::OK, ticket);
         } break;
         case RecordInfo::WATCH:
             if (record.isWatching())
@@ -104,7 +118,7 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
                 break;
 
             record.startWatchFakeNet();
-            break;
+            return pushResult(Result::OK, ticket);
         default:
             break;
         }
@@ -112,6 +126,7 @@ void Manager::handleNewEngineReq(InfoHeader &header) {
     default:
         break;
     }
+    return pushResult(Result::KO, ticket);
 }
 
 void Manager::sendPackets(void) {
@@ -123,4 +138,44 @@ void Manager::sendPackets(void) {
     if (client.sendPackets())
         return;
 }
+
+void Manager::pushResult(Result result, size_t ticket) {
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_results[ticket] = result;
+    }
+    m_conditionVar.notify_all();
+}
+
+void Manager::pushResult(NetUnexpectedEvent result, bool ended) {
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_resultsUnattended.push(result);
+    }
+    if (ended)
+        m_conditionVar.notify_all();
+}
+
+Result Manager::getLastResult(size_t ticket, bool wait) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if (wait)
+        m_conditionVar.wait(lock, [&] { return m_results.find(ticket) != m_results.end() || isEnded(); });
+    else if (m_results.find(ticket) == m_results.end())
+        return Result::NO_RESULT;
+
+    Result result = m_results[ticket];
+    m_results.erase(ticket);
+    return result;
+}
+
+NetUnexpectedEvent Manager::getLastResult(void) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (m_resultsUnattended.empty())
+        return NetUnexpectedEvent::EL_NONE;
+
+    auto result = m_resultsUnattended.front();
+    m_resultsUnattended.pop();
+    return result;
+}
+
 } // namespace Network::Event

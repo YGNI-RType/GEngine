@@ -36,9 +36,10 @@ public:
 private:
     void getInputs(void);
     std::vector<std::string> splitInput(const std::string &input);
-    std::thread inputThread;
-    std::atomic<bool> stopReading;
-    std::vector<std::string> userInputHistory;
-    std::mutex historyMutex;
+
+    std::thread m_inputThread;
+    std::atomic_bool m_stopReading;
+    std::vector<std::string> m_userInputHistory;
+    mutable std::mutex m_historyMutex;
 };
 } // namespace gengine::system

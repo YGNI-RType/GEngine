@@ -29,7 +29,11 @@ void ClientServer::onConnect(event::ConnectToServer &e) {
         return;
     auto &eventManager = Network::NET::getEventManager();
 
-    eventManager.addEvent(Network::Event::CONNECT, Network::Event::ConnectInfo(e.ip, e.port));
+    size_t ticket = eventManager.addEvent(Network::Event::CONNECT, Network::Event::ConnectInfo(e.ip, e.port));
+    auto result = eventManager.getLastResult(ticket, true);
+    if (result != Network::Event::Result::OK)
+        return;
+
     m_serverIp = e.ip;
     m_serverPort = e.port;
     m_connected = true;

@@ -61,20 +61,18 @@ SocketTCPMaster NET::mg_socketListenTcp;
 SocketUDP NET::mg_socketUdpV6;
 SocketTCPMaster NET::mg_socketListenTcpV6;
 
-NetRecord NET::mg_record;
-
 NetWait NET::mg_wait;
 Event::Manager NET::mg_eventManager;
 NetServer NET::mg_server(mg_socketUdp, mg_socketUdpV6);
 CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_socketUdp,
-                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent(),
-                           mg_record);
+                           CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent());
 
 std::vector<IP> NET::g_localIPs;
 
 std::thread NET::mg_networkThread;
 
-std::uint16_t NET::mg_currentUnusedPort = DEFAULT_PORT;
+std::uint16_t NET::mg_currentUnusedPortTCP = DEFAULT_PORT;
+std::uint16_t NET::mg_currentUnusedPortUDP = DEFAULT_PORT;
 
 std::atomic_bool NET::mg_aEnable = false;
 std::mutex NET::mg_mutex;
@@ -89,9 +87,9 @@ bool NET::init(void) {
     std::lock_guard<std::mutex> lock(mg_mutex);
     ASocket::initLibs();
 
-    mg_socketUdp = openSocketUdp(mg_currentUnusedPort, false);
+    mg_socketUdp = openSocketUdp(mg_currentUnusedPortUDP, false);
     if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
-        mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPort, true);
+        mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPortUDP, true);
     return true;
 }
 
@@ -100,7 +98,7 @@ bool NET::initServer(void) {
     if (!NET::mg_aEnable)
         return false;
 
-    mg_currentUnusedPort = NET::mg_server.start(CVar::sv_maxplayers.getIntValue(), mg_currentUnusedPort);
+    mg_currentUnusedPortTCP = NET::mg_server.start(mg_currentUnusedPortTCP);
     return true;
 }
 
@@ -109,12 +107,23 @@ bool NET::start(void) {
         return false;
 
     mg_networkThread = std::thread([]() {
-        while (mg_aEnable)
-            sleep(NET_SLEEP_DURATION);
+        while (mg_aEnable) {
+            try {
+                sleep(NET_SLEEP_DURATION);
+            } catch (const NetException &e) {
+                std::cerr << "FATAL: Network thread exception: " << e.what() << std::endl;
+
+                auto &eventManager = NET::getEventManager();
+                eventManager.pushResult(e.getLocation(), !e.shouldRetry());
+                if (e.shouldRetry())
+                    continue;
+                break;
+            }
+        }
     });
 
     if (mg_client.isEnabled())
-        mg_record.startWatchThread();
+        mg_client.getRecord().startWatchThread();
     return true;
 }
 
@@ -273,9 +282,9 @@ void NET::createSets(NetWaitSet &set) {
     mg_server.createSets(set);
     mg_client.createSets(set);
 
-    set.setAlert(mg_socketUdp);
+    set.setAlert(mg_socketUdp, []() { return NET::handleUdpIPv4(); });
     if (CVar::net_ipv6.getIntValue())
-        set.setAlert(mg_socketUdpV6);
+        set.setAlert(mg_socketUdpV6, []() { return NET::handleUdpIPv6(); });
 }
 
 bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr) {
@@ -285,37 +294,48 @@ bool NET::handleUdpEvent(SocketUDP &socket, UDPMessage &msg, const Address &addr
     return mg_client.handleUDPEvents(socket, msg, addr);
 }
 
-bool NET::handleEvents(const NetWaitSet &set) {
-    if (mg_eventManager.handleEvent(set))
-        return true;
+bool NET::handleUdpIPv4(void) {
+    UDPMessage msg(0, 0);
+    while (true) {
+        AddressV4 addr(AT_IPV4, 0);
+        bool shouldContinue = mg_socketUdp.receiveV4(msg, addr);
+        if (!shouldContinue)
+            break;
+        handleUdpEvent(mg_socketUdp, msg, addr);
+    }
+    return true;
+}
 
-    if (set.isSignaled(mg_socketUdp)) {
-        UDPMessage msg(0, 0);
-        while (true) {
-            AddressV4 addr(AT_IPV6, 0);
-            bool shouldContinue = mg_socketUdp.receiveV4(msg, addr);
-            if (!shouldContinue)
-                break;
-            handleUdpEvent(mg_socketUdp, msg, addr);
-        }
-        return true;
+bool NET::handleUdpIPv6(void) {
+    UDPMessage msg(0, 0);
+    while (true) {
+        AddressV6 addr(AT_IPV6, 0);
+        bool shouldContinue = mg_socketUdp.receiveV6(msg, addr);
+        if (!shouldContinue)
+            break;
+        handleUdpEvent(mg_socketUdp, msg, addr);
     }
-    if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6)) {
-        UDPMessage msg(0, 0);
-        while (true) {
-            AddressV6 addr(AT_IPV6, 0);
-            bool shouldContinue = mg_socketUdp.receiveV6(msg, addr);
-            if (!shouldContinue)
-                break;
-            handleUdpEvent(mg_socketUdp, msg, addr);
-        }
-        return true;
-    }
+    return true;
+}
+
+bool NET::handleEvents(const NetWaitSet &set) {
+#ifdef NET_USE_HANDLE
+    set.applyCallback();
+    return true;
+#else
+    if (set.isSignaled(mg_eventManager.getSocketEvent()))
+        return mg_eventManager.handleEvent();
+
+    if (set.isSignaled(mg_socketUdp))
+        return handleUdpIPv4();
+    if (CVar::net_ipv6.getIntValue() && set.isSignaled(mg_socketUdpV6))
+        return handleUdpIPv6();
 
     if (mg_server.handleTCPEvent(set))
         return true;
 
     return mg_client.handleTCPEvents(set);
+#endif
 }
 
 void NET::handleTimeouts(void) {

@@ -24,6 +24,31 @@ typedef uint32_t in_addr_t;
 #endif
 
 namespace Network {
+/**
+ * @class Address
+ * @brief Abstract base class representing a network address.
+ *
+ * This class provides an interface for handling different types of network addresses.
+ * It includes methods for converting the address to a sockaddr structure, checking if
+ * the address is a local area network (LAN) address, and converting the address to a string.
+ *
+ * @protected
+ * @typedef ipv4_t
+ * @brief Type alias for an IPv4 address represented as an array of 4 bytes.
+ *
+ * @typedef ipv6_t
+ * @brief Type alias for an IPv6 address represented as an array of 16 bytes.
+ *
+ * @protected
+ * @var AddressType m_type
+ * @brief The type of the address.
+ *
+ * @var uint16_t m_port
+ * @brief The port number of the address.
+ *
+ * @var uint32_t m_mask
+ * @brief The mask of the address.
+ */
 class Address {
 
 protected:
@@ -32,7 +57,25 @@ protected:
 
 public:
     virtual ~Address() = default;
+    /**
+     * @brief Converts the network address to a sockaddr structure.
+     *
+     * This pure virtual function must be implemented by derived classes
+     * to provide the appropriate conversion of the network address to
+     * a sockaddr structure.
+     *
+     * @param addr Pointer to a sockaddr structure where the converted
+     *             address will be stored.
+     */
     virtual void toSockAddr(sockaddr *addr) const = 0;
+    /**
+     * @brief Checks if the network address is a local area network (LAN) address.
+     *
+     * This function determines whether the network address is within the range
+     * of addresses designated for local area networks (LANs).
+     *
+     * @return true if the address is a LAN address, false otherwise.
+     */
     virtual bool isLanAddr(void) const = 0;
     virtual std::string toString(void) const = 0;
 
@@ -60,6 +103,14 @@ protected:
         , m_mask(mask) {
     }
 
+    /**
+     * @brief Compares two network addresses for equality based on a given mask.
+     *
+     * @param addr1 Pointer to the first network address.
+     * @param addr2 Pointer to the second network address.
+     * @param mask The mask to apply when comparing the addresses.
+     * @return true if the addresses are equal based on the mask, false otherwise.
+     */
     bool isEqual(const byte_t *addr1, const byte_t *addr2, uint32_t mask) const;
 
     AddressType m_type;
@@ -67,6 +118,23 @@ protected:
     uint32_t m_mask;
 };
 
+/**
+ * @class AddressV4
+ * @brief Represents an IPv4 network address.
+ *
+ * This class provides functionalities to handle IPv4 addresses, including
+ * conversion to socket address structures, checking if the address is a LAN
+ * address, and converting the address to a string representation.
+ *
+ * @note This class inherits from the Address class.
+ */
+
+/**
+ * @var AddressV4::m_address
+ * @brief Stores the IPv4 address.
+ *
+ * This member variable holds the IPv4 address in a custom ipv4_t type.
+ */
 class AddressV4 : public Address {
 
 public:
@@ -92,6 +160,22 @@ private:
     ipv4_t m_address;
 };
 
+/**
+ * @class AddressV6
+ * @brief Represents an IPv6 network address.
+ *
+ * The AddressV6 class provides functionalities to handle IPv6 addresses,
+ * including conversion to socket address structures, checking if the address
+ * is a LAN address, and converting the address to a string representation.
+ *
+ * @note This class inherits from the Address class.
+ *
+ * @var AddressV6::m_address
+ * The IPv6 address stored as an ipv6_t type.
+ *
+ * @var AddressV6::m_scopeId
+ * The scope ID associated with the IPv6 address.
+ */
 class AddressV6 : public Address {
 
 public:
@@ -122,6 +206,22 @@ private:
     uint64_t m_scopeId;
 };
 
+/**
+ * @class UnknownAddress
+ * @brief Represents an unknown network address.
+ *
+ * This class encapsulates an unknown network address, providing methods to
+ * retrieve and manipulate the address type and its underlying sockaddr structure.
+ *
+ * @var UnknownAddress::m_type
+ * The type of the address (e.g., IPv4, IPv6, or none).
+ *
+ * @var UnknownAddress::m_addr
+ * The storage for the address, capable of holding either IPv4 or IPv6 addresses.
+ *
+ * @var UnknownAddress::m_len
+ * The length of the address stored in m_addr.
+ */
 class UnknownAddress {
 
 public:

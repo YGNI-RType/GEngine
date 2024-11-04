@@ -17,7 +17,7 @@
 
 namespace Network {
 
-uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
+uint16_t NetServer::start(uint16_t &currentUnusedPort) {
     // TODO : cloes everything if already initted
     if (m_isRunning)
         return currentUnusedPort;
@@ -27,7 +27,6 @@ uint16_t NetServer::start(size_t maxClients, uint16_t &currentUnusedPort) {
     if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         m_socketv6 = openSocketTcp(currentUnusedPort, true);
 
-    m_maxClients = maxClients;
     m_isRunning = true;
     return currentUnusedPort;
 }
@@ -40,18 +39,18 @@ void NetServer::stop(void) {
 void NetServer::createSets(NetWaitSet &set) {
     if (!isRunning())
         return;
-
-    for (const auto &client : m_clients) {
-        auto &socket = client->getChannel().getTcpSocket();
-        auto eventType = socket.getEventType();
-
-        if (eventType == SocketTCP::EventType::READ)
-            set.setAlert(socket);
-    }
-
-    set.setAlert(m_socketv4);
+    set.setAlert(m_socketv4, [this]() {
+        handleNewClient(m_socketv4);
+        return true;
+    });
     if (CVar::net_ipv6.getIntValue())
-        set.setAlert(m_socketv6);
+        set.setAlert(m_socketv6, [this]() {
+            handleNewClient(m_socketv6);
+            return true;
+        });
+
+    for (auto &client : m_clients)
+        client->createSets(set);
 }
 
 void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, const Address &addr) {
@@ -120,6 +119,9 @@ bool NetServer::handleUDPEvent(SocketUDP &socket, UDPMessage &msg, const Address
 bool NetServer::handleUdpMessageClients(SocketUDP &socket, UDPMessage &msg, const Address &addr) {
     for (const auto &client : m_clients) {
         auto &channel = client->getChannel();
+        if (!channel.isUDPEnabled())
+            continue;
+
         if (channel.getAddressUDP() != addr)
             continue;
 
@@ -151,6 +153,10 @@ bool NetServer::handleTCPEvent(const NetWaitSet &set) {
         }
 
     return false;
+}
+
+uint32_t NetServer::getMaxClients(void) const {
+    return CVar::sv_maxplayers.getIntValue();
 }
 
 bool NetServer::sendPackets(void) {
@@ -197,6 +203,22 @@ void NetServer::disconnectClient(NetClient *client, Event::DisonnectType type) {
     m_clients.erase(std::remove_if(m_clients.begin(), m_clients.end(),
                                    [&client](const std::shared_ptr<NetClient> &cl) { return cl.get() == client; }),
                     m_clients.end());
+}
+
+std::string NetServer::getAddress_TS(void) const {
+    auto sock = m_socketv4.getSocket();
+    sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(sock, (struct sockaddr *)&addr, &addr_len) == -1)
+        return "";
+
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(addr.sin_addr), ip, INET_ADDRSTRLEN);
+    return std::string(ip);
+}
+
+uint16_t NetServer::getPort_TS(void) const {
+    return m_socketv4.getPort();
 }
 
 } // namespace Network

@@ -11,6 +11,7 @@
 #include "net_channel.hpp"
 #include "net_common.hpp"
 #include "net_queue.hpp"
+#include "net_queue_heap.hpp"
 #include "net_record.hpp"
 #include "net_wait.hpp"
 
@@ -24,14 +25,32 @@ struct PingResponse {
     std::unique_ptr<Address> addr;
 };
 
+/**
+ * @class CLNetClient
+ * @brief Manages network client operations for UDP and TCP communication.
+ *
+ * The CLNetClient class handles the initialization, connection, and communication
+ * with a server using both UDP and TCP protocols. It manages the sending and
+ * receiving of packets, handles events, and maintains the state of the connection.
+ *
+ * @details
+ * - The class supports connecting to a server using an IP address and port.
+ * - It can handle both incoming and outgoing data streams.
+ * - It provides mechanisms to handle timeouts and server pings.
+ * - The class maintains various states to track the connection status.
+ *
+ * @see SocketUDP
+ * @see NetChannel
+ * @see NetQueue
+ * @see NetQueueHeap
+ * @see NetRecord
+ */
 class CLNetClient {
-
 public:
-    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent, NetRecord &record)
+    CLNetClient(SocketUDP &socketUdp, AddressType type, Event::SocketEvent &socketEvent)
         : m_socketUdp(socketUdp)
         , m_addrType(type)
         , m_netChannel(NetChannel(false, nullptr, SocketTCP()))
-        , m_netRecord(record)
         , m_packOutData(socketEvent)
         , m_packInData(socketEvent)
         , m_packInDataAck(socketEvent)
@@ -39,24 +58,106 @@ public:
         , m_tcpOut(socketEvent) {};
     ~CLNetClient() = default;
 
+    /**
+     * @brief Initializes the network client.
+     *
+     * This function sets up the necessary configurations and resources
+     * required for the network client to operate. It should be called
+     * before any network operations are performed.
+     */
     void init(void);
+    /**
+     * @brief Stops the network client.
+     *
+     * This function is responsible for stopping the network client and
+     * performing any necessary cleanup operations.
+     */
     void stop(void);
     bool isEnabled(void) const {
         return m_enabled;
     }
+    NetRecord &getRecord(void) {
+        return m_netRecord;
+    }
 
-    /* index of the pinged servers */
+    /**
+     * @brief Connects to a server at the specified index.
+     *
+     * This function attempts to establish a connection to a server identified by the given index, used by the ping
+     * response.
+     *
+     * @param index The index of the server to connect to.
+     * @return true if the connection is successful, false otherwise.
+     */
     bool connectToServer(size_t index);
     bool connectToServer(const std::string &ip, uint16_t port, bool block = false);
     void disconnectFromServer(Event::DisonnectType disconnectType);
 
+    /**
+     * @brief Creates and initializes the network wait sets for reading.
+     *
+     * This function sets up the provided NetWaitSet for monitoring network
+     * events that are ready for reading. It configures the necessary file
+     * descriptors and prepares the set for use in network operations.
+     *
+     * @param readSet A reference to the NetWaitSet that will be configured
+     *                for reading network events.
+     */
     void createSets(NetWaitSet &readSet);
 
+    /**
+     * @brief Handles TCP events based on the provided read set.
+     *
+     * This function processes TCP events by examining the given read set.
+     * It performs necessary actions based on the events detected in the read set.
+     *
+     * @param readSet A constant reference to a NetWaitSet object that contains the set of file descriptors to be
+     * monitored for reading.
+     * @return true if the TCP events were handled successfully, false otherwise.
+     */
     bool handleTCPEvents(const NetWaitSet &readSet);
+    /**
+     * @brief Handles UDP events received from a given socket.
+     *
+     * This function processes incoming UDP messages and performs necessary actions
+     * based on the message content and the sender's address.
+     *
+     * @param socket The UDP socket from which the message is received.
+     * @param msg The UDP message that needs to be handled.
+     * @param addr The address of the sender of the UDP message.
+     * @return true if the event was handled successfully, false otherwise.
+     */
     bool handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    bool handleTCPEvents(void);
 
+    /**
+     * @brief Handles incoming UDP messages from the server.
+     *
+     * @param socket The UDP socket used for communication.
+     * @param msg The UDP message received from the server.
+     * @param addr The address of the server.
+     * @return true if the message was handled successfully, false otherwise.
+     */
     bool handleServerUDP(SocketUDP &socket, UDPMessage &msg, const Address &addr);
+    /**
+     * @brief Handles a sanitized UDP message from the server.
+     *
+     * This function processes a UDP message received from the server, starting from the specified read offset.
+     *
+     * @param msg The UDP message received from the server.
+     * @param readOffset The offset from which to start reading the message.
+     * @return true if the message was successfully handled, false otherwise.
+     */
     bool handleServerUDPSanitized(const UDPMessage &msg, size_t readOffset);
+    /**
+     * @brief Handles the incoming TCP message from the server.
+     *
+     * This function processes the TCP message received from the server and performs
+     * the necessary actions based on the message content.
+     *
+     * @param msg The TCP message received from the server.
+     * @return true if the message was handled successfully, false otherwise.
+     */
     bool handleServerTCP(const TCPMessage &msg);
 
     void checkTimeouts(void);
@@ -83,7 +184,23 @@ public:
     bool sendDatagram(UDPMessage &finishedMsg);
 
 public:
+    /**
+     * @brief Pings all LAN servers to check their availability.
+     *
+     * This function sends a ping request to all servers on the local area network (LAN)
+     * to determine their availability and response time. It is useful for discovering
+     * and listing active servers within the same network.
+     */
     void pingLanServers(void);
+    /**
+     * @brief Handles the response to a ping request.
+     *
+     * This function processes the incoming UDP message that contains the ping response
+     * and the address from which the response was received.
+     *
+     * @param msg The UDP message containing the ping response.
+     * @param addr The address from which the ping response was received.
+     */
     void getPingResponse(const UDPMessage &msg, const Address &addr);
 
 public:
@@ -104,6 +221,14 @@ public:
         return m_packInData.size(type);
     }
 
+    /**
+     * @brief Retrieves the current ping time stamp.
+     *
+     * This function returns the ping time stamp from the network channel. Since this is from a different thread, the
+     * net_channel is handling the safety.
+     *
+     * @return uint16_t The current ping time stamp.
+     */
     uint16_t getPing_TS(void) const {
         return m_netChannel.getPing_TS();
     }
@@ -134,10 +259,12 @@ private:
     AddressType m_addrType;
 
     NetChannel m_netChannel;
-    NetRecord &m_netRecord;
+    NetRecord m_netRecord;
 
     std::vector<PingResponse> m_pingedServers;
     uint64_t m_pingSendTime = 0;
+
+    size_t m_lastConnectTime = 0;
 
     /* in bytes from data (header do not count), can be updated via cvar */
     size_t m_maxRate = 10000;

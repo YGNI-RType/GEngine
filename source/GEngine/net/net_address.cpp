@@ -7,9 +7,9 @@
 
 #include "GEngine/net/net_address.hpp"
 #include "GEngine/net/net_common.hpp"
+#include "GEngine/net/net_exception.hpp"
 
 #include <cstring>
-#include <stdexcept>
 
 namespace Network {
 
@@ -65,7 +65,7 @@ AddressV4::AddressV4(AddressType type, const std::string &ip, uint16_t port)
     in_addr_t addr = inet_addr(ip.c_str());
 
     if (addr == INADDR_NONE)
-        throw std::runtime_error("Invalid IP address"); // todo : custom exception
+        throw NetException("Invalid IP address"); // todo : custom exception
 
     auto convAddr = ntohl(addr);
 
@@ -141,7 +141,7 @@ AddressV6::AddressV6(AddressType type, const std::string &ip, uint16_t port)
     in6_addr addr;
 
     if (inet_pton(AF_INET6, ip.c_str(), &addr) != 1)
-        throw std::runtime_error("Invalid IP address"); // todo : custom exception
+        throw NetException("Invalid IP address"); // todo : custom exception
 
     m_address = *(ipv6_t *)&addr;
 }

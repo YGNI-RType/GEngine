@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "net_queue_heap.hpp"
-#include "net_socket.hpp"
+#include "../net_queue_heap.hpp"
+#include "../net_socket.hpp"
 
 #include <chrono>
 
