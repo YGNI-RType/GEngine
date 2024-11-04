@@ -45,8 +45,6 @@ void Guess::guessWho(gengine::interface::event::SharedEvent<event::GuessEvent> &
             publishEvent(event::Jump(0.4, remote.getUUIDBytes()));
 
         // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
-
-        // std::cout << "MISS" << std::endl;
     }
 }
 } // namespace poc3d::system

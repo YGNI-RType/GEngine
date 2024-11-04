@@ -23,11 +23,10 @@
 #include "events/GuessEvent.hpp"
 
 namespace poc3d::system {
-class Guess
-    : public gengine::System<Guess, gengine::interface::component::RemoteLocal,
-                             gengine::component::driver::output::Model, geg::component::Transform3D, component::Player,
-                             gengine::system::driver::output::DrawModel, gengine::system::driver::output::ModelManager>,
-      public gengine::RemoteSystem {
+class Guess : public gengine::System<Guess, gengine::interface::component::RemoteLocal,
+                                     gengine::component::driver::output::Model, geg::component::Transform3D,
+                                     component::Player, gengine::system::driver::output::DrawModel,
+                                     gengine::system::driver::output::ModelManager> {
 public:
     void init(void) override;
 
