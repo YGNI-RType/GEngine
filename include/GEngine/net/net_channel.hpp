@@ -259,6 +259,16 @@ public: /* THREAD SAFE */
      */
     std::string getAddress_TS(void) const;
 
+    /**
+     * @brief Retrieves the port number in a thread-safe manner.
+     * 
+     * This function returns the port number associated with the network channel.
+     * It ensures that the access to the port number is thread-safe.
+     * 
+     * @return uint16_t The port number.
+     */
+    uint16_t getPort_TS(void) const;
+
 private:
     static constexpr size_t PING_POOL_SIZE = 30;
     std::array<uint16_t, PING_POOL_SIZE> m_pingPool;

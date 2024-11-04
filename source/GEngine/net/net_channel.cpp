@@ -73,6 +73,23 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
         return false;
 
     size_t msgLen = msg.getSize();
+#ifdef DEBUG_NETWORK
+    static uint64_t lastTime = Time::Clock::milliseconds();
+    static size_t totalSent = 0;
+    static size_t totalPackets = 0;
+
+    totalSent += msgLen;
+    totalPackets++;
+
+    uint64_t currentTime = Time::Clock::milliseconds();
+    if (currentTime - lastTime >= 1000) {
+        size_t meanSize = totalSent / totalPackets;
+        std::cout << "Mean packet size in the last second: " << meanSize << " bytes (nb: " << totalPackets << ")" << std::endl;
+        lastTime = currentTime;
+        totalSent = 0;
+        totalPackets = 0;
+    }
+#endif
 
     /* check the client rating before or after ? */
 
@@ -273,4 +290,9 @@ std::string NetChannel::getAddress_TS(void) const {
     return m_toTCPAddress->toString();
 }
 
+uint16_t NetChannel::getPort_TS(void) const {
+    if (m_toTCPAddress == nullptr)
+        return -1;
+    return m_toTCPAddress->getPort();
+}
 } // namespace Network

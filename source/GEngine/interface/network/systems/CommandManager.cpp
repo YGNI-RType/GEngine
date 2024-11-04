@@ -127,7 +127,7 @@ void SVCommandManager::onGameLoop(gengine::system::event::GameLoop &) {
         size_t size = 0;
         if (flags & CVar::ConVar::CON_CALLBACK) {
             std::string value = convar->applyCallback(cvar.value);
-            size =  CF_NET_MIN(Network::MAX_CONCOMMAND_OUTPUT_LEN, value.size());
+            size = CF_NET_MIN(Network::MAX_CONCOMMAND_OUTPUT_LEN, value.size());
             std::memcpy(sendCvar.output, value.c_str(), size);
         } else
             convar->setValue(cvar.value, false);
@@ -159,8 +159,11 @@ std::string SVCommandManager::com_status(const std::string &) {
     size_t i = 0;
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
     auto &server = Network::NET::getServer();
+    std::string ip = server.getAddress_TS();
+    uint16_t port = server.getPort_TS();
 
     buffer += "Server status:\n";
+    buffer += "Server IP: " + ip + ":" + std::to_string(port) + "\n";
     buffer += "----------------\n";
     buffer += "Clients connected: " + std::to_string(clientsSys.getClients().size()) + "/" +
               std::to_string(server.getMaxClients()) + "\n";

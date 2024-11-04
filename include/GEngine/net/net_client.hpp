@@ -152,6 +152,10 @@ public:
         return m_channel.getAddress_TS();
     }
 
+    uint16_t getPort_TS(void) const {
+        return m_channel.getPort_TS();
+    }
+
 private:
     bool retrieveWantedOutgoingData(UDPMessage &msg, size_t &readCount);
     bool retrieveWantedOutgoingDataAck(UDPMessage &msg, size_t &readCount);

@@ -136,6 +136,9 @@ public:
     void checkTimeouts(void);
     void disconnectClient(NetClient *client, Event::DisonnectType info);
 
+    std::string getAddress_TS(void) const;
+    uint16_t getPort_TS(void) const;
+
 private:
     bool m_isRunning = false;
 
