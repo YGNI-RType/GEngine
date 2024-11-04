@@ -31,7 +31,7 @@ void Snapshot::onGameLoop(gengine::system::event::GameLoop &e) {
 
 void Snapshot::registerSnapshot(gengine::interface::event::NewRemoteLocal &e) {
     m_clientSnapshots.insert(std::make_pair(e.uuid, std::make_pair(m_currentSnapshotId, snapshots_t())));
-    m_clientSnapshots[e.uuid].second[m_currentSnapshotId % MAX_SNAPSHOT] = m_dummySnapshot;
+    m_clientSnapshots[e.uuid].second.fill(m_dummySnapshot);
 }
 
 void Snapshot::destroySnapshot(gengine::interface::event::DeleteRemoteLocal &e) {
@@ -60,7 +60,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
 
         if (diff % MAX_SNAPSHOT)
             snapshots[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld; // does not erase lastsnapshot received
-        // std::cout << "client : " << remote.getUUIDString() << " | diff: " << diff << " | m_currentSnapshotId: " <<
+        // std::cout << "client : " << uuids::to_string(uuid) << " | diff: " << diff << " | m_currentSnapshotId: " <<
         // m_currentSnapshotId << " last id: " << lastId
         // << " UDP Last ACK: " << lastReceived << std::endl;
 

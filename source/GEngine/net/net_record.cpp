@@ -76,7 +76,7 @@ void NetRecord::update(const AMessage &msg) {
     m_fs.write(reinterpret_cast<const char *>(&msgSize), sizeof(msgSize));
     m_fs.write(reinterpret_cast<const char *>(msgData), msgSize);
 
-    std::cout << "updating record: " << dt << ", size: " << msgSize << std::endl;
+    // std::cout << "updating record: " << dt << ", size: " << msgSize << std::endl;
 }
 
 bool NetRecord::read(SerializedMessage &msgBuffer, uint8_t &classType, uint32_t &sleepDuration) {

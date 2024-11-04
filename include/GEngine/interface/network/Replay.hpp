@@ -6,6 +6,7 @@
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 
+#include "GEngine/interface/network/systems/ClientServer.hpp"
 #include "GEngine/interface/network/systems/Updater.hpp"
 
 #include "GEngine/net/events/disconnection.hpp"
@@ -14,6 +15,7 @@
 #include "GEngine/net/net.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -31,12 +33,17 @@ public:
         : m_remote(gameEngine)
         , m_local(driverEngine)
         , m_demoPath(demoPath) {
+
+        if (!std::filesystem::exists(demoPath))
+            THROW_INFO("file: " + demoPath + " does not exist.");
+
         m_local.setFirstEntity(ENTITY_ID_START_CLIENT);
         Network::NET::init();
         Network::NET::initClient();
 
         Network::Event::Manager &em = Network::NET::getEventManager();
         m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
+        m_local.registerSystem<gengine::interface::network::system::ClientServer>();
         Network::NET::start();
 
         auto recordInfo = Network::Event::RecordInfo(Network::Event::RecordInfo::WATCH);
