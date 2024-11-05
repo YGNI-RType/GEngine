@@ -21,49 +21,33 @@ void VoIPManager::init(void) {
 
 void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
-    std::vector<Network::UDPMessage> udpMsgs;
-    Network::UDPMessage msgSend(Network::UDPMessage::HEADER, Network::SV_VOIP);
-    const size_t untouchedMsgSz = msgSend.getSize();
 
     for (auto &[remote, client] : clientsSys.getClients()) {
-        size_t readCount = 0;
         if (client.shouldDelete())
             continue;
 
         Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_VOIP);
+        size_t readCount = 0;
         if (!client.getNet()->popIncommingData(msg, readCount))
             continue;
-
-        /*** TODO (if time) for chat proximity, the hook is called here to tell if it should send, if it's done i have
-         * to recode for each client the diffrent messages ****/
 
         std::array<uint8_t, 1400> buffer;
         size_t bufferSize = msg.getSize() - readCount;
         msg.readData(buffer.data(), readCount, bufferSize);
 
-        /* this shit is too big, sending the actual message now */
-        if (msgSend.getSize() + sizeof(Network::UDPG_VoIPSegment) + bufferSize > 1400) {
-            udpMsgs.push_back(msgSend);
-            msgSend = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);
-        }
         Network::UDPG_VoIPSegment segment = {.size = static_cast<uint16_t>(bufferSize)};
         std::memcpy(&segment.playerIndex1, remote.as_bytes().data(), 8);
         std::memcpy(&segment.playerIndex2, remote.as_bytes().data() + 8, 8);
 
+        Network::UDPMessage msgSend(Network::UDPMessage::HEADER, Network::SV_VOIP);
         msgSend.appendData(segment);
         msgSend.appendData((const void *)buffer.data(), bufferSize);
-    }
 
-    for (auto &[remote, client] : clientsSys.getClients()) {
-        if (client.shouldDelete())
-            continue;
-
-        if (untouchedMsgSz < msgSend.getSize())
-            client.getNet()->pushData(msgSend, false);
-        for (const Network::UDPMessage &message : udpMsgs) {
-            if (untouchedMsgSz == msgSend.getSize())
+        for (auto &[remoteDest, clientDest] : clientsSys.getClients()) {
+            if (clientDest.shouldDelete() || remote == remoteDest) // Skip sending to the source client
                 continue;
-            client.getNet()->pushData(message, false);
+
+            clientDest.getNet()->pushData(msgSend, false);
         }
     }
 }

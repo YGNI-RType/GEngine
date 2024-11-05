@@ -14,7 +14,6 @@
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/driver/output/FontManager.hpp"
 #include "GEngine/libdev/systems/driver/output/RenderWindow.hpp"
-#include "GEngine/libdev/systems/driver/output/SoundManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
 #include "Constants.hpp"
@@ -37,9 +36,17 @@
 #include "GEngine/interface/systems/RemoteLocal.hpp"
 
 // VOIP
-// #include "GEngine/interface/network/systems/VoIPManager.hpp"
-// #include "GEngine/libdev/systems/driver/input/VoIPAudioCatcher.hpp"
-// #include "GEngine/libdev/systems/driver/output/VoIPAudio.hpp"
+#include "GEngine/interface/network/systems/VoIPManager.hpp"
+#include "GEngine/libdev/systems/driver/input/VoIPAudioCatcher.hpp"
+#include "GEngine/libdev/systems/driver/output/VoIPAudio.hpp"
+
+#include "GEngine/libdev/System.hpp"
+
+struct V: gengine::System<V> {
+    void init(void) override {
+        publishEvent(gengine::system::event::driver::input::StartVoIP());
+    }
+};
 
 void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::driver::output::RenderWindow>(WINDOW_WIDTH, WINDOW_TOTAL_HEIGHT, "R-Type");
@@ -54,7 +61,6 @@ void GEngineDeclareSystems(Registry *r) {
     // r->registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
     r->registerSystem<gengine::system::driver::input::KeyboardCatcher>();
     r->registerSystem<gengine::system::driver::input::MouseCatcher>();
-    r->registerSystem<gengine::system::driver::output::SoundManager>("../assets/sounds");
     r->registerSystem<gengine::system::driver::output::ModelManager>("../assets/models");
     r->registerSystem<geg::system::io::AnimationManager>("../assets/animations");
     r->registerSystem<gengine::system::driver::output::Animate>();
@@ -92,9 +98,11 @@ void GEngineDeclareSystems(Registry *r) {
 
     r->registerSystem<gengine::interface::network::system::ConnectAtStart>("127.0.0.1", 4242);
 
+    r->registerSystem<V>();
+
     // VOIP
-    // r->registerSystem<gengine::interface::network::system::VoIPManager>();
-    // r->registerSystem<gengine::system::driver::output::VoIPAudio>();
-    // r->registerSystem<gengine::system::driver::input::VoIPAudioCatcher>();
+    r->registerSystem<gengine::interface::network::system::VoIPManager>();
+    r->registerSystem<gengine::system::driver::output::VoIPAudio>();
+    r->registerSystem<gengine::system::driver::input::VoIPAudioCatcher>();
     // TODO auto register ↓
 }
