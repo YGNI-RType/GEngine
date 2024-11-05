@@ -10,7 +10,8 @@
 namespace gengine::system::driver::output {
 
 AudioManager::AudioManager(const std::string &soundFolder, const std::string &musicFolder)
-    : m_soundFolder(soundFolder), m_musicFolder(musicFolder) {
+    : m_soundFolder(soundFolder)
+    , m_musicFolder(musicFolder) {
 }
 
 void AudioManager::onStartEngine(gengine::system::event::StartEngine &e) {
@@ -37,10 +38,9 @@ void AudioManager::onStartEngine(gengine::system::event::StartEngine &e) {
 }
 
 Music AudioManager::getMusicById(std::uint64_t id) {
-    for (auto &[_, pair]: m_musicTable) {
+    for (auto &[_, pair] : m_musicTable)
         if (pair.first == id)
             return pair.second;
-    }
     throw ""; // TODO
 }
 
@@ -76,7 +76,6 @@ void AudioManager::onMainLoop(geg::event::MainLoop &e) {
 
     static std::set<gengine::Entity> m_soundsPlayed;
 
-
     for (auto &[e, sound] : sounds) {
         if (m_soundsPlayed.find(e) == m_soundsPlayed.end()) {
             m_soundsPlayed.insert(e);
@@ -96,7 +95,7 @@ gengine::component::driver::output::Music &AudioManager::getMusicComponent(void)
 
     if (!musics.size())
         throw ""; // TODO
-    for (auto &[_, m]: musics)
+    for (auto &[_, m] : musics)
         return m;
 }
 
