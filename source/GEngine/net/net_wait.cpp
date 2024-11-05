@@ -28,10 +28,10 @@ bool NetWaitSet::isSignaled(const ASocket &socket) const {
     if (WSAEnumNetworkEvents(sock, socket.getHandle(), &networkEvents) == SOCKET_ERROR)
         throw SocketException(GetLastError());
 
-    if (!(networkEvents.lNetworkEvents & FD_READ || networkEvents.lNetworkEvents & FD_ACCEPT))
+    if (!(networkEvents.lNetworkEvents & FD_READ || networkEvents.lNetworkEvents & FD_ACCEPT || networkEvents.lNetworkEvents & FD_CLOSE))
         return false;
 
-    if (networkEvents.iErrorCode[FD_READ_BIT] != 0 && networkEvents.iErrorCode[FD_ACCEPT_BIT] != 0)
+    if (networkEvents.iErrorCode[FD_READ_BIT] != 0 && networkEvents.iErrorCode[FD_ACCEPT_BIT] != 0 && networkEvents.iErrorCode[FD_CLOSE] != 0)
         throw SocketException(GetLastError());
 
     return true;
@@ -102,6 +102,7 @@ bool NetWait::wait(uint32_t ms, NetWaitSet &set) {
         return false;
     }
 
+    std::cout << "event" << std::endl;
     set.setResultIndex(dwEvent - WSA_WAIT_EVENT_0);
 #else
     SOCKET highest = NetWait::getHighestSocket();

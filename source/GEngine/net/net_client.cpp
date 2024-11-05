@@ -31,7 +31,14 @@ void NetClient::createSets(NetWaitSet &set) {
         return;
 
     auto &socket = m_channel.getTcpSocket();
-    set.setAlert(socket, [this]() { return handleClientStream(); });
+    set.setAlert(socket, [this]() {
+        bool res = handleClientStream();
+        if (isDisconnected()) {
+            auto &server = NET::getServer();
+            server.disconnectClient(this, Event::DisonnectType::DT_RESET);
+        }
+        return res;
+    });
 }
 
 bool NetClient::isTimeout(void) const {

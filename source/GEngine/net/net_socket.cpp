@@ -102,7 +102,7 @@ int ASocket::socketClose(void) {
 #ifdef NET_USE_HANDLE
 void ASocket::createHandle(void) {
     m_handle = WSACreateEvent();
-    if (WSAEventSelect(m_sock, m_handle, FD_CONNECT | FD_ACCEPT | FD_READ) != 0)
+    if (WSAEventSelect(m_sock, m_handle, FD_CONNECT | FD_ACCEPT | FD_READ | FD_CLOSE) != 0)
         throw SocketException("WSAEventSelect");
 }
 #endif
