@@ -1,0 +1,123 @@
+[
+    {
+        "sprite": {
+            "txtPath": "caterpillar.gif",
+            "src": {
+                "x": 198,
+                "width": 33,
+                "height": 34
+            }
+        },
+        "transform": {
+            "scale": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "velocity": {
+            "x": -4,
+            "y": 4
+        },
+        "typeOfMotion": 1
+    },
+    {
+        "sprite": {
+            "txtPath": "caterpillar.gif",
+            "src": {
+                "x": 198,
+                "width": 33,
+                "height": 34
+            }
+        },
+        "transform": {
+            "position": {
+                "x": 0.04,
+                "y": -0.07
+            },
+            "scale": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "velocity": {
+            "x": -4,
+            "y": 4
+        },
+        "typeOfMotion": 1
+    },
+    {
+        "sprite": {
+            "txtPath": "caterpillar.gif",
+            "src": {
+                "x": 198,
+                "width": 33,
+                "height": 34
+            }
+        },
+        "transform": {
+            "position": {
+                "x": 0.08,
+                "y": -0.14
+            },
+            "scale": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "velocity": {
+            "x": -4,
+            "y": 4
+        },
+        "typeOfMotion": 1
+    },
+    {
+        "sprite": {
+            "txtPath": "caterpillar.gif",
+            "src": {
+                "x": 198,
+                "width": 33,
+                "height": 34
+            }
+        },
+        "transform": {
+            "position": {
+                "x": 0.12,
+                "y": -0.21
+            },
+            "scale": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "velocity": {
+            "x": -4,
+            "y": 4
+        },
+        "typeOfMotion": 1
+    },
+    {
+        "sprite": {
+            "txtPath": "caterpillar.gif",
+            "src": {
+                "x": 198,
+                "width": 33,
+                "height": 34
+            }
+        },
+        "transform": {
+            "position": {
+                "x": 0.16,
+                "y": -0.28
+            },
+            "scale": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "velocity": {
+            "x": -4,
+            "y": 4
+        },
+        "typeOfMotion": 1
+    }
+]
