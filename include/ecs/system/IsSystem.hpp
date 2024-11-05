@@ -8,5 +8,9 @@
 #pragma once
 
 namespace ecs::system {
-class IsSystem {};
+class IsSystem {
+    public:
+        IsSystem() = default;
+        virtual ~IsSystem() = default;
+};
 } // namespace ecs::system
