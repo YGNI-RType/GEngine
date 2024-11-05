@@ -26,6 +26,7 @@ void TextureManager::onStartEngine(gengine::system::event::StartEngine &e) {
             // if (isValidImageFile(filePath)) {
             Texture texture = LoadTexture(filePath.c_str());
             std::string path = std::filesystem::relative(entry.path(), m_folder).string();
+            std::replace(path.begin(), path.end(), '\\', '/');
             m_textureTable.emplace(path, texture);
             // }
         }
