@@ -64,6 +64,8 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::Collision2D>();
     r->registerSystem<gengine::system::AutoKiller>();
 
+    r->registerSystem<poc3d::system::Crossair>();
+
     r->registerSystem<poc3d::system::InputsToGameEvents>();
     r->registerSystem<poc3d::system::Start>();
     r->registerSystem<poc3d::system::BackgroundMotion>();
@@ -88,6 +90,8 @@ void GEngineDeclareSystems(Registry *r) {
         poc3d::event::GuessEvent, poc3d::event::MorphToPropEvent, poc3d::event::ChangePlayerModelEvent,
         poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent, poc3d::event::Sprint,
         gengine::interface::event::GetRemoteLocalWhoIAm>>();
+
+    r->registerSystem<gengine::interface::network::system::ConnectAtStart>("127.0.0.1", 4242);
 
     // VOIP
     // r->registerSystem<gengine::interface::network::system::VoIPManager>();
