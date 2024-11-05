@@ -60,9 +60,9 @@ void Snapshot::getAndSendDeltaDiff(void) {
 
         if (diff % MAX_SNAPSHOT)
             snapshots[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld; // does not erase lastsnapshot received
-        // std::cout << "client : " << uuids::to_string(uuid) << " | diff: " << diff << " | m_currentSnapshotId: " <<
-        // m_currentSnapshotId << " last id: " << lastId
-        // << " UDP Last ACK: " << lastReceived << std::endl;
+        std::cout << "client : " << uuids::to_string(uuid) << " | diff: " << diff << " | m_currentSnapshotId: " <<
+        m_currentSnapshotId << " last id: " << lastId
+        << " UDP Last ACK: " << lastReceived << std::endl;
 
         bool fullSnapshot = !lastReceived;
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];

@@ -55,8 +55,8 @@ public:
 #endif
         Network::NET::start();
 
-        m_remote.registerSystem<gengine::system::AutoMainLoop>(60, 30);
-        m_local.registerSystem<gengine::system::AutoMainLoop>(60, 30);
+        m_remote.registerSystem<gengine::system::AutoMainLoop>(60, 20);
+        m_local.registerSystem<gengine::system::AutoMainLoop>(60, 20);
     }
 
     ~Networked() {
