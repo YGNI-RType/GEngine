@@ -49,7 +49,8 @@ static int captureCallback(const void *inputBuffer, void *outputBuffer, unsigned
 //////////////
 
 void VoIPAudioCatcher::init(void) {
-    subscribeToEvent<gengine::system::driver::input::KeyVEvent>(&VoIPAudioCatcher::onCapture);
+    subscribeToEvent<gengine::system::event::driver::input::StartVoIP>(&VoIPAudioCatcher::onStartVoIP);
+    subscribeToEvent<gengine::system::event::driver::input::EndVoIP>(&VoIPAudioCatcher::onEndVoIP);
     subscribeToEvent<gengine::system::event::MainLoop>(&VoIPAudioCatcher::onMainLoop);
 
     /** Port Audio + Opus **/
@@ -88,25 +89,18 @@ void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
     m_captureBuffer.erase(m_captureBuffer.begin(), m_captureBuffer.begin() + CF_NET_MIN(1400, m_captureBuffer.size()));
 }
 
-void VoIPAudioCatcher::onCapture(gengine::system::driver::input::KeyVEvent &e) {
-    PaError paErr;
+void VoIPAudioCatcher::onStartVoIP(gengine::system::event::driver::input::StartVoIP &) {
+    PaError paErr = Pa_StartStream(captureStream);
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
+    m_capturing = true;
+}
 
-    switch (e.state) {
-    case gengine::system::driver::input::InputState::PRESSED:
-        paErr = Pa_StartStream(captureStream);
-        if (paErr != paNoError)
-            throw std::runtime_error("PortAudio Start stream error: " + std::string(Pa_GetErrorText(paErr)));
-        m_capturing = true;
-        break;
-    case gengine::system::driver::input::InputState::RELEASE:
-        paErr = Pa_StopStream(captureStream);
-        if (paErr != paNoError)
-            throw std::runtime_error("PortAudio STOP stream error: " + std::string(Pa_GetErrorText(paErr)));
-        m_capturing = false;
-        break;
-    default:
-        break;
-    }
+void VoIPAudioCatcher::onEndVoIP(gengine::system::event::driver::input::EndVoIP &) {
+    PaError paErr = Pa_StopStream(captureStream);
+    if (paErr != paNoError)
+        throw std::runtime_error("PortAudio STOP stream error: " + std::string(Pa_GetErrorText(paErr)));
+    m_capturing = false;
 }
 
 VoIPAudioCatcher::~VoIPAudioCatcher() {
