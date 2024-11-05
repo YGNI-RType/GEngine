@@ -32,8 +32,10 @@
 
 namespace gengine::system::driver::output {
 
-class AudioManager : public gengine::System<AudioManager, gengine::component::driver::output::Sound, gengine::component::driver::output::Music,
-                                            gengine::interface::component::RemoteLocal, geg::component::network::NetSend> {
+class AudioManager
+    : public gengine::System<AudioManager, gengine::component::driver::output::Sound,
+                             gengine::component::driver::output::Music, gengine::interface::component::RemoteLocal,
+                             geg::component::network::NetSend> {
 public:
     AudioManager(const std::string &soundFolder, const std::string &musicFolder);
     virtual void init(void) override {
@@ -60,7 +62,7 @@ public:
                         geg::component::network::NetSend());
         else {
             getMusicComponent().musicId = getMusicIdByPath(e.path);
-            for (auto [e, _unused, netSend]: gengine::Zip(musics, netSends)) {
+            for (auto [e, _unused, netSend] : gengine::Zip(musics, netSends)) {
                 netSend.update();
                 break;
             }

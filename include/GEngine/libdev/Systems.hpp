@@ -36,10 +36,10 @@ using MotionAcceleration3D = gengine::system::MotionAcceleration3D;
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
 #include "GEngine/libdev/systems/driver/input/MouseCatcher.hpp"
 #include "GEngine/libdev/systems/driver/output/Animate.hpp"
+#include "GEngine/libdev/systems/driver/output/AudioManager.hpp"
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/driver/output/FontManager.hpp"
 #include "GEngine/libdev/systems/driver/output/RenderWindow.hpp"
-#include "GEngine/libdev/systems/driver/output/AudioManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
 namespace geg::system::io {

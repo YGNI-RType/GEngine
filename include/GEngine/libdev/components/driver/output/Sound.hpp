@@ -22,11 +22,12 @@ struct Sound : public gengine::Component<Sound> {
     }
 };
 
-struct Music: public gengine::Component<Music> {
+struct Music : public gengine::Component<Music> {
     bool pause = false;
     std::uint64_t musicId;
 
-    Music(std::uint64_t musicId): musicId(musicId) {
+    Music(std::uint64_t musicId)
+        : musicId(musicId) {
     }
 
     bool operator==(const Music &) const = default;
