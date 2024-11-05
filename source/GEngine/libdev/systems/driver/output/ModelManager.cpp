@@ -19,14 +19,17 @@ void ModelManager::init(void) {
 
 void ModelManager::onStartEngine(gengine::system::event::StartEngine &e) {
     for (const auto &entry : std::filesystem::recursive_directory_iterator(m_folder)) {
-        std::cout << "  ---  Loading model: " << entry.path() << std::endl;
         if (entry.is_regular_file()) {
             std::string filePath = entry.path().string();
 
             // Check if the file has a valid image extension
             // if (isValidImageFile(filePath)) {
+            if (filePath.find(".mtl") != std::string::npos)
+                continue;
+            std::cout << "  ---  Loading model: " << entry.path() << std::endl;
             Model model = LoadModel(filePath.c_str());
             std::string path = std::filesystem::relative(entry.path(), m_folder).string();
+            std::replace(path.begin(), path.end(), '\\', '/');
             m_modelTable.emplace(path, model);
             // }
         }

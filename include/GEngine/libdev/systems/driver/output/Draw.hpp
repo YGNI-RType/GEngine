@@ -15,6 +15,7 @@
 #include <set>
 
 #include "GEngine/libdev/components/Transforms.hpp"
+#include "GEngine/libdev/components/driver/output/Animation.hpp"
 #include "GEngine/libdev/components/driver/output/Drawable.hpp"
 #include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "GEngine/libdev/components/driver/output/Shape.hpp"
@@ -84,9 +85,9 @@ public:
     void onDraw(gengine::system::event::Draw &e);
 };
 
-class DrawModel
-    : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D, ModelManager>,
-      public LocalSystem {
+class DrawModel : public gengine::System<DrawModel, component::driver::output::Model, component::Transform3D,
+                                         component::driver::output::Animation, ModelManager>,
+                  public LocalSystem {
 public:
     void init(void) override;
 

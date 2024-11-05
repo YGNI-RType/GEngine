@@ -24,10 +24,12 @@ namespace gengine::component::driver::output {
 struct Model : public Component<Model> {
     Network::NetString<32> txtPath; // The texture of the model
     Clr tint;
+    bool isAnimated;
 
-    Model(const std::string &txtPathstr, const Clr &tint = WHITE)
+    Model(const std::string &txtPathstr, const Clr &tint = WHITE, bool isAnimated = false)
         : txtPath(txtPathstr)
-        , tint(tint) {
+        , tint(tint)
+        , isAnimated(isAnimated) {
     }
 
     bool operator==(const Model &) const = default;
