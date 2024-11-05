@@ -15,7 +15,8 @@
 #include <raylib.h>
 
 namespace poc3d::system {
-class Crossair : public gengine::OnEventSystem<Crossair, gengine::system::event::StartEngine>, public gengine::LocalSystem {
+class Crossair : public gengine::OnEventSystem<Crossair, gengine::system::event::StartEngine>,
+                 public gengine::LocalSystem {
 public:
     void onEvent(gengine::system::event::StartEngine &e);
 };

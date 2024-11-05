@@ -30,8 +30,8 @@
 #include "systems/Start.hpp"
 
 #include "GEngine/interface/network/systems/ClientEventPublisher.hpp"
-#include "GEngine/interface/network/systems/ServerEventReceiver.hpp"
 #include "GEngine/interface/network/systems/ClientServer.hpp"
+#include "GEngine/interface/network/systems/ServerEventReceiver.hpp"
 
 #include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/systems/RemoteLocal.hpp"
@@ -81,13 +81,13 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode, poc3d::event::ChangePlayerModelEvent,
-        poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent, poc3d::event::Sprint,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
-        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode, poc3d::event::ChangePlayerModelEvent,
-        poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent, poc3d::event::Sprint,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     r->registerSystem<gengine::interface::network::system::ConnectAtStart>("127.0.0.1", 4242);
 

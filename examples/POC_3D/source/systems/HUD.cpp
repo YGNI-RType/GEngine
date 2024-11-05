@@ -27,23 +27,23 @@ void Crossair::onEvent(gengine::system::event::StartEngine &e) {
 }
 
 // void DebugMenu::onEvent(gengine::system::event::StartEngine &e) {
-    // F3 Debug Menu
+// F3 Debug Menu
 
-    // DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
-    //                        std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
-    //                .c_str(),
-    //            10, 10, 20, WHITE);
-    // DrawText(std::string("Camera target: " + std::to_string(camera.target.x) + " " +
-    //                        std::to_string(camera.target.y) + " " + std::to_string(camera.target.z))
-    //                .c_str(),
-    //            10, 30, 20, WHITE);
-    // DrawText(std::string("Camera up: " + std::to_string(camera.up.x) + " " + std::to_string(camera.up.y) + " " +
-    //                        std::to_string(camera.up.z))
-    //                .c_str(),
-    //            10, 50, 20, WHITE);
-    // DrawText(std::string("Camera fovy: " + std::to_string(camera.fovy)).c_str(), 10, 70, 20, WHITE);
-    // DrawText(std::string("Camera projection: " + std::to_string(camera.projection)).c_str(), 10, 90, 20, WHITE);
-    // spawnEntity(gengine::component::driver::output::Text(""))
-    // );
+// DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
+//                        std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
+//                .c_str(),
+//            10, 10, 20, WHITE);
+// DrawText(std::string("Camera target: " + std::to_string(camera.target.x) + " " +
+//                        std::to_string(camera.target.y) + " " + std::to_string(camera.target.z))
+//                .c_str(),
+//            10, 30, 20, WHITE);
+// DrawText(std::string("Camera up: " + std::to_string(camera.up.x) + " " + std::to_string(camera.up.y) + " " +
+//                        std::to_string(camera.up.z))
+//                .c_str(),
+//            10, 50, 20, WHITE);
+// DrawText(std::string("Camera fovy: " + std::to_string(camera.fovy)).c_str(), 10, 70, 20, WHITE);
+// DrawText(std::string("Camera projection: " + std::to_string(camera.projection)).c_str(), 10, 90, 20, WHITE);
+// spawnEntity(gengine::component::driver::output::Text(""))
+// );
 // }
-}
+} // namespace poc3d::system
