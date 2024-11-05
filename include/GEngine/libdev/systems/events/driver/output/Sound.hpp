@@ -5,7 +5,7 @@
 **  File        : Sound.hpp
 **  Create at   : 2024-10-15 05:14
 **  Author      : AUTHOR
-**  Description : This event is listened to natively by the SoundManager system
+**  Description : This event is listened to natively by the AudioManager system
                     which will launch the sound linked to the path passed as an
                     argument when it is triggered by this event.
 ** ════════════════════════════════════════════════════════════════════════════
@@ -37,5 +37,12 @@ struct SoundPlayed : public Event {
     SoundPlayed(std::uint64_t soundId)
         : soundId(soundId) {
     }
+};
+
+struct Music: public Event {
+    Music(const std::string &path): path(path) {
+    }
+
+    const std::string path;
 };
 } // namespace gengine::system::event::driver::output
