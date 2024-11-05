@@ -15,7 +15,6 @@ namespace gengine {
 
 void setModelTransform(Model &model, component::Transform3D &transform);
 BoundingBox TransformBoundingBox(BoundingBox box, const Matrix &transform);
-RayCollision GetRayCollisionModel(Vector2 screenPos, Model model, component::Transform3D &modelTransform,
-                                  Camera &camera);
+RayCollision GetRayCollisionModel(Ray ray, Model model, component::Transform3D &modelTransform);
 void CameraPitch(Camera *camera, float angle, bool lockView, bool rotateAroundTarget, bool rotateUp);
 } // namespace gengine

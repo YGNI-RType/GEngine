@@ -16,20 +16,27 @@
 #include "GEngine/libdev/System.hpp"
 
 #include "GEngine/interface/events/SharedEvent.hpp"
+#include "GEngine/interface/events/RemoteLocal.hpp"
 
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/driver/output/ModelManager.hpp"
+#include "GEngine/libdev/systems/driver/output/RenderWindow.hpp"
 
 #include "events/GuessEvent.hpp"
 
 namespace poc3d::system {
-class Guess : public gengine::System<Guess, gengine::interface::component::RemoteLocal,
-                                     gengine::component::driver::output::Model, geg::component::Transform3D,
-                                     component::Player, gengine::system::driver::output::DrawModel,
-                                     gengine::system::driver::output::ModelManager> {
+class Guess
+    : public gengine::System<Guess, gengine::interface::component::RemoteLocal,
+                             gengine::component::driver::output::Model, geg::component::Transform3D, component::Player,
+                             gengine::system::driver::output::DrawModel, gengine::system::driver::output::ModelManager,
+                             gengine::system::driver::output::RenderWindow>, public gengine::LocalSystem {
 public:
     void init(void) override;
 
-    void guessWho(gengine::interface::event::SharedEvent<event::GuessEvent> &e);
+    void guessWho(event::GuessEvent &e);
+    void setMe(gengine::interface::event::ItsMe &e);
+
+private:
+    uuids::uuid m_me;
 };
 } // namespace poc3d::system

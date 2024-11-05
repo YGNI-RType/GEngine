@@ -19,24 +19,23 @@
 
 namespace poc3d::system {
 void MorphToProp::init(void) {
-    subscribeToEvent<gengine::interface::event::SharedEvent<event::MorphToPropEvent>>(&MorphToProp::morphPlayer);
+    subscribeToEvent<event::MorphToPropEvent>(&MorphToProp::morphPlayer);
 }
 
-void MorphToProp::morphPlayer(gengine::interface::event::SharedEvent<event::MorphToPropEvent> &e) {
-    if (!hasSystem<gengine::system::driver::output::DrawModel>())
-        return;
-
+void MorphToProp::morphPlayer(event::MorphToPropEvent &e) {
     auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
     auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
+    auto &wd = getSystem<gengine::system::driver::output::RenderWindow>();
 
     auto &models = getComponents<gengine::component::driver::output::Model>();
     auto &transforms = getComponents<geg::component::Transform3D>();
     auto &props = getComponents<component::Prop>();
-    RayCollision collision = {0};
 
+    Vector2 center = {wd.getWidth() / 2.f, wd.getHeight() / 2.f};
+    Ray ray = GetMouseRay(center, draw.camera);
+    RayCollision collision = {0};
     for (auto [entity, prop, model, transform] : gengine::Zip(props, models, transforms)) {
-        collision = gengine::GetRayCollisionModel({WINDOW_WIDTH / 2, (WINDOW_TOTAL_HEIGHT) / 2},
-                                                  modelMan.get(model.txtPath), transform, draw.camera);
+        collision = gengine::GetRayCollisionModel(ray, modelMan.get(model.txtPath), transform);
         if (collision.hit)
             publishEvent(event::ChangePlayerModelEvent(model.txtPath));
     }
