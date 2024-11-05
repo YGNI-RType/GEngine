@@ -24,9 +24,15 @@ void RenderWindow::init(void) {
 
 void RenderWindow::onStartEngine(gengine::system::event::StartEngine &e) {
     SetTraceLogLevel(LOG_WARNING);
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE); // TODO FLAG_WINDOW_RESIZABLE
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(m_width, m_height, m_title.c_str());
     SetWindowMonitor(0);
+
+    m_baseWidth = GetRenderWidth();
+    m_baseHeight = GetRenderHeight();
+    m_width = m_baseWidth;
+    m_height = m_baseHeight;
+    publishEvent(gengine::system::event::WindowResized({m_width / m_baseWidth, m_height / m_baseHeight}));
 }
 
 void RenderWindow::onMainLoop(gengine::system::event::MainLoop &e) {
