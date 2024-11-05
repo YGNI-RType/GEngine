@@ -34,7 +34,6 @@ void AudioManager::onStartEngine(gengine::system::event::StartEngine &e) {
             m_musicTable.insert({path, {m_musicBaseId++, music}});
         }
     }
-    publishEvent(gengine::system::event::driver::output::Music("stage1.mp3"));
 }
 
 Music AudioManager::getMusicById(std::uint64_t id) {
