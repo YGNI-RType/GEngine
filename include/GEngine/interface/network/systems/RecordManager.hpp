@@ -15,15 +15,16 @@
 
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
 
-namespace gengine::interface::network::system {
+#include "GEngine/interface/network/events/Record.hpp"
 
+namespace gengine::interface::network::system {
 class RecordManager : public System<RecordManager>, public LocalSystem {
 
 public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
 
-    void toggleCapture(gengine::system::driver::input::KeyPEvent &e);
+    void toggleCapture(gengine::interface::network::event::ToogleRecord &);
 
 private:
     bool m_started = false;
