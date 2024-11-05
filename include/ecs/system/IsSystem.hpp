@@ -9,8 +9,8 @@
 
 namespace ecs::system {
 class IsSystem {
-    public:
-        IsSystem() = default;
-        virtual ~IsSystem() = default;
+public:
+    IsSystem() = default;
+    virtual ~IsSystem() = default;
 };
 } // namespace ecs::system
