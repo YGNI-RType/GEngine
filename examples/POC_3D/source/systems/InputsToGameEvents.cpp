@@ -148,7 +148,7 @@ event::Movement::State InputsToGameEvents::getMovementState(void) {
 }
 
 void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
-    if (e.state == geg::event::io::InputState::PRESSED)
+    if (e.state == geg::event::io::InputState::PRESSED || e.state == geg::event::io::InputState::DOWN)
         publishEvent(event::Jump(0.12));
 }
 
@@ -180,7 +180,7 @@ void InputsToGameEvents::lockPlayer(geg::event::io::KeyLeftShiftEvent &e) {
 
 void InputsToGameEvents::setPlayerModelCoraline(geg::event::io::KeyOneEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED)
-        publishEvent(event::ChangePlayerModelEvent("coraline.glb"));
+        publishEvent(event::ChangePlayerModelEvent("player/", "player.json/idle", 0.04f));
 }
 
 void InputsToGameEvents::setPlayerModelHunter(geg::event::io::KeyTwoEvent &e) {

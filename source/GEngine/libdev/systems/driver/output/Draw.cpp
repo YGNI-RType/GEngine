@@ -137,11 +137,23 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
 
     if (models.contains(e.entity) && transforms.contains(e.entity)) {
         auto &modelMan = getSystem<ModelManager>();
-        auto &[path, color] = models.get(e.entity);
+        auto &[path, color, isAnimated] = models.get(e.entity);
         auto &transform = transforms.get(e.entity);
+        auto &anims = getComponents<component::driver::output::Animation>();
 
         BeginMode3D(camera);
-        Model model = modelMan.get(path.c_str());
+        std::string fullPath = path;
+        if (isAnimated && anims.contains(e.entity)) {
+            auto &anim = anims.get(e.entity);
+            std::string animName = anim.trackName;
+            size_t frameIndex = anim.currentFrameIndex;
+
+            fullPath += animName.substr(animName.find_last_of("/") + 1) + "/";
+            if (frameIndex + 1 < 10)
+                fullPath += "0";
+            fullPath += std::to_string(frameIndex + 1) + ".obj";
+        }
+        Model model = modelMan.get(fullPath.c_str());
         setModelTransform(model, transform);
 
         ::DrawModel(model, {0, 0, 0}, 1, color);

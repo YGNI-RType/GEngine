@@ -22,6 +22,7 @@ void SoundManager::onStartEngine(gengine::system::event::StartEngine &e) {
 
             Sound sound = LoadSound(filePath.c_str());
             std::string path = std::filesystem::relative(entry.path(), m_folder).string();
+            std::replace(path.begin(), path.end(), '\\', '/');
             m_soundTable.insert({path, {m_baseId++, sound}});
         }
     }
