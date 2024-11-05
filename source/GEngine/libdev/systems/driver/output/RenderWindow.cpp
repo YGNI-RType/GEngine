@@ -30,6 +30,9 @@ void RenderWindow::onStartEngine(gengine::system::event::StartEngine &e) {
 
     m_baseWidth = GetRenderWidth();
     m_baseHeight = GetRenderHeight();
+    m_width = m_baseWidth;
+    m_height = m_baseHeight;
+    publishEvent(gengine::system::event::WindowResized({m_width / m_baseWidth, m_height / m_baseHeight}));
 }
 
 void RenderWindow::onMainLoop(gengine::system::event::MainLoop &e) {
