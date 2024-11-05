@@ -31,6 +31,12 @@ void AutoMainLoop::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&AutoMainLoop::onStartEngine);
     subscribeToEvent<gengine::system::event::MainLoop>(&AutoMainLoop::onMainLoop);
     subscribeToEvent<gengine::system::event::StopMainLoop>(&AutoMainLoop::onStopMainLoop);
+    subscribeToEvent<gengine::system::event::CLINewInput>(&AutoMainLoop::onExit);
+}
+
+void AutoMainLoop::onExit(gengine::system::event::CLINewInput &e) {
+    if (e.prompt.size() && !e.prompt[0].compare("exit"))
+        m_isRunning = false;
 }
 
 void AutoMainLoop::onStartEngine(gengine::system::event::StartEngine &e) {

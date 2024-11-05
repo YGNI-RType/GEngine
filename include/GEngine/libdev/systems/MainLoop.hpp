@@ -19,6 +19,7 @@
 #include <chrono>
 
 #include "GEngine/libdev/System.hpp"
+#include "GEngine/libdev/systems/events/CLI.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
@@ -34,6 +35,8 @@ public:
     void onMainLoop(gengine::system::event::MainLoop &e);
 
     void onStopMainLoop(gengine::system::event::StopMainLoop &e);
+
+    void onExit(gengine::system::event::CLINewInput &e);
 
     std::chrono::microseconds getElapsedTime(void);
 
