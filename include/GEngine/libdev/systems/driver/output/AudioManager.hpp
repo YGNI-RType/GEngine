@@ -86,7 +86,7 @@ protected:
         auto it = m_musicTable.find(path);
 
         if (it == m_musicTable.end())
-            throw ""; // TODO
+            throw THROW_WARNING("Music not found");
 
         return it->second.first;
     }
