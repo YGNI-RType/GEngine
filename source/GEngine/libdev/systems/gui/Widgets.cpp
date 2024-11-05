@@ -184,7 +184,7 @@ void InputBoxHandler::onKeyPressed(geg::event::io::KeyPressedEvent &e) {
         if (button.state == button.PRESSED) {
             int index = input.strRef.size();
             if (e.key >= ' ' && e.key <= '}') {
-                if (index < input.mamax - 1)
+                if (index < input.max - 1)
                     input.strRef.push_back(e.key);
             } else if (e.key == KEY_BACKSPACE) {
                 if (!input.strRef.empty())

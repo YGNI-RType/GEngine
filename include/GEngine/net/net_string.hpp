@@ -55,7 +55,7 @@ public:
         return size();
     }
 
-    size_t maxStr() const {
+    size_t max() const {
         return m_array.size();
     }
 
