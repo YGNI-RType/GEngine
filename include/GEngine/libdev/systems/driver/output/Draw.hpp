@@ -32,6 +32,8 @@
 #include "GEngine/libdev/systems/events/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/events/driver/output/Window.hpp"
 
+#include "GEngine/libdev/tools/rlights.h"
+
 namespace gengine::system::driver::output {
 class Draw : public gengine::System<Draw, component::driver::output::Drawable>, public LocalSystem {
 public:
@@ -91,10 +93,12 @@ class DrawModel : public gengine::System<DrawModel, component::driver::output::M
 public:
     void init(void) override;
 
+    void onStartEngine(gengine::system::event::StartEngine &e);
+    void onStopEngine(gengine::system::event::StopEngine &e);
     void onDraw(gengine::system::event::Draw &e);
-    // Camera camera = {
-    //     (Vector3){-2.12, 5.90, 3.29}, (Vector3){0.93, 3.71, 1.94}, {0.0f, 1.0f, 0.0f}, 75.f, CAMERA_PERSPECTIVE};
     Camera camera = {{0, 1.7, 0}, {0, 0, 0}, {0.0f, 1.0f, 0.0f}, 75.f, CAMERA_PERSPECTIVE};
+    Shader shader = {0};
+    Light lights[MAX_LIGHTS] = {0};
     CameraMode cameraMode = CAMERA_FIRST_PERSON;
 };
 } // namespace gengine::system::driver::output
