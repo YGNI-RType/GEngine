@@ -41,7 +41,7 @@ Music AudioManager::getMusicById(std::uint64_t id) {
     for (auto &[_, pair] : m_musicTable)
         if (pair.first == id)
             return pair.second;
-    throw THROW_WARNING("Music component not initilized");
+    THROW_WARNING("Music component not initilized");
 }
 
 void AudioManager::onStopEngine(gengine::system::event::StopEngine &e) {
@@ -94,7 +94,7 @@ gengine::component::driver::output::Music &AudioManager::getMusicComponent(void)
     auto &musics = getComponents<gengine::component::driver::output::Music>();
 
     if (!musics.size())
-        throw THROW_WARNING("Music component not initilazed");
+        THROW_WARNING("Music component not initilazed");
     for (auto &[_, m] : musics)
         return m;
 }
@@ -120,7 +120,7 @@ std::uint64_t AudioManager::getIdByPath(const std::string &path) const {
     auto it = m_soundTable.find(path);
 
     if (it == m_soundTable.end())
-        throw THROW_WARNING("Sound not found");
+        THROW_WARNING("Sound not found");
 
     return it->second.first;
 }
