@@ -73,6 +73,24 @@ bool NetChannel::sendDatagram(SocketUDP &socket, UDPMessage &msg) {
         return false;
 
     size_t msgLen = msg.getSize();
+#ifdef DEBUG_NETWORK
+    static uint64_t lastTime = Time::Clock::milliseconds();
+    static size_t totalSent = 0;
+    static size_t totalPackets = 0;
+
+    totalSent += msgLen;
+    totalPackets++;
+
+    uint64_t currentTime = Time::Clock::milliseconds();
+    if (currentTime - lastTime >= 1000) {
+        size_t meanSize = totalSent / totalPackets;
+        std::cout << "Mean packet size in the last second: " << meanSize << " bytes (nb: " << totalPackets << ")"
+                  << std::endl;
+        lastTime = currentTime;
+        totalSent = 0;
+        totalPackets = 0;
+    }
+#endif
 
     /* check the client rating before or after ? */
 
@@ -226,8 +244,15 @@ bool NetChannel::sendStream(const TCPMessage &msg) {
 
 bool NetChannel::readStream(TCPMessage &msg) {
     try {
-        m_tcpSocket.receive(msg);
-    } catch (const SocketDisconnected &e) {
+        m_tcpSocket.receive(msg, m_tcpBuffer, m_sizeBuffer);
+    } catch (const SocketException &e) {
+        if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr) {
+            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN) {
+                std::cout << "blocking" << std::endl;
+                return false;
+            }
+            std::cerr << "Socket exception: " << e.what() << std::endl;
+        }
         m_disconnect = true;
         return true;
     }
@@ -258,4 +283,17 @@ uint16_t NetChannel::getPing_TS(void) const {
     return static_cast<uint16_t>(res);
 }
 
+std::string NetChannel::getAddress_TS(void) const {
+    /* there is no need mutex here, since it's created and not modifiable, the other thread got the netclient already
+     * with the net_channel created */
+    if (m_toTCPAddress == nullptr)
+        return "";
+    return m_toTCPAddress->toString();
+}
+
+uint16_t NetChannel::getPort_TS(void) const {
+    if (m_toTCPAddress == nullptr)
+        return -1;
+    return m_toTCPAddress->getPort();
+}
 } // namespace Network

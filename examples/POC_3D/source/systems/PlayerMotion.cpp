@@ -17,50 +17,6 @@
 #include "Constants.hpp"
 #include <random>
 
-// TODO try to get Raylib code with rcamera.h
-static void CameraPitch(Camera *camera, float angle, bool lockView, bool rotateAroundTarget, bool rotateUp) {
-    // Up direction
-    Vector3 targetPosition = Vector3Subtract(camera->target, camera->position);
-    Vector3 up = Vector3Normalize(camera->up);
-    Vector3 forward = Vector3Normalize(targetPosition);
-    Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, up));
-
-    if (lockView) {
-        // In these camera modes we clamp the Pitch angle
-        // to allow only viewing straight up or down.
-
-        // Clamp view up
-        float maxAngleUp = Vector3Angle(up, targetPosition);
-        maxAngleUp -= 0.001f; // avoid numerical errors
-        if (angle > maxAngleUp)
-            angle = maxAngleUp;
-
-        // Clamp view down
-        float maxAngleDown = Vector3Angle(Vector3Negate(up), targetPosition);
-        maxAngleDown *= -1.0f;  // downwards angle is negative
-        maxAngleDown += 0.001f; // avoid numerical errors
-        if (angle < maxAngleDown)
-            angle = maxAngleDown;
-    }
-
-    // Rotate view vector around right axis
-    targetPosition = Vector3RotateByAxisAngle(targetPosition, right, angle);
-
-    if (rotateAroundTarget) {
-        // Move position relative to target
-        camera->position = Vector3Subtract(camera->target, targetPosition);
-    } else // rotate around camera.position
-    {
-        // Move target relative to position
-        camera->target = Vector3Add(camera->position, targetPosition);
-    }
-
-    if (rotateUp) {
-        // Rotate up direction around right axis
-        camera->up = Vector3RotateByAxisAngle(camera->up, right, angle);
-    }
-}
-
 namespace poc3d::system {
 void PlayerMotion::init(void) {
     subscribeToEvent<gengine::system::event::GameLoop>(&PlayerMotion::onGameLoop);
@@ -70,6 +26,7 @@ void PlayerMotion::init(void) {
     subscribeToEvent<gengine::interface::event::SharedEvent<event::ChangeCameraMode>>(
         &PlayerMotion::changeCameraModePlayer);
     subscribeToEvent<gengine::interface::event::SharedEvent<event::Sprint>>(&PlayerMotion::sprintPlayer);
+    subscribeToEvent<gengine::interface::event::SharedEvent<event::LockPlayerEvent>>(&PlayerMotion::lockPlayer);
 }
 
 void PlayerMotion::onGameLoop(gengine::system::event::GameLoop &e) {
@@ -149,8 +106,6 @@ void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Move
             break;
         }
         }
-
-        moveCamera(transform, forward);
     }
 }
 
@@ -160,19 +115,10 @@ void PlayerMotion::rotatePlayer(gengine::interface::event::SharedEvent<event::Ro
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
 
     for (auto [entity, remote, player, transform] : gengine::Zip(remotes, players, transforms)) {
-        if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
+        if (remote.getUUIDBytes() != e.remoteUUID || player.isLocked) // check if its the same remote (zip)
             continue;
 
         transform.rotation.y += e->move.y;
-        if (hasSystem<gengine::system::driver::output::DrawModel>()) {
-            auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
-            // UpdateCameraPro(&draw.camera, {},
-            //                 {0, draw.cameraMode == CAMERA_FREE ? 0 : -e->move.z * 3 * MOUSE_SENSITIVITY, 0}, 0);
-            if (draw.cameraMode != CAMERA_FREE)
-                CameraPitch(&draw.camera, e->move.z / 50.f * MOUSE_SENSITIVITY, true, false,
-                            // draw.cameraMode == CAMERA_FIRST_PERSON ? false : true, // TODO Fun to play with
-                            false);
-        }
     }
 }
 
@@ -184,53 +130,12 @@ void PlayerMotion::jumpPlayer(gengine::interface::event::SharedEvent<event::Jump
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
 
     for (auto [entity, remote, player, velocity, transform] : gengine::Zip(remotes, players, velocities, transforms)) {
-        if (remote.getUUIDBytes() != e.remoteUUID ||
-            accelerations.contains(entity)) // check if its the same remote (zip)
+        if (accelerations.contains(entity) ||
+            (remote.getUUIDBytes() != e.remoteUUID && remote.getUUIDBytes() != e->playerUuid) ||
+            (!e->playerUuid.is_nil() && remote.getUUIDBytes() == e.remoteUUID)) // check if its the same remote (zip)
             continue;
         velocity.y = e->strength;
         setComponent(entity, geg::component::Acceleration3D(0, -0.009, 0));
-    }
-}
-
-void PlayerMotion::moveCamera(geg::component::Transform3D &transform, gengine::Vect3 &forward) {
-    static float lastY = 0;
-    if (!hasSystem<gengine::system::driver::output::DrawModel>())
-        return;
-    auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
-    switch (draw.cameraMode) {
-    case CAMERA_FIRST_PERSON: {
-        draw.camera.position.y = 1.4; // TODO: make this a variable (height of the model)
-        draw.camera.position.x = transform.pos.x + forward.x / 4;
-        draw.camera.position.z = transform.pos.z + forward.z / 4;
-        draw.camera.target.x = transform.pos.x + forward.x;
-        draw.camera.target.z = transform.pos.z + forward.z;
-        break;
-    }
-    case CAMERA_THIRD_PERSON: {
-        draw.camera.position.y = 1.7;
-        draw.camera.position.x = transform.pos.x - forward.x * 1;
-        draw.camera.position.z = transform.pos.z - forward.z * 1;
-        draw.camera.target.x = transform.pos.x + forward.x * 2;
-        draw.camera.target.z = transform.pos.z + forward.z * 2;
-        break;
-    }
-    case CAMERA_CUSTOM: {
-        draw.camera.position.y = 1.7;
-        draw.camera.position.x = transform.pos.x + forward.x * 2;
-        draw.camera.position.z = transform.pos.z + forward.z * 2;
-        draw.camera.target.x = transform.pos.x;
-        draw.camera.target.z = transform.pos.z;
-        break;
-    }
-    default:
-        break;
-    }
-    // Jump
-    if (draw.cameraMode != CAMERA_FREE) {
-        draw.camera.position.y += transform.pos.y;
-        draw.camera.target.y += transform.pos.y;
-        draw.camera.target.y -= lastY;
-        lastY = transform.pos.y;
     }
 }
 
@@ -262,4 +167,13 @@ void PlayerMotion::sprintPlayer(gengine::interface::event::SharedEvent<event::Sp
     }
 }
 
+void PlayerMotion::lockPlayer(gengine::interface::event::SharedEvent<event::LockPlayerEvent> &e) {
+    auto &players = getComponents<component::Player>();
+    auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
+    for (auto [entity, remote, player] : gengine::Zip(remotes, players)) {
+        if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
+            continue;
+        player.isLocked = e->locked;
+    }
+}
 } // namespace poc3d::system

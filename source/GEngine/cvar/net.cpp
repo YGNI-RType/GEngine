@@ -10,13 +10,13 @@
 namespace CVar {
 ConVar net_ipv6("net_ipv6", "0", ConVar::flag::CMD, "Enable ipv6 (set in convar)");
 
-ConVar sv_maxplayers("sv_maxplayers", "4", ConVar::flag::TRANSMIT | ConVar::flag::SETUP,
+ConVar sv_maxplayers("sv_maxplayers", "4", ConVar::flag::SERVER | ConVar::flag::CMD,
                      "Set the maxmium number of players a server can accept");
 
-ConVar net_recv_dropsim("net_recv_dropsim", "0", ConVar::flag::SELF, "Simulate recv packet drop rate (%)");
-ConVar net_send_dropsim("net_send_dropsim", "0", ConVar::flag::SELF, "Simulate send packet drop rate (%)");
+ConVar net_recv_dropsim("net_recv_dropsim", "0", ConVar::flag::CLIENT, "Simulate recv packet drop rate (%)");
+ConVar net_send_dropsim("net_send_dropsim", "0", ConVar::flag::CLIENT, "Simulate send packet drop rate (%)");
 
 ConVar net_kick_timeout(
-    "net_active_timeout", "10000", ConVar::flag::SELF,
+    "net_active_timeout", "10000", ConVar::flag::CLIENT,
     "Set the timeout to disconnect a client (self or server client) based on the last received packet");
 } // namespace CVar

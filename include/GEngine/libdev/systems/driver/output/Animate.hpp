@@ -24,10 +24,11 @@
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include <nlohmann/json.hpp>
-using json = nlohmann::json;
 
 namespace gengine::system::driver::output {
+using json = nlohmann::json;
 using ATrack = component::driver::output::AnimationTrack;
+
 class AnimationManager : public gengine::System<AnimationManager>, public LocalSystem {
 public:
     AnimationManager(const std::string &folder);

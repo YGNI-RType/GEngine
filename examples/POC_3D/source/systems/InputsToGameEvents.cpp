@@ -12,6 +12,7 @@ namespace poc3d::system {
 void InputsToGameEvents::init(void) {
     // Send movements + rotation
     subscribeToEvent<gengine::system::event::GameLoop>(&InputsToGameEvents::sendEvents);
+    subscribeToEvent<geg::event::io::MouseMoveEvent>(&InputsToGameEvents::rotatePlayer);
     subscribeToEvent<geg::event::io::KeyF5Event>(&InputsToGameEvents::changeCameraMode);
     // Movements
     subscribeToEvent<geg::event::io::KeyWEvent>(&InputsToGameEvents::moveFwd);
@@ -19,9 +20,11 @@ void InputsToGameEvents::init(void) {
     subscribeToEvent<geg::event::io::KeySEvent>(&InputsToGameEvents::moveBck);
     subscribeToEvent<geg::event::io::KeyDEvent>(&InputsToGameEvents::moveRight);
     subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
-    subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::sprint);
+    subscribeToEvent<geg::event::io::KeyLeftControlEvent>(&InputsToGameEvents::sprint);
 
-    subscribeToEvent<geg::event::io::KeyEEvent>(&InputsToGameEvents::guess);
+    subscribeToEvent<geg::event::io::MouseLeft>(&InputsToGameEvents::guess);
+    subscribeToEvent<geg::event::io::KeyEEvent>(&InputsToGameEvents::morph);
+    subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::lockPlayer);
 
     subscribeToEvent<geg::event::io::KeyOneEvent>(&InputsToGameEvents::setPlayerModelCoraline);
     subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelHunter);
@@ -32,17 +35,13 @@ void InputsToGameEvents::init(void) {
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
     publishEvent(event::Movement(getMovementState()));
+}
 
-    // Player Direction
-    const Vector2 mouseDelta = GetMouseDelta();
-    DisableCursor();
-    // SetMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+void InputsToGameEvents::rotatePlayer(geg::event::io::MouseMoveEvent &e) {
     gengine::Vect3 rotation = {0, 0, 0};
-    if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
-        rotation.y -= MOUSE_SENSITIVITY * mouseDelta.x;
-        rotation.z -= MOUSE_SENSITIVITY * mouseDelta.y;
-        publishEvent<event::Rotation>(rotation);
-    }
+    rotation.y -= MOUSE_SENSITIVITY * e.delta.x;
+    rotation.z -= MOUSE_SENSITIVITY * e.delta.y;
+    publishEvent(event::Rotation(rotation));
 }
 
 void InputsToGameEvents::changeCameraMode(geg::event::io::KeyF5Event &e) {
@@ -153,16 +152,30 @@ void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
         publishEvent(event::Jump(0.12));
 }
 
-void InputsToGameEvents::sprint(geg::event::io::KeyLeftShiftEvent &e) {
+void InputsToGameEvents::sprint(geg::event::io::KeyLeftControlEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED || e.state == geg::event::io::InputState::DOWN)
         publishEvent(event::Sprint(true));
     else
         publishEvent(event::Sprint(false));
 }
 
-void InputsToGameEvents::guess(geg::event::io::KeyEEvent &e) {
+void InputsToGameEvents::guess(geg::event::io::MouseLeft &e) {
     if (e.state == geg::event::io::InputState::PRESSED)
-        publishEvent(event::GuessEvent());
+        publishEvent(event::GuessEvent(0.4));
+}
+
+void InputsToGameEvents::morph(geg::event::io::KeyEEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::MorphToPropEvent());
+}
+
+void InputsToGameEvents::lockPlayer(geg::event::io::KeyLeftShiftEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::LockPlayerEvent(true));
+    if (e.state == geg::event::io::InputState::RELEASE) {
+        publishEvent(event::LockPlayerEvent(false));
+        publishEvent(event::ResetPlayerRotationCameraEvent());
+    }
 }
 
 void InputsToGameEvents::setPlayerModelCoraline(geg::event::io::KeyOneEvent &e) {

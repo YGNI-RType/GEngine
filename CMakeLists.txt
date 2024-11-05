@@ -6,8 +6,10 @@ include(GNUInstallDirs)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 include(cmake/automate-vcpkg.cmake)
-vcpkg_bootstrap()
-vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
+if (NOT DEFINED ENV{NOT_INSTALL_VCPKG})
+    vcpkg_bootstrap()
+    vcpkg_install_packages(raylib stduuid nlohmann-json portaudio opus bzip2)
+endif()
 
 file(GLOB_RECURSE SOURCES source/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/deprecated/.*")

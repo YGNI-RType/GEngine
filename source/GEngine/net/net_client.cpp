@@ -26,6 +26,21 @@ NetClient::NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUD
     , m_state(CS_CONNECTED) {
 }
 
+void NetClient::createSets(NetWaitSet &set) {
+    if (!m_channel.isEnabled())
+        return;
+
+    auto &socket = m_channel.getTcpSocket();
+    set.setAlert(socket, [this]() {
+        bool res = handleClientStream();
+        if (isDisconnected()) {
+            auto &server = NET::getServer();
+            server.disconnectClient(this, Event::DisonnectType::DT_RESET);
+        }
+        return res;
+    });
+}
+
 bool NetClient::isTimeout(void) const {
     if (m_state < CS_ACTIVE)
         return false;

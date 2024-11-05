@@ -36,7 +36,10 @@ namespace Network {
 #else
 typedef unsigned short sa_family_t;
 #endif
+
+/* Since windows uses handles for sockets, there is a whole definition section for it */
 #define NET_USE_HANDLE
+
 #define socketError WSAGetLastError()
 #else /* unix */
 #define WSAEINVAL EINVAL
@@ -78,6 +81,14 @@ typedef uint8_t byte_t;
 
 typedef enum { AT_NONE = 0, AT_BOT, AT_LOOPBACK, AT_BROADCAST, AT_MULTICAST, AT_IPV4, AT_IPV6, AT_UNSPEC } AddressType;
 
+/*
+** @brief Represents an IP address.
+** @param ifname The name of the interface.
+** @param type The type of the address.
+** @param family The address family.
+** @param addr The address in storage, for ipv6 and ipv4.
+** @param netmask The netmask, same way as addr.
+*/
 struct IP {
     std::string ifname = std::string(IF_NAMESIZE, '\0');
 

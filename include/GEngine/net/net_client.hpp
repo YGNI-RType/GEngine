@@ -22,10 +22,14 @@ namespace Network {
 #define MAX_SZ_NAME 64
 #define PACKET_BACKUP 32
 
-/*
-this info is transmitted to network, WE NEED TO USE C ARRAYS
-this is global TO ALL TYPE OF GAMES, we need to set custom data information one day
-*/
+/**
+ * @class NetClientInfo
+ * @brief This class represents the information of a network client.
+ *
+ * The NetClientInfo class encapsulates various attributes related to a network client,
+ * including the client's name, request rate, snapshot rate, and whether high-frequency
+ * data transmission is enabled.
+ */
 class NetClientInfo {
 public:
     NetClientInfo() = default;
@@ -52,9 +56,19 @@ private:
     std::vector<byte_t> m_data;
 };
 
-/* likely composed */
+/**
+ * @class NetClient
+ * @brief Manages network client operations including sending and receiving data over TCP and UDP.
+ *
+ * The NetClient class handles the communication with a network server using both TCP and UDP protocols.
+ * It provides methods to send and receive packets, manage connection states, and handle network events.
+ * The class ensures thread safety for certain operations and maintains internal queues for incoming and outgoing data.
+ *
+ * @note This class is designed to be thread-safe for specific operations.
+ *
+ * @todo Adjust the sizes of the internal queues based on average data size requirements.
+ */
 class NetClient {
-
 public:
     NetClient(std::unique_ptr<Address> addr, SocketTCP &&socket, SocketUDP &socketudp, Event::SocketEvent &socketEvent);
     ~NetClient() = default;
@@ -71,10 +85,32 @@ public:
         return m_channel.isDisconnected();
     }
 
+    void createSets(NetWaitSet &readSet);
+
     bool isTimeout(void) const;
 
+    /**
+     * @brief Handles TCP events based on the provided NetWaitSet.
+     *
+     * This function processes TCP events that are ready for handling as indicated
+     * by the NetWaitSet. It performs necessary actions to manage these events.
+     *
+     * @param set A reference to a NetWaitSet object that contains the set of TCP events
+     *            to be handled.
+     * @return true if the events were handled successfully, false otherwise.
+     */
     bool handleTCPEvents(const NetWaitSet &set);
     bool handleClientStream(void);
+    /**
+     * @brief Handles the incoming datagram from a client.
+     *
+     * This function processes the datagram received from a client through the specified UDP socket.
+     * It interprets the message and performs necessary actions based on the content of the message.
+     *
+     * @param socket The UDP socket through which the datagram is received.
+     * @param msg The message received from the client.
+     * @return true if the datagram was handled successfully, false otherwise.
+     */
     bool handleClientDatagram(SocketUDP &socket, UDPMessage &msg);
 
 public:
@@ -93,9 +129,31 @@ public:
         return m_packInData.size();
     }
 
-    /* Thread safe to get the net_client's ping */
+    /**
+     * @brief Retrieves the current ping timestamp.
+     *
+     * This function returns the ping timestamp from the network channel.
+     *
+     * @return uint16_t The current ping timestamp.
+     */
     uint16_t getPing_TS(void) const {
         return m_channel.getPing_TS();
+    }
+    /**
+     * @brief Retrieves the address in a thread-safe manner.
+     *
+     * This function calls the getAddress_TS method of the m_channel object
+     * to obtain the address. The operation is performed in a thread-safe
+     * manner to ensure data integrity when accessed concurrently.
+     *
+     * @return A string containing the address.
+     */
+    std::string getAddress_TS(void) const {
+        return m_channel.getAddress_TS();
+    }
+
+    uint16_t getPort_TS(void) const {
+        return m_channel.getPort_TS();
     }
 
 private:
@@ -126,7 +184,5 @@ private:
     SocketUDP &m_socketUdp;
 
     uint16_t ping = 0;
-
-    size_t m_maxRate = 0;
 };
 } // namespace Network

@@ -9,7 +9,7 @@
 
 namespace gengine::system {
 CLI::CLI()
-    : stopReading(false) {
+    : m_stopReading(false) {
 }
 
 void CLI::init(void) {
@@ -19,33 +19,31 @@ void CLI::init(void) {
 }
 
 void CLI::onStartEngine(gengine::system::event::StartEngine &e [[maybe_unused]]) {
-    inputThread = std::thread(&CLI::getInputs, this);
+    m_inputThread = std::thread(&CLI::getInputs, this);
+    m_inputThread.detach();
 }
 
 void CLI::onStopEngine(gengine::system::event::StopEngine &e [[maybe_unused]]) {
-    stopReading = true;
-    if (inputThread.joinable())
-        inputThread.join();
+    m_stopReading = true;
 }
 
 void CLI::onMainLoop(gengine::system::event::MainLoop &e [[maybe_unused]]) {
-    std::lock_guard<std::mutex> lock(historyMutex);
-    for (const auto &entry : userInputHistory)
+    std::lock_guard<std::mutex> lock(m_historyMutex);
+    for (const auto &entry : m_userInputHistory)
         publishEvent(gengine::system::event::CLINewInput(splitInput(entry)));
-    userInputHistory.clear();
+    m_userInputHistory.clear();
 }
 
 void CLI::getInputs(void) {
     std::string input;
 
-    while (!stopReading) {
+    while (!m_stopReading) {
         std::cout << "> " << std::flush;
         if (std::getline(std::cin, input)) {
-            std::lock_guard<std::mutex> lock(historyMutex);
-            userInputHistory.push_back(input);
-        } else {
+            std::lock_guard<std::mutex> lock(m_historyMutex);
+            m_userInputHistory.push_back(input);
+        } else
             break;
-        }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
