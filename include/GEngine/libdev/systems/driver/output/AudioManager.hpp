@@ -67,7 +67,6 @@ public:
                 break;
             }
         }
-        std::cout << "music: " << getMusicComponent().musicId << std::endl;
     }
 
 protected:
