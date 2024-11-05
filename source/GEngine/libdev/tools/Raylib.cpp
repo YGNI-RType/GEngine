@@ -45,8 +45,7 @@ BoundingBox TransformBoundingBox(BoundingBox box, const Matrix &transform) {
     return transformedBox;
 }
 
-RayCollision GetRayCollisionModel(Vector2 screenPos, Model model, component::Transform3D &modelTransform,
-                                  Camera &camera) {
+RayCollision GetRayCollisionModel(Ray ray, Model model, component::Transform3D &modelTransform) {
     setModelTransform(model, modelTransform);
 
     // BoundingBox box = GetMeshBoundingBox(model.meshes[0]);
@@ -59,7 +58,6 @@ RayCollision GetRayCollisionModel(Vector2 screenPos, Model model, component::Tra
     BoundingBox box = GetMeshBoundingBox(model.meshes[0]);
     BoundingBox transformedBox = TransformBoundingBox(box, model.transform);
 
-    Ray ray = GetMouseRay(screenPos, camera);
     RayCollision collision = GetRayCollisionBox(ray, transformedBox);
     if (collision.hit) {
         RayCollision meshHitInfo = {0};

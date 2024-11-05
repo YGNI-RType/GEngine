@@ -22,7 +22,7 @@
 #include "systems/CameraRotation.hpp"
 #include "systems/ChangePlayerModel.hpp"
 #include "systems/Guess.hpp"
-#include "systems/Init.hpp"
+#include "systems/HUD.hpp"
 #include "systems/InputsToGameEvents.hpp"
 #include "systems/MorphToProp.hpp"
 #include "systems/PlayerMotion.hpp"
@@ -30,6 +30,7 @@
 #include "systems/Start.hpp"
 
 #include "GEngine/interface/network/systems/ClientEventPublisher.hpp"
+#include "GEngine/interface/network/systems/ClientServer.hpp"
 #include "GEngine/interface/network/systems/ServerEventReceiver.hpp"
 
 #include "GEngine/interface/events/RemoteLocal.hpp"
@@ -64,6 +65,8 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::Collision2D>();
     r->registerSystem<gengine::system::AutoKiller>();
 
+    r->registerSystem<poc3d::system::Crossair>();
+
     r->registerSystem<poc3d::system::InputsToGameEvents>();
     r->registerSystem<poc3d::system::Start>();
     r->registerSystem<poc3d::system::BackgroundMotion>();
@@ -73,21 +76,20 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<poc3d::system::ChangePlayerModel>();
     r->registerSystem<poc3d::system::Guess>();
     r->registerSystem<poc3d::system::MorphToProp>();
-    r->registerSystem<poc3d::system::Init>();
 
     r->registerSystem<gengine::interface::system::HandleRemoteLocal>();
     r->registerSystem<gengine::interface::system::HandleLocal>();
 
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
-        poc3d::event::GuessEvent, poc3d::event::MorphToPropEvent, poc3d::event::ChangePlayerModelEvent,
-        poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent, poc3d::event::Sprint,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
-        poc3d::event::GuessEvent, poc3d::event::MorphToPropEvent, poc3d::event::ChangePlayerModelEvent,
-        poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent, poc3d::event::Sprint,
-        gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
+        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+
+    r->registerSystem<gengine::interface::network::system::ConnectAtStart>("127.0.0.1", 4242);
 
     // VOIP
     // r->registerSystem<gengine::interface::network::system::VoIPManager>();

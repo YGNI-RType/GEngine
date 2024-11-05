@@ -26,13 +26,14 @@
 
 namespace poc3d::system {
 class MorphToProp
-    : public gengine::System<MorphToProp, gengine::interface::component::RemoteLocal,
-                             gengine::component::driver::output::Model, geg::component::Transform3D, component::Player,
-                             component::Prop, gengine::system::driver::output::DrawModel,
-                             gengine::system::driver::output::ModelManager> {
+    : public gengine::System<
+          MorphToProp, gengine::interface::component::RemoteLocal, gengine::component::driver::output::Model,
+          geg::component::Transform3D, component::Player, component::Prop, gengine::system::driver::output::DrawModel,
+          gengine::system::driver::output::ModelManager, gengine::system::driver::output::RenderWindow>,
+      public gengine::LocalSystem {
 public:
     void init(void) override;
 
-    void morphPlayer(gengine::interface::event::SharedEvent<event::MorphToPropEvent> &e);
+    void morphPlayer(event::MorphToPropEvent &e);
 };
 } // namespace poc3d::system

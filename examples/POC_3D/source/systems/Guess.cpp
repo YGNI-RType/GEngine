@@ -19,32 +19,38 @@
 
 namespace poc3d::system {
 void Guess::init(void) {
-    subscribeToEvent<gengine::interface::event::SharedEvent<event::GuessEvent>>(&Guess::guessWho);
+    subscribeToEvent<event::GuessEvent>(&Guess::guessWho);
+    subscribeToEvent<gengine::interface::event::ItsMe>(&Guess::setMe);
 }
 
-void Guess::guessWho(gengine::interface::event::SharedEvent<event::GuessEvent> &e) {
-    if (!hasSystem<gengine::system::driver::output::DrawModel>())
+void Guess::guessWho(event::GuessEvent &e) {
+    if (m_me.is_nil())
         return;
+
+    auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
+    auto &wd = getSystem<gengine::system::driver::output::RenderWindow>();
 
     auto &models = getComponents<gengine::component::driver::output::Model>();
     auto &players = getComponents<component::Player>();
     auto &transforms = getComponents<geg::component::Transform3D>();
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
 
-    auto &draw = getSystem<gengine::system::driver::output::DrawModel>();
     RayCollision collision = {0};
-
+    Vector2 center = {wd.getWidth() / 2.f, wd.getHeight() / 2.f};
+    Ray ray = GetMouseRay(center, draw.camera);
     auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
-
     for (auto [entity, model, player, remote, transform] : gengine::Zip(models, players, remotes, transforms)) {
-        if (remote.getUUIDBytes() == e.remoteUUID) // check if its the same remote (zip)
+        if (remote.getUUIDBytes() == m_me) // check if its the same remote (zip)
             continue;
-        collision = gengine::GetRayCollisionModel({WINDOW_WIDTH / 2, (WINDOW_TOTAL_HEIGHT) / 2},
-                                                  modelMan.get(model.txtPath), transform, draw.camera);
+        collision = gengine::GetRayCollisionModel(ray, modelMan.get(model.txtPath), transform);
         if (collision.hit)
             publishEvent(event::Jump(0.4, remote.getUUIDBytes()));
 
         // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
     }
 }
+void Guess::setMe(gengine::interface::event::ItsMe &e) {
+    m_me = e.myUUID;
+}
+
 } // namespace poc3d::system
