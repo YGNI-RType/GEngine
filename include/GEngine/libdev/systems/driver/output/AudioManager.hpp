@@ -2,7 +2,7 @@
 ** ════════════════════════════════════════════════════════════════════════════
 **                           GEngine (libdev) System
 ** ════════════════════════════════════════════════════════════════════════════
-**  File        : SoundManager.hpp
+**  File        : AudioManager.hpp
 **  Create at   : 2024-10-15 05:02
 **  Author      : AUTHOR
 **  Description : This system dedicated to ther DriverEngine, it must with
@@ -32,10 +32,12 @@
 
 namespace gengine::system::driver::output {
 
-class SoundManager : public gengine::System<SoundManager, gengine::component::driver::output::Sound,
-                                            gengine::interface::component::RemoteLocal> {
+class AudioManager
+    : public gengine::System<AudioManager, gengine::component::driver::output::Sound,
+                             gengine::component::driver::output::Music, gengine::interface::component::RemoteLocal,
+                             geg::component::network::NetSend> {
 public:
-    SoundManager(const std::string &folder);
+    AudioManager(const std::string &soundFolder, const std::string &musicFolder);
     virtual void init(void) override {
     }
 
@@ -51,27 +53,58 @@ public:
 
     void onMainLoop(geg::event::MainLoop &e);
     void onSoundPlayed(gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed> &e);
+    void onMusic(gengine::system::event::driver::output::Music &e) {
+        auto &musics = getComponents<gengine::component::driver::output::Music>();
+        auto &netSends = getComponents<geg::component::network::NetSend>();
+
+        if (!musics.size())
+            spawnEntity(gengine::component::driver::output::Music(getMusicIdByPath(e.path)),
+                        geg::component::network::NetSend());
+        else {
+            getMusicComponent().musicId = getMusicIdByPath(e.path);
+            for (auto [e, _unused, netSend] : gengine::Zip(musics, netSends)) {
+                netSend.update();
+                break;
+            }
+        }
+        std::cout << "music: " << getMusicComponent().musicId << std::endl;
+    }
 
 protected:
+    const std::string m_soundFolder;
+    const std::string m_musicFolder;
     std::string m_folder;
     std::unordered_map<std::string, std::pair<std::uint64_t, Sound>> m_soundTable;
-    std::uint64_t m_baseId = 0;
+    std::unordered_map<std::string, std::pair<std::uint64_t, Music>> m_musicTable;
+    std::uint64_t m_soundBaseId = 0;
+    std::uint64_t m_musicBaseId = 1;
+    std::uint64_t m_currentMusicId = 0;
 
     std::uint64_t getIdByPath(const std::string &path) const;
+    Music getMusicById(std::uint64_t id);
+    std::uint64_t getMusicIdByPath(const std::string &path) {
+        auto it = m_musicTable.find(path);
 
+        if (it == m_musicTable.end())
+            THROW_WARNING("Music not found");
+
+        return it->second.first;
+    }
     void playSoundById(std::uint64_t id);
+
+    gengine::component::driver::output::Music &getMusicComponent(void);
 };
 
-class SoundManagerLocal : public SoundManager, public gengine::LocalSystem {
+class AudioManagerLocal : public AudioManager, public gengine::LocalSystem {
 public:
-    SoundManagerLocal(const std::string &folder);
+    AudioManagerLocal(const std::string &soundFolder, const std::string &musicFolder);
 
     void init(void) override;
 };
 
-class SoundManagerRemote : public SoundManager, public gengine::RemoteSystem {
+class AudioManagerRemote : public AudioManager, public gengine::RemoteSystem {
 public:
-    SoundManagerRemote(const std::string &folder);
+    AudioManagerRemote(const std::string &soundFolder, const std::string &musicFolder);
 
     void init(void) override;
 };

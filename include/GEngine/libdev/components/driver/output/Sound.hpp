@@ -16,10 +16,20 @@
 namespace gengine::component::driver::output {
 struct Sound : public gengine::Component<Sound> {
     std::uint64_t soundId;
-    std::uint64_t _ack = 0;
 
     Sound(std::uint64_t soundId)
         : soundId(soundId) {
     }
+};
+
+struct Music : public gengine::Component<Music> {
+    bool pause = false;
+    std::uint64_t musicId;
+
+    Music(std::uint64_t musicId)
+        : musicId(musicId) {
+    }
+
+    bool operator==(const Music &) const = default;
 };
 } // namespace gengine::component::driver::output

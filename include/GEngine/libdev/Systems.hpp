@@ -36,10 +36,10 @@ using MotionAcceleration3D = gengine::system::MotionAcceleration3D;
 #include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
 #include "GEngine/libdev/systems/driver/input/MouseCatcher.hpp"
 #include "GEngine/libdev/systems/driver/output/Animate.hpp"
+#include "GEngine/libdev/systems/driver/output/AudioManager.hpp"
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/driver/output/FontManager.hpp"
 #include "GEngine/libdev/systems/driver/output/RenderWindow.hpp"
-#include "GEngine/libdev/systems/driver/output/SoundManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
 namespace geg::system::io {
@@ -60,7 +60,7 @@ using FontManager = gengine::system::driver::output::FontManager;
 
 using RenderWindow = gengine::system::driver::output::RenderWindow;
 
-using SoundManager = gengine::system::driver::output::SoundManager;
+using AudioManager = gengine::system::driver::output::AudioManager;
 
 using TextureManager = gengine::system::driver::output::TextureManager;
 }; // namespace geg::system::io
