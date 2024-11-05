@@ -102,7 +102,6 @@ bool NetWait::wait(uint32_t ms, NetWaitSet &set) {
         return false;
     }
 
-    std::cout << "event" << std::endl;
     set.setResultIndex(dwEvent - WSA_WAIT_EVENT_0);
 #else
     SOCKET highest = NetWait::getHighestSocket();
