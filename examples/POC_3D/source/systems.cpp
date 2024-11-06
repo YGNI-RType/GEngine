@@ -36,15 +36,29 @@
 #include "GEngine/interface/systems/RemoteLocal.hpp"
 
 // VOIP
+
+#include "GEngine/libdev/systems/CLI.hpp"
+#include "GEngine/libdev/systems/events/CLI.hpp"
+
 #include "GEngine/interface/network/systems/VoIPManager.hpp"
 #include "GEngine/libdev/systems/driver/input/VoIPAudioCatcher.hpp"
 #include "GEngine/libdev/systems/driver/output/VoIPAudio.hpp"
 
 #include "GEngine/libdev/System.hpp"
 
-struct V : gengine::System<V> {
+struct V : public gengine::System<V>, public gengine::LocalSystem {
     void init(void) override {
-        publishEvent(gengine::system::event::driver::input::StartVoIP());
+        // publishEvent(gengine::system::event::driver::input::StartVoIP());
+        subscribeToEvent<gengine::system::event::CLINewInput>(&V::onCLi);
+    }
+
+    void onCLi(gengine::system::event::CLINewInput &e) {
+        if (!e.prompt.size())
+            return;
+        if (!e.prompt[0].compare("voip-start"))
+            publishEvent(gengine::system::event::driver::input::StartVoIP());
+        if (!e.prompt[0].compare("voip-stop"))
+            publishEvent(gengine::system::event::driver::input::EndVoIP());
     }
 };
 
@@ -100,8 +114,10 @@ void GEngineDeclareSystems(Registry *r) {
 
     r->registerSystem<V>();
 
+    r->registerSystem<gengine::system::CLI>();
+
     // VOIP
-    r->registerSystem<gengine::interface::network::system::VoIPManager>();
+    r->registerSystem<gengine::interface::network::system::VoIPManager>(7.f);
     r->registerSystem<gengine::system::driver::output::VoIPAudio>();
     r->registerSystem<gengine::system::driver::input::VoIPAudioCatcher>();
     // TODO auto register ↓
