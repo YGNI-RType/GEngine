@@ -14,6 +14,8 @@ RenderWindow::RenderWindow(int width, int height, const std::string &title)
     , m_baseHeight(height)
     , m_width(width)
     , m_height(height)
+    , m_trueWidth(width)
+    , m_trueHeight(height)
     , m_title(title) {
 }
 
@@ -30,6 +32,8 @@ void RenderWindow::onStartEngine(gengine::system::event::StartEngine &e) {
 
     m_baseWidth = GetRenderWidth();
     m_baseHeight = GetRenderHeight();
+    std::cout << "Base width: " << m_baseWidth << std::endl;
+    std::cout << "Base Height: " << m_baseHeight << std::endl;
     m_width = m_baseWidth;
     m_height = m_baseHeight;
     publishEvent(gengine::system::event::WindowResized({m_width / m_baseWidth, m_height / m_baseHeight}));
@@ -43,23 +47,25 @@ void RenderWindow::onMainLoop(gengine::system::event::MainLoop &e) {
         m_width = GetRenderWidth();
         m_height = GetRenderHeight();
         publishEvent(gengine::system::event::WindowResized({m_width / m_baseWidth, m_height / m_baseHeight}));
+        m_trueWidth *= m_width / m_baseWidth;
+        m_trueHeight *= m_height / m_baseHeight;
     }
 }
 
 int RenderWindow::getWidth(void) const {
-    return m_width;
+    return m_trueWidth;
 }
 
 void RenderWindow::setWidth(int width) {
-    m_width = width;
+    m_trueWidth = width;
 }
 
 int RenderWindow::getHeight(void) const {
-    return m_height;
+    return m_trueHeight;
 }
 
 void RenderWindow::setHeight(int height) {
-    m_height = height;
+    m_trueHeight = height;
 }
 
 const std::string &RenderWindow::getTitle(void) const {

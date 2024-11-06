@@ -37,7 +37,7 @@ trap cleanup SIGINT
 sleep 1
 
 echo "Running client..."
-./poc3d_clientd 127.0.0.1
+./poc3d_clientd --ip 127.0.0.1
 
 kill $SERVER_PID 2>/dev/null
 kill $TEE_PID 2>/dev/null

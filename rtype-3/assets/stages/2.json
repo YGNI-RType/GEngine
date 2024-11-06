@@ -1,0 +1,28 @@
+{
+    "background": {
+        "sprite": {
+            "txtPath": "background2.png",
+            "src": {
+                "width": 1120,
+                "height": 207
+            }
+        },
+        "transform": {
+            "scale": {
+                "x": 3.48,
+                "y": 3.48
+            }
+        },
+        "velocity": {
+            "x": -3
+        }
+    },
+    "boss": {
+        "mobName": "red.json",
+        "spawnFactor": {
+            "x": 0.9,
+            "y": 0.5
+        },
+        "spawnDelay": 2000
+    }
+}

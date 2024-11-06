@@ -38,6 +38,7 @@ void Guess::guessWho(event::GuessEvent &e) {
 
     RayCollision collision = {0};
     Vector2 center = {wd.getWidth() / 2.f, wd.getHeight() / 2.f};
+
     Ray ray = GetMouseRay(center, draw.camera);
     auto &modelMan = getSystem<gengine::system::driver::output::ModelManager>();
     for (auto [entity, model, player, remote, transform] : gengine::Zip(models, players, remotes, transforms)) {
@@ -60,7 +61,7 @@ void Guess::guessWho(event::GuessEvent &e) {
 
         // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
     }
-}
+} // namespace poc3d::system
 void Guess::setMe(gengine::interface::event::ItsMe &e) {
     m_me = e.myUUID;
 }
