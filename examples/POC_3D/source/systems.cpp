@@ -55,9 +55,8 @@ struct V : public gengine::System<V>, public gengine::LocalSystem {
     void onCLi(gengine::system::event::CLINewInput &e) {
         if (!e.prompt.size())
             return;
-        if (!e.prompt[0].compare("voip-start")) {
+        if (!e.prompt[0].compare("voip-start"))
             publishEvent(gengine::system::event::driver::input::StartVoIP());
-        }
         if (!e.prompt[0].compare("voip-stop"))
             publishEvent(gengine::system::event::driver::input::EndVoIP());
     }
