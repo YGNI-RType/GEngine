@@ -101,7 +101,7 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<V>();
 
     // VOIP
-    r->registerSystem<gengine::interface::network::system::VoIPManager>();
+    r->registerSystem<gengine::interface::network::system::VoIPManager>(7.f);
     r->registerSystem<gengine::system::driver::output::VoIPAudio>();
     r->registerSystem<gengine::system::driver::input::VoIPAudioCatcher>();
     // TODO auto register ↓

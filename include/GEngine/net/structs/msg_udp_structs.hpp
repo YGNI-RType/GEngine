@@ -77,6 +77,7 @@ PACK(struct UDPG_VoIPSegment {
     uint64_t playerIndex1;
     uint64_t playerIndex2;
     uint16_t size;
+    float volume;
 });
 
 } // namespace Network

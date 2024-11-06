@@ -119,11 +119,10 @@ void VoIPAudio::init(void) {
 void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
     auto &client = Network::NET::getClient();
     size_t nbPackets = client.getSizeIncommingData(Network::SV_VOIP, false);
-    std::unordered_map<uint64_t, std::vector<std::vector<uint8_t>>> tempbuffer;
+    std::unordered_map<uint64_t, std::vector<float>> tempbuffer;
     for (size_t i = 0; i < nbPackets; i++) {
         size_t readCount = 0;
 
-        /* todo : not compressedsince segmented is hard */
         auto msg = Network::UDPMessage(Network::UDPMessage::HEADER, Network::SV_VOIP);
         if (!client.popIncommingData(msg, readCount, false))
             break;
@@ -132,22 +131,39 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
             Network::UDPG_VoIPSegment segment;
             msg.readContinuousData(segment, readCount);
 
-            /*todo:  playerid is a array<16>, uuid some sort */
             uint64_t playerId = segment.playerIndex1;
             size_t dataSize = segment.size;
+            float volume = segment.volume;
 
             std::vector<uint8_t> encodedData(dataSize);
             msg.readData(encodedData.data(), readCount, dataSize);
+
+            std::vector<float> decodedBuffer(FRAME_SIZE, 0.0f);
+            int decodedSize = opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
+            if (decodedSize < 0) {
+                std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
+                continue;
+            }
+
+            // Apply volume directly after decoding
+            for (size_t j = 0; j < decodedBuffer.size(); ++j) {
+                decodedBuffer[j] *= volume;
+            }
+
             if (tempbuffer.find(playerId) == tempbuffer.end())
-                tempbuffer[playerId] = std::vector<std::vector<uint8_t>>();
+                tempbuffer[playerId] = std::vector<float>();
 
-            tempbuffer[playerId].push_back(encodedData);
+            tempbuffer[playerId].insert(tempbuffer[playerId].end(), decodedBuffer.begin(), decodedBuffer.begin() + decodedSize);
         } while (readCount != msg.getSize());
+    }
 
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_inputBuffer.push(tempbuffer);
-            tempbuffer.clear();
+    {
+        std::lock_guard<std::mutex> lock(m_sndmutex);
+        for (auto &[playerId, buffer] : tempbuffer) {
+            if (m_outputBuffers.find(playerId) == m_outputBuffers.end())
+                m_outputBuffers[playerId] = std::vector<float>();
+
+            m_outputBuffers[playerId].insert(m_outputBuffers[playerId].end(), buffer.begin(), buffer.end());
         }
     }
 }
