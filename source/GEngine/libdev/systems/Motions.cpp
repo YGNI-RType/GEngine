@@ -17,8 +17,8 @@ void Motion2D::onGameLoop(event::RenderLoop &e) {
     auto &velocities = getComponents<component::Velocity2D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x * 3;
-        tr.pos.y += vel.y * 3;
+        tr.pos.x += vel.x;
+        tr.pos.y += vel.y;
     }
 }
 
@@ -30,9 +30,9 @@ void Motion3D::onGameLoop(event::GameLoop &e) {
     auto &velocities = getComponents<component::Velocity3D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x * 3;
-        tr.pos.y += vel.y * 3;
-        tr.pos.z += vel.z * 3;
+        tr.pos.x += vel.x;
+        tr.pos.y += vel.y;
+        tr.pos.z += vel.z;
     }
 }
 
