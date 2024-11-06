@@ -42,7 +42,7 @@
 
 #include "GEngine/libdev/System.hpp"
 
-struct V: gengine::System<V> {
+struct V : gengine::System<V> {
     void init(void) override {
         publishEvent(gengine::system::event::driver::input::StartVoIP());
     }
