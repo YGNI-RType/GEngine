@@ -50,6 +50,7 @@ void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Move
     auto &players = getComponents<component::Player>();
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
     auto &models = getComponents<gengine::component::driver::output::Model>();
+    auto &anims = getComponents<geg::component::io::Animation>();
 
     for (auto [entity, remote, player, velocity, transform] : gengine::Zip(remotes, players, velocities, transforms)) {
         if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
@@ -57,6 +58,13 @@ void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Move
         float yawRadians = (transform.rotation.y + 90) * 3.14f / 180.f;
         gengine::Vect3 forward = {cos(yawRadians), 0, -sin(yawRadians)};
         gengine::Vect3 right = {sin(yawRadians), 0, cos(yawRadians)};
+
+        if (e->state != event::Movement::STANDING && anims.contains(entity)) {
+            if (player.sprinting && anims.get(entity).trackName != "player.json/run")
+                setComponent(entity, geg::component::io::Animation("player.json/run", 0.03f));
+            if (!player.sprinting && anims.get(entity).trackName != "player.json/walk")
+                setComponent(entity, geg::component::io::Animation("player.json/walk", 0.03f));
+        }
 
         // Handle movement input
         switch (e->state) {
@@ -103,6 +111,8 @@ void PlayerMotion::movePlayer(gengine::interface::event::SharedEvent<event::Move
         case event::Movement::STANDING: {
             velocity.x = 0;
             velocity.z = 0;
+            if (anims.contains(entity) && anims.get(entity).trackName != "player.json/idle")
+                setComponent(entity, geg::component::io::Animation("player.json/idle", 0.03f));
             break;
         }
         }
@@ -160,6 +170,7 @@ void PlayerMotion::sprintPlayer(gengine::interface::event::SharedEvent<event::Sp
     for (auto [entity, remote, player] : gengine::Zip(remotes, players)) {
         if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
             continue;
+        player.sprinting = e->sprinting;
         if (e->sprinting)
             player.speed = player.defaultSpeed * 2;
         else

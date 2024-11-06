@@ -51,7 +51,7 @@ public:
                     geg::component::network::NetSend());
     }
 
-    void onMainLoop(geg::event::MainLoop &e);
+    void onMainLoop(geg::event::RenderLoop &e);
     void onSoundPlayed(gengine::interface::event::SharedEvent<gengine::system::event::driver::output::SoundPlayed> &e);
     void onMusic(gengine::system::event::driver::output::Music &e) {
         auto &musics = getComponents<gengine::component::driver::output::Music>();
@@ -67,7 +67,6 @@ public:
                 break;
             }
         }
-        std::cout << "music: " << getMusicComponent().musicId << std::endl;
     }
 
 protected:

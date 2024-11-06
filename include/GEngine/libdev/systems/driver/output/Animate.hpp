@@ -16,11 +16,11 @@
 #include <unordered_map>
 
 #include "GEngine/libdev/components/driver/output/Animation.hpp"
+#include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "GEngine/libdev/components/driver/output/Sprite.hpp"
 
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include <nlohmann/json.hpp>
@@ -49,6 +49,17 @@ private:
 class Animate
     : public System<Animate, component::driver::output::Sprite, component::driver::output::Animation, AnimationManager>,
       public LocalSystem {
+public:
+    void init(void) override;
+
+    void onGameLoop(gengine::system::event::GameLoop &e);
+
+private:
+};
+
+class AnimateModel : public System<AnimateModel, component::driver::output::Model, component::driver::output::Animation,
+                                   AnimationManager>,
+                     public LocalSystem {
 public:
     void init(void) override;
 

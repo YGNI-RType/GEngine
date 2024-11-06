@@ -14,9 +14,20 @@
 namespace poc3d::event {
 struct ChangePlayerModelEvent : public gengine::Event {
     Network::NetString<32> modelPath;
+    bool isAnimated;
+    Network::NetString<32> animPath;
+    float frameDuration;
 
     ChangePlayerModelEvent(const std::string &modelPath)
-        : modelPath(modelPath) {
+        : modelPath(modelPath)
+        , isAnimated(false) {
+    }
+
+    ChangePlayerModelEvent(const std::string &modelPath, const std::string &animPath, float frameDuration)
+        : modelPath(modelPath)
+        , isAnimated(true)
+        , animPath(animPath)
+        , frameDuration(frameDuration) {
     }
 };
 } // namespace poc3d::event

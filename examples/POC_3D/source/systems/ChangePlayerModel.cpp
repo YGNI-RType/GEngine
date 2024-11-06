@@ -24,6 +24,13 @@ void ChangePlayerModel::changePlayerModel(gengine::interface::event::SharedEvent
         if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
             continue;
         model.txtPath = e->modelPath;
+        if (e->isAnimated) {
+            setComponent(entity, geg::component::io::Animation(e->animPath, e->frameDuration));
+            model.isAnimated = true;
+        } else {
+            unsetComponent<geg::component::io::Animation>(entity);
+            model.isAnimated = false;
+        }
     }
 }
 } // namespace poc3d::system

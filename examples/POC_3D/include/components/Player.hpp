@@ -20,6 +20,7 @@ enum class PlayerState {
 struct Player : public gengine::Component<Player> {
     float speed;
     float defaultSpeed;
+    bool sprinting = false;
     bool isLocked = false;
 
     Player(float defaultSpeed = DEFAULT_SPEED)

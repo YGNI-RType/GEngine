@@ -56,13 +56,6 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
     spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
                 gengine::component::driver::output::Drawable(2),
                 gengine::component::driver::output::Model("antique_cabinet.glb"), geg::component::network::NetSend());
-    spawnEntity(component::Prop(), geg::component::Transform3D({20.0f, 0.0f, 0.0f}, {20, 20, 20}, {0, 0, 0}),
-                gengine::component::driver::output::Drawable(2),
-                gengine::component::driver::output::Model("coraline.glb"), geg::component::network::NetSend());
-    // spawnEntity(component::Prop(), geg::component::Transform3D({4.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
-    //             gengine::component::driver::output::Drawable(2),
-    //             gengine::component::driver::output::Model("props/mechanical_shark.glb"),
-    //             geg::component::network::NetSend());
 }
 
 void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &e) {
@@ -71,7 +64,8 @@ void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &
                 gengine::component::Transform3D({2.0f, 0.0f, 0.0f}, {scale, scale, scale},
                                                 {0, 0, 0}), // coraline_old {-90, 0, 180}
                 gengine::component::Velocity3D(0, 0, 0), gengine::component::driver::output::Drawable(2),
-                gengine::component::driver::output::Model("coraline.glb"),
+                gengine::component::driver::output::Model("player/", WHITE, true),
+                geg::component::io::Animation("player.json/walk", 0.03f),
                 gengine::interface::component::RemoteLocal(e.uuid), geg::component::network::NetSend());
     m_nbPlayer++;
 }

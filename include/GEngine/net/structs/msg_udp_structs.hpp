@@ -56,12 +56,10 @@ struct UDPG_MasterFragmentHeaderFrom {
 };
 
 /* the one from is the one receiving the fragment, he hasn't asked for it ! */
-PACK(struct UDPG_FragmentHeaderFrom
-     : AUDPG_FragmentHeader {
-         uint16_t receivedFragmentsMask; /* 0110 1100 */
-                                         /* 0  : Want this Fragment */
-                                         /* 1  : Ack this fragment */
-     });
+PACK(struct UDPG_FragmentHeaderFrom : AUDPG_FragmentHeader { uint16_t receivedFragmentsMask; });
+/* 0110 1100 */
+/* 0  : Want this Fragment */
+/* 1  : Ack this fragment */
 
 PACK(struct UDPG_FragmentHeaderTo {
     uint32_t idSequence;
@@ -78,6 +76,7 @@ PACK(struct UDPG_VoIPSegment {
     uint64_t playerIndex1;
     uint64_t playerIndex2;
     uint16_t size;
+    float volume;
 });
 
 } // namespace Network
