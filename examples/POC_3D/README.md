@@ -28,7 +28,7 @@ Welcome to **Prophunt**! This game was built with **GEngine**, a custom game eng
 
 ### Hunter Controls
 
-- **Left Click:** Shoot or interact with objects.
+- **Left Click:** Shoot to interact with props.
 
 ### Additional Commands
 
