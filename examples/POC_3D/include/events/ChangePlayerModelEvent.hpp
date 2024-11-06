@@ -20,6 +20,7 @@ struct ChangePlayerModelEvent : public gengine::Event {
     Network::NetString<32> animPath;
     float frameDuration;
     gengine::component::Transform3D transform = {gengine::Vect3{0, 0, 0}};
+    uuids::uuid playerUuid = uuids::uuid{};
 
     ChangePlayerModelEvent(const std::string &modelPath)
         : modelPath(modelPath)
@@ -53,6 +54,16 @@ struct ChangePlayerModelEvent : public gengine::Event {
         , isAnimated(true)
         , animPath(animPath)
         , frameDuration(frameDuration) {
+        transform = gengine::component::Transform3D({0, 0, 0}, scale);
+    }
+
+    ChangePlayerModelEvent(const std::string &modelPath, const std::string &animPath, float frameDuration,
+                           gengine::Vect3 scale, uuids::uuid playerUuid)
+        : modelPath(modelPath)
+        , isAnimated(true)
+        , animPath(animPath)
+        , frameDuration(frameDuration)
+        , playerUuid(playerUuid) {
         transform = gengine::component::Transform3D({0, 0, 0}, scale);
     }
 };

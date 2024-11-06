@@ -22,7 +22,8 @@ void ChangePlayerModel::changePlayerModel(gengine::interface::event::SharedEvent
     auto &transforms = getComponents<geg::component::Transform3D>();
 
     for (auto [entity, model, player, remote] : gengine::Zip(models, players, remotes)) {
-        if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
+        if ((remote.getUUIDBytes() != e.remoteUUID && remote.getUUIDBytes() != e->playerUuid) ||
+            (!e->playerUuid.is_nil() && remote.getUUIDBytes() == e.remoteUUID)) // check if its the same remote (zip)
             continue;
         model.txtPath = e->modelPath;
         if (transforms.contains(entity)) {

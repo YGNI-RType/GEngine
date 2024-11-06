@@ -30,14 +30,9 @@ Welcome to **Prophunt**! This game was built with **GEngine**, a custom game eng
 
 - **Left Click:** Shoot to interact with props.
 
-### Additional Commands
-
-- **R:** Reload weapon (if ammunition is limited).
-- **Tab:** View player list and current scores.
-
 ## How to Play
 
-The game has not built-in rules but here is a general guideline on how to play:
+The game has no built-in rules but here is a general guideline on how to play:
 
 ### Game Objective
 
