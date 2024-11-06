@@ -9,16 +9,16 @@
 
 namespace gengine::system {
 void Motion2D::init(void) {
-    subscribeToEvent<event::RenderLoop>(&Motion2D::onGameLoop);
+    subscribeToEvent<event::GameLoop>(&Motion2D::onGameLoop);
 }
 
-void Motion2D::onGameLoop(event::RenderLoop &e) {
+void Motion2D::onGameLoop(event::GameLoop &e) {
     auto &transforms = getComponents<component::Transform2D>();
     auto &velocities = getComponents<component::Velocity2D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x;
-        tr.pos.y += vel.y;
+        tr.pos.x += vel.x * 1.5f;
+        tr.pos.y += vel.y * 1.5f;
     }
 }
 
@@ -30,9 +30,9 @@ void Motion3D::onGameLoop(event::GameLoop &e) {
     auto &velocities = getComponents<component::Velocity3D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x;
-        tr.pos.y += vel.y;
-        tr.pos.z += vel.z;
+        tr.pos.x += vel.x * 1.5f;
+        tr.pos.y += vel.y * 1.5f;
+        tr.pos.z += vel.z * 1.5f;
     }
 }
 
