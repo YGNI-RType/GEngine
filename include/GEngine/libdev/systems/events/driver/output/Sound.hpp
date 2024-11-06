@@ -38,4 +38,12 @@ struct SoundPlayed : public Event {
         : soundId(soundId) {
     }
 };
+
+struct Music : public Event {
+    Music(const std::string &path)
+        : path(path) {
+    }
+
+    const std::string path;
+};
 } // namespace gengine::system::event::driver::output

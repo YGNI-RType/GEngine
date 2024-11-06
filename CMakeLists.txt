@@ -50,7 +50,7 @@ set_target_properties(GEngine_static PROPERTIES
 )
 
 find_package(raylib CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED) #TODO a supp
+find_package(glfw3 CONFIG REQUIRED)
 find_package(portaudio CONFIG REQUIRED)
 find_package(Opus REQUIRED)
 find_package(BZip2 REQUIRED)

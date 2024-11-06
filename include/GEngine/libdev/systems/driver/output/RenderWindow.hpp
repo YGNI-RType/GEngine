@@ -39,8 +39,8 @@ public:
     void setTitle(const std::string &title);
 
 private:
-    const int m_baseWidth;
-    const int m_baseHeight;
+    int m_baseWidth;
+    int m_baseHeight;
     float m_width;
     float m_height;
     std::string m_title;

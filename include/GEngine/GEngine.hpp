@@ -116,6 +116,8 @@ public:
      * It also registers the necessary game engine elements by calling the registerElements method.
      */
     static void init(int size, const char **argv) {
+        getArgsSize(size);
+        getArgs(argv);
         std::call_once(initFlag, [size, argv]() {
             instance.reset(new GEngine());
             instance->getLocal().setParams(argv, size);
@@ -172,6 +174,22 @@ public:
         return instance->m_remote;
     }
 
+    static size_t getArgsSize(size_t argsSize) {
+        static size_t _argsSize = 0;
+
+        if (argsSize)
+            _argsSize = argsSize;
+        return _argsSize;
+    }
+
+    static const char **getArgs(const char **args) {
+        static const char **_args = NULL;
+
+        if (args)
+            _args = args;
+        return _args;
+    }
+
 private:
     /**
      * @brief Private constructor to prevent direct instantiation.
@@ -213,3 +231,6 @@ private:
 // Initialize static members
 // std::unique_ptr<GEngine> GEngine::instance = nullptr;
 // std::once_flag GEngine::initFlag;
+
+#define GENGINE_ARGS_SIZE GEngine::getArgsSize(0)
+#define GENGINE_ARGS GEngine::getArgs(NULL)

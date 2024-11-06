@@ -71,12 +71,12 @@ void Collision2D::onGameLoop(event::GameLoop &e [[maybe_unused]]) {
             if (entity1HasSquare && entity2HasSquare) {
                 const auto &square1 = hitboxSquares.get(entity1);
                 const auto &square2 = hitboxSquares.get(entity2);
-                if (checkSquareCollision(square1, tr, square2, tr2.pos))
+                if (checkSquareCollision(square1, tr, square2, tr2))
                     publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasCircle && entity2HasCircle) {
                 const auto &circle1 = hitboxCircles.get(entity1);
                 const auto &circle2 = hitboxCircles.get(entity2);
-                if (checkCircleCollision(circle1, tr, circle2, tr2.pos))
+                if (checkCircleCollision(circle1, tr, circle2, tr2))
                     publishEvent(gengine::system::event::Collision(entity1, entity2));
             } else if (entity1HasSquare && entity2HasCircle) {
                 const auto &square = hitboxSquares.get(entity1);
