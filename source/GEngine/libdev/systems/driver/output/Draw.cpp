@@ -139,9 +139,13 @@ void DrawModel::onStartEngine(gengine::system::event::StartEngine &e) {
 
     shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
     int ambientLoc = GetShaderLocation(shader, "ambient");
-    SetShaderValue(shader, ambientLoc, (float[4]){0.1f, 0.1f, 0.1f, 1.0f}, SHADER_UNIFORM_VEC4);
+    float ambiantValue[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+    SetShaderValue(shader, ambientLoc, ambiantValue, SHADER_UNIFORM_VEC4);
 
+    // Vector3 lightPosRed = {1.16, 1.40, 4.76};
     lights[0] = CreateLight(LIGHT_POINT, (Vector3){1.16, 1.40, 4.76}, (Vector3){0, 0, 0}, RED, shader);
+
+    // Vector3 lightPosBlue = {6.8, 1.4, 4.5};
     lights[1] = CreateLight(LIGHT_POINT, (Vector3){6.8, 1.4, 4.5}, (Vector3){0, 0, 0}, BLUE, shader);
 }
 

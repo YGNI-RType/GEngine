@@ -5,7 +5,7 @@
 **  File        : Sound.hpp
 **  Create at   : 2024-10-15 05:14
 **  Author      : AUTHOR
-**  Description : This event is listened to natively by the SoundManager system
+**  Description : This event is listened to natively by the AudioManager system
                     which will launch the sound linked to the path passed as an
                     argument when it is triggered by this event.
 ** ════════════════════════════════════════════════════════════════════════════
