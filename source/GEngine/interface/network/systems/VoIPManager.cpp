@@ -11,15 +11,16 @@
 #include "GEngine/net/net_client.hpp"
 #include "GEngine/net/structs/msg_udp_structs.hpp"
 
-#include <iostream>
-#include <cmath>
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <iostream>
 #include <vector>
 
 namespace gengine::interface::network::system {
 
-VoIPManager::VoIPManager(float distance) : m_distance(distance) {
+VoIPManager::VoIPManager(float distance)
+    : m_distance(distance) {
 }
 
 void VoIPManager::init(void) {
@@ -36,19 +37,19 @@ float VoIPManager::calculateDistance(uuids::uuid c1, uuids::uuid c2) {
     Vect3 pos1;
     Vect3 pos2;
 
-    for (auto [entity, id, tranform]: gengine::Zip(remotes, tranforms)) {
+    for (auto [entity, id, tranform] : gengine::Zip(remotes, tranforms)) {
         if (id.getUUIDBytes() == c1)
             pos1 = tranform.pos;
         if (id.getUUIDBytes() == c2)
             pos2 = tranform.pos;
     }
-    return std::sqrt(std::pow(pos1.x - pos2.x, 2) + std::pow(pos1.y - pos2.y, 2));
+    return std::sqrt(std::pow(pos1.x - pos2.x, 2) + std::pow(pos1.z - pos2.z, 2));
 }
 
 void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
-    auto& clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
+    auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
 
-    for (auto& [remote, client] : clientsSys.getClients()) {
+    for (auto &[remote, client] : clientsSys.getClients()) {
         if (client.shouldDelete())
             continue;
 
@@ -60,19 +61,19 @@ void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
         std::vector<uint8_t> buffer(msg.getSize() - readCount);
         msg.readData(buffer.data(), readCount, buffer.size());
 
-        for (auto& [remoteDest, clientDest] : clientsSys.getClients()) {
+        for (auto &[remoteDest, clientDest] : clientsSys.getClients()) {
             if (clientDest.shouldDelete() || remote == remoteDest) // Ne pas envoyer au client lui-même
                 continue;
-
 
             // Calculer la distance entre le client source et le client destination
             float distance = calculateDistance(remote, remoteDest);
             // float volume = 1.0f / (1.0f + distance); // Exemple de calcul du volume
-            std::cout << distance << std::endl;
             // Préparer le segment VoIP avec le volume
             Network::UDPG_VoIPSegment segment = {
                 .size = static_cast<uint16_t>(buffer.size()),
-                .volume = static_cast<float>(m_distance ? std::clamp(m_distance - distance, 0.f, m_distance) / m_distance : 1) // Ajouter le volume au segment
+                .volume =
+                    static_cast<float>(m_distance ? std::clamp(m_distance - distance, 0.f, m_distance) / m_distance
+                                                  : 1) // Ajouter le volume au segment
             };
             std::memcpy(&segment.playerIndex1, remote.as_bytes().data(), 8);
             std::memcpy(&segment.playerIndex2, remote.as_bytes().data() + 8, 8);

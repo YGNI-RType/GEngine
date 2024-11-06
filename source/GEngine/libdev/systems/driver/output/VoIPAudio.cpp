@@ -139,21 +139,22 @@ void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
             msg.readData(encodedData.data(), readCount, dataSize);
 
             std::vector<float> decodedBuffer(FRAME_SIZE, 0.0f);
-            int decodedSize = opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
+            int decodedSize =
+                opus_decode_float(decoder, encodedData.data(), encodedData.size(), decodedBuffer.data(), FRAME_SIZE, 0);
             if (decodedSize < 0) {
                 std::cerr << "Opus decoding error: " << opus_strerror(decodedSize) << std::endl;
                 continue;
             }
 
             // Apply volume directly after decoding
-            for (size_t j = 0; j < decodedBuffer.size(); ++j) {
+            for (size_t j = 0; j < decodedBuffer.size(); ++j)
                 decodedBuffer[j] *= volume;
-            }
 
             if (tempbuffer.find(playerId) == tempbuffer.end())
                 tempbuffer[playerId] = std::vector<float>();
 
-            tempbuffer[playerId].insert(tempbuffer[playerId].end(), decodedBuffer.begin(), decodedBuffer.begin() + decodedSize);
+            tempbuffer[playerId].insert(tempbuffer[playerId].end(), decodedBuffer.begin(),
+                                        decodedBuffer.begin() + decodedSize);
         } while (readCount != msg.getSize());
     }
 
