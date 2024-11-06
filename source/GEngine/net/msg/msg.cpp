@@ -66,7 +66,8 @@ void AMessage::readDataCompressed(void *data, size_t &offset, std::size_t size) 
         throw MsgError("Message should be compressed");
 
     if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize())
-        throw MsgError("Message overflow when reading");
+        throw MsgError("Message overflow when reading: SIZE=" +
+                       std::to_string(m_curSize + offset + getBitBuffer() / 8));
     m_huffman.decompressContinuous(*this, offset, (byte_t *)data, size);
 }
 

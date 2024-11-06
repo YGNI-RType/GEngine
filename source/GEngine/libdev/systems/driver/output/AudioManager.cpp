@@ -57,7 +57,7 @@ const Sound &AudioManager::get(const std::string &path) {
     return sound->second.second;
 }
 
-void AudioManager::onMainLoop(geg::event::MainLoop &e) {
+void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
     auto &sounds = getComponents<gengine::component::driver::output::Sound>();
     auto &musics = getComponents<gengine::component::driver::output::Music>();
 
@@ -141,7 +141,7 @@ AudioManagerLocal::AudioManagerLocal(const std::string &soundFolder, const std::
 void AudioManagerLocal::init(void) {
     subscribeToEvent<gengine::system::event::StartEngine>(&AudioManager::onStartEngine);
     subscribeToEvent<gengine::system::event::StopEngine>(&AudioManager::onStopEngine);
-    subscribeToEvent<geg::event::MainLoop>(&AudioManager::onMainLoop);
+    subscribeToEvent<geg::event::RenderLoop>(&AudioManager::onMainLoop);
 }
 
 AudioManagerRemote::AudioManagerRemote(const std::string &soundFolder, const std::string &musicFolder)

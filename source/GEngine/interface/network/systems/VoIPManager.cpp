@@ -16,10 +16,10 @@
 namespace gengine::interface::network::system {
 
 void VoIPManager::init(void) {
-    subscribeToEvent<gengine::system::event::GameLoop>(&VoIPManager::onGameLoop);
+    subscribeToEvent<gengine::system::event::MainLoop>(&VoIPManager::onMainLoop);
 }
 
-void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
+void VoIPManager::onMainLoop(gengine::system::event::MainLoop &) {
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
 
     for (auto &[remote, client] : clientsSys.getClients()) {

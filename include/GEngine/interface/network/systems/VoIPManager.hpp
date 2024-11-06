@@ -10,7 +10,7 @@
 #include "GEngine/BaseEngine.hpp"
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/GameLoop.hpp"
+#include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
@@ -25,7 +25,7 @@ class VoIPManager : public System<VoIPManager, interface::component::RemoteLocal
 
 public:
     void init(void) override;
-    void onGameLoop(gengine::system::event::GameLoop &);
+    void onMainLoop(gengine::system::event::MainLoop &);
 };
 
 } // namespace gengine::interface::network::system
