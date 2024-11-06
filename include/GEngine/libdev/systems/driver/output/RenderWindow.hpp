@@ -43,6 +43,8 @@ private:
     int m_baseHeight;
     float m_width;
     float m_height;
+    int m_trueWidth;
+    int m_trueHeight;
     std::string m_title;
 };
 } // namespace gengine::system::driver::output
