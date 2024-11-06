@@ -108,7 +108,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
             } // TODO cleaner
             msg.stopCompressingSegment(false);
             msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
-
+            std::cout << "SEND:" << msg.getSize() << std::endl;
             if (!server.isRunning())
                 continue;
             client.getNet()->pushData(msg, true);
