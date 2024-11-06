@@ -13,8 +13,8 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
+#include "GEngine/libdev/systems/events/RenderLoop.hpp"
 
 #include <atomic>
 #include <mutex>
