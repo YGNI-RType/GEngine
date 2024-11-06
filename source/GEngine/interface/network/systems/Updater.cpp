@@ -47,7 +47,7 @@ int getNthBit(uint8_t byte, int n) {
 
 void Updater::handleSnapshotMsg(Network::UDPMessage &msg, size_t readCount) {
     int nbComp = m_localWorld.size();
-    std::cout <<  "RECV:" << msg.getSize() << std::endl;
+    // std::cout <<  "RECV:" << msg.getSize() << std::endl;
     uint32_t nbEntity;
     msg.readContinuousData(nbEntity, readCount);
     msg.startCompressingSegment(true);
