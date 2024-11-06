@@ -29,9 +29,9 @@ void InputsToGameEvents::init(void) {
 
     subscribeToEvent<geg::event::io::KeyOneEvent>(&InputsToGameEvents::setPlayerModelCoraline);
     subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelBeer);
-    subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
-    subscribeToEvent<geg::event::io::KeyFourEvent>(&InputsToGameEvents::setPlayerModelLamp);
-    subscribeToEvent<geg::event::io::KeyFiveEvent>(&InputsToGameEvents::setPlayerModelStick);
+    // subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
+    // subscribeToEvent<geg::event::io::KeyFourEvent>(&InputsToGameEvents::setPlayerModelLamp);
+    // subscribeToEvent<geg::event::io::KeyFiveEvent>(&InputsToGameEvents::setPlayerModelStick);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
