@@ -21,7 +21,7 @@
 
 namespace poc3d::system {
 class ChangePlayerModel : public gengine::System<ChangePlayerModel, gengine::interface::component::RemoteLocal,
-                                                 geg::component::io::Animation,
+                                                 geg::component::io::Animation, geg::component::Transform3D,
                                                  gengine::component::driver::output::Model, component::Player> {
 public:
     void init(void) override;

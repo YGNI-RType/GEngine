@@ -38,4 +38,7 @@ void GEngineDeclareComponents(Registry *r) {
 
     r->registerComponent<gengine::interface::component::RemoteLocal>();
     r->registerComponent<geg::component::network::NetSend>();
+
+    r->registerComponent<gengine::component::driver::output::Sound>();
+    r->registerComponent<gengine::component::driver::output::Music>();
 }

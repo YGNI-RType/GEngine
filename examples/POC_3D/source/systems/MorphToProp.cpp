@@ -16,6 +16,7 @@
 #include "Constants.hpp"
 
 #include "events/ChangePlayerModelEvent.hpp"
+#include "events/ResetPlayerRotationCameraEvent.hpp"
 
 namespace poc3d::system {
 void MorphToProp::init(void) {
@@ -36,8 +37,10 @@ void MorphToProp::morphPlayer(event::MorphToPropEvent &e) {
     RayCollision collision = {0};
     for (auto [entity, prop, model, transform] : gengine::Zip(props, models, transforms)) {
         collision = gengine::GetRayCollisionModel(ray, modelMan.get(model.txtPath), transform);
-        if (collision.hit)
-            publishEvent(event::ChangePlayerModelEvent(model.txtPath));
+        if (collision.hit) {
+            publishEvent(event::ChangePlayerModelEvent(model.txtPath, transform));
+            publishEvent(event::ResetPlayerRotationCameraEvent());
+        }
     }
 }
 } // namespace poc3d::system

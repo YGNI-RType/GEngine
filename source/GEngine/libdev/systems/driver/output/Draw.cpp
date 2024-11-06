@@ -139,11 +139,12 @@ void DrawModel::onStartEngine(gengine::system::event::StartEngine &e) {
 
     shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
     int ambientLoc = GetShaderLocation(shader, "ambient");
-    float ambiantValue[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+    float ambiantValue[4] = {0.2f, 0.2f, 0.2f, 1.0f};
     SetShaderValue(shader, ambientLoc, ambiantValue, SHADER_UNIFORM_VEC4);
 
     lights[0] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
-    lights[1] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
+    lights[1] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
+    lights[2] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
 }
 
 void DrawModel::onStopEngine(gengine::system::event::StopEngine &e) {
@@ -182,10 +183,10 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
             model.materials[i].shader = shader;
 
         ::DrawModel(model, {0, 0, 0}, 1, color);
-        BoundingBox box = TransformBoundingBox(GetMeshBoundingBox(model.meshes[0]), model.transform);
 
         EndShaderMode();
-        ::DrawBoundingBox(box, RED);
+        // BoundingBox box = TransformBoundingBox(GetMeshBoundingBox(model.meshes[0]), model.transform);
+        // ::DrawBoundingBox(box, RED);
         EndMode3D();
 
         ::DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +

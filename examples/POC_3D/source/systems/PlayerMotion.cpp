@@ -26,6 +26,7 @@ void PlayerMotion::init(void) {
     subscribeToEvent<gengine::interface::event::SharedEvent<event::ChangeCameraMode>>(
         &PlayerMotion::changeCameraModePlayer);
     subscribeToEvent<gengine::interface::event::SharedEvent<event::Sprint>>(&PlayerMotion::sprintPlayer);
+    subscribeToEvent<gengine::interface::event::SharedEvent<event::Crouch>>(&PlayerMotion::crouchPlayer);
     subscribeToEvent<gengine::interface::event::SharedEvent<event::LockPlayerEvent>>(&PlayerMotion::lockPlayer);
 }
 
@@ -178,6 +179,20 @@ void PlayerMotion::sprintPlayer(gengine::interface::event::SharedEvent<event::Sp
     }
 }
 
+void PlayerMotion::crouchPlayer(gengine::interface::event::SharedEvent<event::Crouch> &e) {
+    auto &players = getComponents<component::Player>();
+    auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
+
+    for (auto [entity, remote, player] : gengine::Zip(remotes, players)) {
+        if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
+            continue;
+        if (e->crouching)
+            player.speed = player.defaultSpeed / 4;
+        else
+            player.speed = player.defaultSpeed;
+    }
+}
+
 void PlayerMotion::lockPlayer(gengine::interface::event::SharedEvent<event::LockPlayerEvent> &e) {
     auto &players = getComponents<component::Player>();
     auto &remotes = getComponents<gengine::interface::component::RemoteLocal>();
@@ -185,6 +200,11 @@ void PlayerMotion::lockPlayer(gengine::interface::event::SharedEvent<event::Lock
         if (remote.getUUIDBytes() != e.remoteUUID) // check if its the same remote (zip)
             continue;
         player.isLocked = e->locked;
+        if (e->locked)
+            unsetComponent<gengine::component::Velocity3D>(entity);
+        else
+            setComponent(entity, gengine::component::Velocity3D(0, 0, 0));
+        // unsetComponent<geg::component::Acceleration3D>(entity);
     }
 }
 } // namespace poc3d::system

@@ -53,9 +53,53 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
                 geg::component::network::NetSend());
 
     // Props
-    spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {1, 1, 1}, {0, 0, 0}),
+    float scale = 1;
+    spawnEntity(component::Prop(), geg::component::Transform3D({-2.0f, 0.0f, 0.0f}, {scale, scale, scale}, {0, 0, 0}),
                 gengine::component::driver::output::Drawable(2),
-                gengine::component::driver::output::Model("antique_cabinet.glb"), geg::component::network::NetSend());
+                gengine::component::driver::output::Model("props/antique_cabinet.glb"),
+                geg::component::network::NetSend());
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> randomIndex(0, propsList.size() - 1);
+    std::uniform_real_distribution<float> randomX(-1.0f, 11.0f);
+    std::uniform_real_distribution<float> randomZ(-5.0f, 7.0f);
+    std::uniform_real_distribution<float> randomRotation(0.f, 360.f);
+
+    for (int i = 0; i < PROPS_COUNT; i++) {
+        size_t newIndex = randomIndex(gen);
+
+        scale = propsList[newIndex].second;
+        spawnEntity(component::Prop(),
+                    geg::component::Transform3D({randomX(gen), 0.0f, randomZ(gen)}, {scale, scale, scale},
+                                                {0, randomRotation(gen), 0}),
+                    gengine::component::driver::output::Drawable(2),
+                    gengine::component::driver::output::Model("props/" + propsList[newIndex].first),
+                    geg::component::network::NetSend());
+    }
+
+    // Car
+    scale = 0.03;
+    spawnEntity(component::Prop(), geg::component::Transform3D({-2.5f, 0.0f, 2.0f}, {scale, scale, scale}, {90, 0, 56}),
+                gengine::component::driver::output::Drawable(2),
+                gengine::component::driver::output::Model("props/voiture_cassee.glb"),
+                geg::component::network::NetSend());
+
+    // Surprise
+    scale = 0.6;
+    spawnEntity(
+        component::Prop(), geg::component::Transform3D({1.38f, 0.0f, -5.5f}, {scale, scale, scale}, {-90, 0, 0}),
+        gengine::component::driver::output::Drawable(2),
+        gengine::component::driver::output::Model("props/skibidi_toilet.glb"), geg::component::network::NetSend());
+
+    // Chair
+    scale = 0.02;
+    spawnEntity(
+        component::Prop(), geg::component::Transform3D({1.38f, 0.0f, -4.0f}, {scale, scale, scale}, {90, 0, 0}),
+        gengine::component::driver::output::Drawable(2),
+        gengine::component::driver::output::Model("props/chaise.glb"), geg::component::network::NetSend());
+
+    publishEvent(gengine::system::event::driver::output::Music("ambiance.mp3"));
 }
 
 void system::Start::onNewRemoteLocal(gengine::interface::event::NewRemoteLocal &e) {
