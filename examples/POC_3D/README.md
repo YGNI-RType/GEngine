@@ -7,6 +7,7 @@ Welcome to **Prophunt**! This game was built with **GEngine**, a custom game eng
 - **Move around** in an immersive 3D environment.
 - **Proximity Chat**: Talk to other players near you. (put `voip-start` in the console to start voice chat)
 - **Disguise**: Props can transform into different objects to blend in with the environment.
+- **Hunt**: Hunters can search for hidden Props and eliminate them.
 
 ## Controls
 
@@ -14,6 +15,8 @@ Welcome to **Prophunt**! This game was built with **GEngine**, a custom game eng
 
 - **W (or Z), A (or Q), S, D:** Move around the environment.
 - **Mouse:** Control camera movement to look around.
+- **Left Control:** Sprint to move faster.
+- **C:** Crouch to hide easier.
 - **F5:** Toggle camera mode between first-person, third-person, self look third-person, and free look.
 - **1:** Switch to Hunter
 
@@ -53,7 +56,6 @@ The goal of Prophunt is simple: **players are split into two teams, Hunters and 
 4. **Winning Conditions**:
    - **Props win** if at least one Prop remains hidden when time runs out.
    - **Hunters win** if all Props are eliminated before time expires.
-
 
 ## Technical Information
 
