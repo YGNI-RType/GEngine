@@ -13,8 +13,8 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/driver/input/VoIP.hpp"
 
 #include <vector>
