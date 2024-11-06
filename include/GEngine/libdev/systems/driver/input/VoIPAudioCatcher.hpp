@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 #include "GEngine/libdev/systems/events/driver/input/VoIP.hpp"
 
@@ -27,7 +27,7 @@ public:
 
     void init(void) override;
 
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onMainLoop(gengine::system::event::RenderLoop &e);
     void onStartVoIP(gengine::system::event::driver::input::StartVoIP &);
     void onEndVoIP(gengine::system::event::driver::input::EndVoIP &);
 

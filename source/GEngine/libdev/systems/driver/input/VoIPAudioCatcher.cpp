@@ -51,7 +51,7 @@ static int captureCallback(const void *inputBuffer, void *outputBuffer, unsigned
 void VoIPAudioCatcher::init(void) {
     subscribeToEvent<gengine::system::event::driver::input::StartVoIP>(&VoIPAudioCatcher::onStartVoIP);
     subscribeToEvent<gengine::system::event::driver::input::EndVoIP>(&VoIPAudioCatcher::onEndVoIP);
-    subscribeToEvent<gengine::system::event::MainLoop>(&VoIPAudioCatcher::onMainLoop);
+    subscribeToEvent<gengine::system::event::RenderLoop>(&VoIPAudioCatcher::onMainLoop);
 
     /** Port Audio + Opus **/
     int iErr;
@@ -76,7 +76,7 @@ void VoIPAudioCatcher::init(void) {
         throw std::runtime_error("PortAudio Open stream error: " + std::string(Pa_GetErrorText(paErr)));
 }
 
-void VoIPAudioCatcher::onMainLoop(gengine::system::event::MainLoop &e) {
+void VoIPAudioCatcher::onMainLoop(gengine::system::event::RenderLoop &e) {
     if (m_captureBuffer.empty())
         return;
 

@@ -76,7 +76,7 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
 //////////////
 
 void VoIPAudio::init(void) {
-    subscribeToEvent<gengine::system::event::MainLoop>(&VoIPAudio::onMainLoop);
+    subscribeToEvent<gengine::system::event::RenderLoop>(&VoIPAudio::onMainLoop);
 
     /** Port Audio + Opus **/
 
@@ -116,7 +116,7 @@ void VoIPAudio::init(void) {
     m_soundThread = std::thread([this]() { processSoundInput(); });
 }
 
-void VoIPAudio::onMainLoop(gengine::system::event::MainLoop &e) {
+void VoIPAudio::onMainLoop(gengine::system::event::RenderLoop &e) {
     auto &client = Network::NET::getClient();
     size_t nbPackets = client.getSizeIncommingData(Network::SV_VOIP, false);
     std::unordered_map<uint64_t, std::vector<std::vector<uint8_t>>> tempbuffer;

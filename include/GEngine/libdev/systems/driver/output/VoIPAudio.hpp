@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEngine/libdev/System.hpp"
-#include "GEngine/libdev/systems/events/MainLoop.hpp"
+#include "GEngine/libdev/systems/events/RenderLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
 #include <atomic>
@@ -28,7 +28,7 @@ class VoIPAudio : public gengine::System<VoIPAudio>, public LocalSystem {
 public:
     ~VoIPAudio() override;
 
-    void onMainLoop(gengine::system::event::MainLoop &e);
+    void onMainLoop(gengine::system::event::RenderLoop &e);
 
     void init(void) override;
 

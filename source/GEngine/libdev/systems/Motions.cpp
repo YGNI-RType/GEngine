@@ -9,10 +9,10 @@
 
 namespace gengine::system {
 void Motion2D::init(void) {
-    subscribeToEvent<event::GameLoop>(&Motion2D::onGameLoop);
+    subscribeToEvent<event::RenderLoop>(&Motion2D::onGameLoop);
 }
 
-void Motion2D::onGameLoop(event::GameLoop &e) {
+void Motion2D::onGameLoop(event::RenderLoop &e) {
     auto &transforms = getComponents<component::Transform2D>();
     auto &velocities = getComponents<component::Velocity2D>();
 

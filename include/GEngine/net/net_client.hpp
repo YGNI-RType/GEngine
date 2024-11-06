@@ -172,8 +172,8 @@ private:
     connectionState m_connectionState = CON_UNINITIALIZED;
 
     /* todo : change based on average size */
-    NetQueue<UDPMessage, 4, 1400> m_packInData;     /* todo : get the size of Usercmd + own voip / */
-    NetQueue<UDPMessage, 8, 1400> m_packOutData;    /* voiceip etc.. */
+    NetQueue<UDPMessage, 24, 1400> m_packInData;     /* todo : get the size of Usercmd + own voip / */
+    NetQueue<UDPMessage, 32, 1400> m_packOutData;    /* voiceip etc.. */
     NetQueue<UDPMessage, 1, 17000> m_packOutDataAck; /* snapshot */
 
     NetQueueHeap<TCPMessage, 5> m_tcpIn;
