@@ -14,7 +14,6 @@
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 #include "GEngine/libdev/systems/driver/output/FontManager.hpp"
 #include "GEngine/libdev/systems/driver/output/RenderWindow.hpp"
-#include "GEngine/libdev/systems/driver/output/SoundManager.hpp"
 #include "GEngine/libdev/systems/driver/output/TextureManager.hpp"
 
 #include "Constants.hpp"
@@ -51,13 +50,13 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::system::driver::output::DrawCircle>();
 
     r->registerSystem<gengine::system::driver::output::TextureManager>("../assets/sprites");
-    r->registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
+    // r->registerSystem<gengine::system::driver::output::FontManager>("../assets/fonts");
     r->registerSystem<gengine::system::driver::input::KeyboardCatcher>();
     r->registerSystem<gengine::system::driver::input::MouseCatcher>();
-    r->registerSystem<gengine::system::driver::output::SoundManager>("../assets/sounds");
     r->registerSystem<gengine::system::driver::output::ModelManager>("../assets/models");
     r->registerSystem<geg::system::io::AnimationManager>("../assets/animations");
     r->registerSystem<gengine::system::driver::output::Animate>();
+    r->registerSystem<gengine::system::driver::output::AnimateModel>();
 
     r->registerSystem<gengine::system::Motion2D>();
     r->registerSystem<gengine::system::Motion3D>();

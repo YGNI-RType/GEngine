@@ -12,6 +12,8 @@
 #include "GEngine/libdev/System.hpp"
 #include "GEngine/libdev/Systems.hpp"
 
+#include "GEngine/libdev/Components.hpp"
+
 #include <raylib.h>
 
 namespace poc3d::system {

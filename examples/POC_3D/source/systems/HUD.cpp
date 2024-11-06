@@ -30,9 +30,10 @@ void Crossair::onEvent(gengine::system::event::StartEngine &e) {
 // F3 Debug Menu
 
 // DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
-//                        std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
-//                .c_str(),
-//            10, 10, 20, WHITE);
+// std::to_string(camera.position.y) +
+//                      " " + std::to_string(camera.position.z))
+//              .c_str(),
+//          10, 10, 20, WHITE);
 // DrawText(std::string("Camera target: " + std::to_string(camera.target.x) + " " +
 //                        std::to_string(camera.target.y) + " " + std::to_string(camera.target.z))
 //                .c_str(),

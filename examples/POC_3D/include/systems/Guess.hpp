@@ -9,6 +9,7 @@
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
 #include "GEngine/libdev/components/Transforms.hpp"
+#include "GEngine/libdev/components/driver/output/Animation.hpp"
 #include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "components/Player.hpp"
 
@@ -26,7 +27,7 @@
 
 namespace poc3d::system {
 class Guess
-    : public gengine::System<Guess, gengine::interface::component::RemoteLocal,
+    : public gengine::System<Guess, gengine::interface::component::RemoteLocal, geg::component::io::Animation,
                              gengine::component::driver::output::Model, geg::component::Transform3D, component::Player,
                              gengine::system::driver::output::DrawModel, gengine::system::driver::output::ModelManager,
                              gengine::system::driver::output::RenderWindow>,

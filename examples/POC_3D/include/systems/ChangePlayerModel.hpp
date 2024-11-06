@@ -8,6 +8,7 @@
 #pragma once
 
 #include "GEngine/interface/components/RemoteLocal.hpp"
+#include "GEngine/libdev/components/driver/output/Animation.hpp"
 #include "GEngine/libdev/components/driver/output/Model.hpp"
 #include "components/Player.hpp"
 
@@ -20,6 +21,7 @@
 
 namespace poc3d::system {
 class ChangePlayerModel : public gengine::System<ChangePlayerModel, gengine::interface::component::RemoteLocal,
+                                                 geg::component::io::Animation,
                                                  gengine::component::driver::output::Model, component::Player> {
 public:
     void init(void) override;

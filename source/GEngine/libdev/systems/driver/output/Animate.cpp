@@ -58,6 +58,53 @@ void Animate::onGameLoop(gengine::system::event::GameLoop &e) {
     }
 }
 
+void AnimateModel::init(void) {
+    subscribeToEvent<gengine::system::event::GameLoop>(&AnimateModel::onGameLoop);
+}
+
+void AnimateModel::onGameLoop(gengine::system::event::GameLoop &e) {
+    auto &animations = getComponents<component::driver::output::Animation>();
+    auto &models = getComponents<component::driver::output::Model>();
+
+    auto &animMan = getSystem<AnimationManager>();
+    for (auto [entity, anim, model] : Zip(animations, models)) {
+        anim.currentTime += e.deltaTime / 1000.f;
+        if (anim.currentTime < anim.frameDuration)
+            continue;
+        anim.currentTime -= anim.frameDuration; // while ?
+        auto &track = animMan.getAnimationTrack(anim.trackName.c_str());
+        int currentframe = track.frames[anim.currentFrameIndex];
+        switch (anim.getPlaybackMode()) {
+        case ATrack::PlaybackMode::Forward:
+            if (anim.currentFrameIndex == track.frames.size() - 1)
+                if (track.looping)
+                    anim.currentFrameIndex = 0;
+                else
+                    anim.currentFrameIndex = track.frames.size() - 1;
+            else
+                anim.currentFrameIndex++;
+            break;
+        case ATrack::PlaybackMode::Reverse:
+            if (anim.currentFrameIndex == 0)
+                if (track.looping)
+                    anim.currentFrameIndex = track.frames.size() - 1;
+                else
+                    anim.currentFrameIndex = 0;
+            else
+                anim.currentFrameIndex--;
+            break;
+        case ATrack::PlaybackMode::Idling:
+            if (anim.currentFrameIndex < track.idleFrameIdx)
+                anim.currentFrameIndex++;
+            else if (anim.currentFrameIndex > track.idleFrameIdx)
+                anim.currentFrameIndex--;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 AnimationManager::AnimationManager(const std::string &folder)
     : m_folder(folder) {
 }

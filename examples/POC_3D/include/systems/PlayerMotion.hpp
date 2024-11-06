@@ -31,10 +31,11 @@
 #include "GEngine/libdev/systems/driver/output/Draw.hpp"
 
 namespace poc3d::system {
-class PlayerMotion : public gengine::System<PlayerMotion, gengine::interface::component::RemoteLocal,
-                                            gengine::component::Velocity3D, gengine::component::driver::output::Model,
-                                            geg::component::Transform3D, geg::component::Acceleration3D,
-                                            component::Player, gengine::system::driver::output::DrawModel> {
+class PlayerMotion
+    : public gengine::System<PlayerMotion, gengine::interface::component::RemoteLocal, gengine::component::Velocity3D,
+                             gengine::component::driver::output::Model, geg::component::Transform3D,
+                             geg::component::Acceleration3D, geg::component::io::Animation, component::Player,
+                             gengine::system::driver::output::DrawModel> {
 public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);

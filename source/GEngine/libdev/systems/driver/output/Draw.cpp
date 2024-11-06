@@ -47,9 +47,9 @@ void Draw::onWindowResized(gengine::system::event::WindowResized &e) {
 }
 
 void Draw::onBeginDraw(gengine::system::event::BeginDraw &e) {
-    // BeginDrawing();
     ClearBackground(e.clear);
 }
+
 void Draw::onEndDraw(gengine::system::event::EndDraw &e) {
     rlDrawRenderBatchActive();
     SwapScreenBuffer();
@@ -129,6 +129,25 @@ void DrawCircle::onDraw(gengine::system::event::Draw &e) {
 // 3D Rendering
 void DrawModel::init(void) {
     subscribeToEvent<gengine::system::event::Draw>(&DrawModel::onDraw);
+    subscribeToEvent<gengine::system::event::StartEngine>(&DrawModel::onStartEngine);
+    subscribeToEvent<gengine::system::event::StopEngine>(&DrawModel::onStopEngine);
+}
+
+void DrawModel::onStartEngine(gengine::system::event::StartEngine &e) {
+    shader =
+        LoadShader(TextFormat("../assets/shaders/lighting.vs", 330), TextFormat("../assets/shaders/lighting.fs", 330));
+
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    float ambiantValue[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+    SetShaderValue(shader, ambientLoc, ambiantValue, SHADER_UNIFORM_VEC4);
+
+    lights[0] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
+    lights[1] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
+}
+
+void DrawModel::onStopEngine(gengine::system::event::StopEngine &e) {
+    UnloadShader(shader);
 }
 
 void DrawModel::onDraw(gengine::system::event::Draw &e) {
@@ -137,18 +156,42 @@ void DrawModel::onDraw(gengine::system::event::Draw &e) {
 
     if (models.contains(e.entity) && transforms.contains(e.entity)) {
         auto &modelMan = getSystem<ModelManager>();
-        auto &[path, color] = models.get(e.entity);
+        auto &[path, color, isAnimated] = models.get(e.entity);
         auto &transform = transforms.get(e.entity);
+        auto &anims = getComponents<component::driver::output::Animation>();
+
+        float cameraPos[3] = {camera.position.x, camera.position.y, camera.position.z};
+        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
 
         BeginMode3D(camera);
-        Model model = modelMan.get(path.c_str());
+        BeginShaderMode(shader);
+        std::string fullPath = path;
+        if (isAnimated && anims.contains(e.entity)) {
+            auto &anim = anims.get(e.entity);
+            std::string animName = anim.trackName;
+            size_t frameIndex = anim.currentFrameIndex;
+
+            fullPath += animName.substr(animName.find_last_of("/") + 1) + "/";
+            if (frameIndex + 1 < 10)
+                fullPath += "0";
+            fullPath += std::to_string(frameIndex + 1) + ".obj";
+        }
+        Model model = modelMan.get(fullPath.c_str());
         setModelTransform(model, transform);
+        for (int i = 0; i < model.materialCount; i++)
+            model.materials[i].shader = shader;
 
         ::DrawModel(model, {0, 0, 0}, 1, color);
         BoundingBox box = TransformBoundingBox(GetMeshBoundingBox(model.meshes[0]), model.transform);
 
+        EndShaderMode();
         ::DrawBoundingBox(box, RED);
         EndMode3D();
+
+        ::DrawText(std::string("Camera position: " + std::to_string(camera.position.x) + " " +
+                               std::to_string(camera.position.y) + " " + std::to_string(camera.position.z))
+                       .c_str(),
+                   10, 10, 20, WHITE);
     }
 }
 } // namespace gengine::system::driver::output
