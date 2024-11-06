@@ -46,7 +46,6 @@ float VoIPManager::calculateDistance(uuids::uuid c1, uuids::uuid c2) {
     return std::sqrt(std::pow(pos1.x - pos2.x, 2) + std::pow(pos1.z - pos2.z, 2));
 }
 
-
 void VoIPManager::onMainLoop(gengine::system::event::MainLoop &) {
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
 
