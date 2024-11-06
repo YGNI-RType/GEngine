@@ -56,7 +56,6 @@ struct V : public gengine::System<V>, public gengine::LocalSystem {
         if (!e.prompt.size())
             return;
         if (!e.prompt[0].compare("voip-start")) {
-            std::cout << "start" << std::endl;
             publishEvent(gengine::system::event::driver::input::StartVoIP());
         }
         if (!e.prompt[0].compare("voip-stop"))
