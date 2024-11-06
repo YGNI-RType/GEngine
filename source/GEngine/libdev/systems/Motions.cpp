@@ -7,6 +7,8 @@
 
 #include "GEngine/libdev/systems/Motions.hpp"
 
+#include "GEngine/libdev/Constants.hpp"
+
 namespace gengine::system {
 void Motion2D::init(void) {
     subscribeToEvent<event::GameLoop>(&Motion2D::onGameLoop);
@@ -17,8 +19,8 @@ void Motion2D::onGameLoop(event::GameLoop &e) {
     auto &velocities = getComponents<component::Velocity2D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x;
-        tr.pos.y += vel.y;
+        tr.pos.x += vel.x * TPS_MAGIC_NUMBER;
+        tr.pos.y += vel.y * TPS_MAGIC_NUMBER;
     }
 }
 
@@ -30,9 +32,9 @@ void Motion3D::onGameLoop(event::GameLoop &e) {
     auto &velocities = getComponents<component::Velocity3D>();
 
     for (auto [entity, tr, vel] : Zip(transforms, velocities)) {
-        tr.pos.x += vel.x;
-        tr.pos.y += vel.y;
-        tr.pos.z += vel.z;
+        tr.pos.x += vel.x * TPS_MAGIC_NUMBER;
+        tr.pos.y += vel.y * TPS_MAGIC_NUMBER;
+        tr.pos.z += vel.z * TPS_MAGIC_NUMBER;
     }
 }
 

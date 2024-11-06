@@ -24,7 +24,7 @@ VoIPManager::VoIPManager(float distance)
 }
 
 void VoIPManager::init(void) {
-    subscribeToEvent<gengine::system::event::GameLoop>(&VoIPManager::onGameLoop);
+    subscribeToEvent<gengine::system::event::MainLoop>(&VoIPManager::onMainLoop);
 }
 
 // Fonction pour calculer la distance entre deux clients (exemple simple)
@@ -46,7 +46,8 @@ float VoIPManager::calculateDistance(uuids::uuid c1, uuids::uuid c2) {
     return std::sqrt(std::pow(pos1.x - pos2.x, 2) + std::pow(pos1.z - pos2.z, 2));
 }
 
-void VoIPManager::onGameLoop(gengine::system::event::GameLoop &) {
+
+void VoIPManager::onMainLoop(gengine::system::event::MainLoop &) {
     auto &clientsSys = getSystem<gengine::interface::network::system::ServerClientsHandler>();
 
     for (auto &[remote, client] : clientsSys.getClients()) {
