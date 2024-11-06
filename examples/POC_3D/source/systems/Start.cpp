@@ -94,10 +94,9 @@ void system::Start::onStartEngine(gengine::system::event::StartEngine &e) {
 
     // Chair
     scale = 0.02;
-    spawnEntity(
-        component::Prop(), geg::component::Transform3D({1.38f, 0.0f, -4.0f}, {scale, scale, scale}, {90, 0, 0}),
-        gengine::component::driver::output::Drawable(2),
-        gengine::component::driver::output::Model("props/chaise.glb"), geg::component::network::NetSend());
+    spawnEntity(component::Prop(), geg::component::Transform3D({1.38f, 0.0f, -4.0f}, {scale, scale, scale}, {90, 0, 0}),
+                gengine::component::driver::output::Drawable(2),
+                gengine::component::driver::output::Model("props/chaise.glb"), geg::component::network::NetSend());
 
     publishEvent(gengine::system::event::driver::output::Music("ambiance.mp3"));
 }
