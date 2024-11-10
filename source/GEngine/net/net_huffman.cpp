@@ -55,7 +55,7 @@ size_t AHC::compressContinuous(AMessage &msg, size_t offset, const byte_t *pushD
 
 size_t AHC::decompressContinuous(AMessage &msg, size_t offset, byte_t *pushData, size_t size) {
     auto offsetBits = msg.getBitBuffer();
-    const size_t msgSize = msg.getMaxMsgSize() - offset - offsetBits / 8;
+    const size_t msgSize = msg.getMaxMsgSize() - offset;
     size_t old = msg.getBitBuffer();
 
     if (!m_decompress.readSymbol(msg.getData() + offset, pushData, size, msgSize, msg.getBitBuffer()))

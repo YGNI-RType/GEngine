@@ -287,7 +287,7 @@ public:
         if (!isCompressed())
             throw MsgError("Message is not compressed");
 
-        if (m_curSize + offset + getBitBuffer() / 8 > getMaxMsgSize()) {
+        if (offset + getBitBuffer() / 8 > getMaxMsgSize()) {
             throw MsgError("Message overflow when reading: SIZE=" +
                            std::to_string(m_curSize + offset + getBitBuffer() / 8));
         }
