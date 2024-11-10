@@ -185,7 +185,7 @@ void NetServer::checkTimeouts(void) {
         return;
 
     for (const auto &client : m_clients) {
-        if (!client->isTimeout())
+        if (client.get() == nullptr || !client->isTimeout())
             continue;
 
         std::cout << "SV: Client timeout" << std::endl;
