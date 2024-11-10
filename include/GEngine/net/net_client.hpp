@@ -125,8 +125,8 @@ public:
     bool pushStream(const TCPMessage &msg);
     bool popIncommingData(UDPMessage &msg, size_t &readCount);
     bool popIncommingStream(TCPMessage &msg, size_t &readCount);
-    size_t getSizeIncommingData(void) const {
-        return m_packInData.size();
+    size_t getSizeIncommingData(uint8_t type) const {
+        return m_packInData.size(type);
     }
 
     /**
