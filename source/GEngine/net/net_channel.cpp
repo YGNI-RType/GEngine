@@ -247,10 +247,8 @@ bool NetChannel::readStream(TCPMessage &msg) {
         m_tcpSocket.receive(msg, m_tcpBuffer, m_sizeBuffer);
     } catch (const SocketException &e) {
         if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr) {
-            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN) {
-                std::cout << "blocking" << std::endl;
+            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN)
                 return false;
-            }
             std::cerr << "Socket exception: " << e.what() << std::endl;
         }
         m_disconnect = true;
