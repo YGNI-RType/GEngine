@@ -60,13 +60,10 @@ void Snapshot::getAndSendDeltaDiff(void) {
 
         if (diff % MAX_SNAPSHOT)
             snapshots[m_currentSnapshotId % MAX_SNAPSHOT] = m_currentWorld; // does not erase lastsnapshot received
-        // std::cout << "client : " << uuids::to_string(uuid) << " | diff: " << diff << " | m_currentSnapshotId: " <<
-        // m_currentSnapshotId << " last id: " << lastId
-        // << " UDP Last ACK: " << lastReceived << std::endl;
 
-        bool fullSnapshot = !lastReceived;
+        bool isFullSnapshot = !lastReceived;
         auto &current = snapshots[m_currentSnapshotId % MAX_SNAPSHOT];
-        auto &last = fullSnapshot ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
+        auto &last = isFullSnapshot ? m_dummySnapshot : snapshots[lastId % MAX_SNAPSHOT];
 
         auto &lastNetSends = std::any_cast<ecs::component::SparseArray<component::NetSend> &>(
             last[std::type_index(typeid(component::NetSend))]);
@@ -74,7 +71,7 @@ void Snapshot::getAndSendDeltaDiff(void) {
         Network::UDPMessage msg(Network::UDPMessage::HEADER | Network::UDPMessage::ACK |
                                     Network::UDPMessage::COMPRESSED,
                                 Network::SV_SNAPSHOT);
-        msg.setFullAck(fullSnapshot);
+        msg.setFullAck(isFullSnapshot);
 
         uint32_t nbEntity = 0;
         msg.appendData(nbEntity);
@@ -100,12 +97,16 @@ void Snapshot::getAndSendDeltaDiff(void) {
                     msg.appendData(byte);
                 nbEntity++;
             }
-        } // TODO cleaner
+        }
         msg.stopCompressingSegment(false);
         msg.writeData(nbEntity, sizeof(Network::UDPG_NetChannelHeader), 0, false);
         if (!server.isRunning())
             continue;
         client.getNet()->pushData(msg, true);
+
+        // std::cout << "client : " << uuids::to_string(uuid) << " | diff: " << diff
+        //           << " | m_currentSnapshotId: " << m_currentSnapshotId << " last id: " << lastId
+        //           << " UDP Last ACK: " << lastReceived << " | Msg size: " << msg.getSize() << std::endl;
     }
 }
 

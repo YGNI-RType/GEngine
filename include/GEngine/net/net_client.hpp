@@ -46,16 +46,6 @@ private:
     bool transmitHighFreqData; /* voip, webcam feed etc...*/
 };
 
-/* Since the engine and the snapshots are not defined in advance, we store them in heap with a predefined size */
-class NetClientSnapshot {
-public:
-    NetClientSnapshot(size_t size);
-    ~NetClientSnapshot() = default;
-
-private:
-    std::vector<byte_t> m_data;
-};
-
 /**
  * @class NetClient
  * @brief Manages network client operations including sending and receiving data over TCP and UDP.
