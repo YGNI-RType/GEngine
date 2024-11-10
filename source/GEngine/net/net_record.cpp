@@ -316,6 +316,9 @@ bool NetRecord::endWatch(bool wanted) {
     if (!isWatching())
         return false;
 
+    if (m_fs.is_open())
+        m_fs.close();
+
     m_watching = false;
     std::cout << "Demo ended." << std::endl;
     if (std::remove(m_decompressFilePath.c_str()) != 0)
