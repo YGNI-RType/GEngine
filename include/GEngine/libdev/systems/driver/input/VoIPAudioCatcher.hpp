@@ -28,6 +28,7 @@ public:
     void init(void) override;
 
     void onMainLoop(gengine::system::event::MainLoop &e);
+    void onStartEngine(gengine::system::event::StartEngine &e);
     void onStartVoIP(gengine::system::event::driver::input::StartVoIP &);
     void onEndVoIP(gengine::system::event::driver::input::EndVoIP &);
 
