@@ -24,10 +24,11 @@ public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
 
-    void toggleCapture(gengine::interface::network::event::ToogleRecord &);
+    void toggleCapture(gengine::interface::network::event::ToggleRecord &);
+    void watchReplay(gengine::interface::network::event::WatchReplay &);
 
 private:
-    bool m_started = false;
+    static bool mg_started;
 };
 
 } // namespace gengine::interface::network::system

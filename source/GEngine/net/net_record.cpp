@@ -27,10 +27,15 @@ void NetRecord::init(void) {
 #else
     std::ifstream execFile("/proc/self/exe", std::ios::binary);
 #endif
+
+#if 0
     if (!execFile.is_open())
         throw NetException("Failed to open executable file for hashing", EL_ERR_RECORDING);
     std::vector<char> execBuffer((std::istreambuf_iterator<char>(execFile)), std::istreambuf_iterator<char>());
     m_execHash = std::hash<std::string>{}(std::string(execBuffer.begin(), execBuffer.end()));
+#else
+    m_execHash = 0;
+#endif
 
 #ifdef _WIN32
     m_recordFilePath = "C:\\Windows\\Temp\\record.bin";
