@@ -13,8 +13,6 @@
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
-#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
-
 #include "GEngine/interface/network/events/Record.hpp"
 
 namespace gengine::interface::network::system {
