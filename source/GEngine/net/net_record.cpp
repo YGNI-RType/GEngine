@@ -119,7 +119,7 @@ bool NetRecord::startRecord(void) {
     return true;
 }
 
-bool NetRecord::endRecord(void) {
+bool NetRecord::endRecord(bool isDestructing) {
     if (!isRecording() || isWatching() || !m_fs.is_open())
         return false;
 
@@ -132,45 +132,50 @@ bool NetRecord::endRecord(void) {
 
     std::cout << "Ended record demo file" << std::endl;
 
-    m_compressionThread = std::thread([this]() {
-        std::cout << "Compressing the demo file..." << std::endl;
-
-        std::ifstream fs(m_recordFilePath, std::ios::in | std::ios::binary);
-        if (!fs.is_open())
-            throw NetException("Failed to open record file for compression", EL_ERR_RECORDING);
-
-        /* Compress the file content after the magic number and the hash */
-        fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
-        std::vector<char> buffer((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
-
-        uint32_t compressedSize = buffer.size() * 1.01 + 600;
-        std::vector<char> compressedBuffer(compressedSize);
-
-        int result =
-            BZ2_bzBuffToBuffCompress(compressedBuffer.data(), &compressedSize, buffer.data(), buffer.size(), 9, 0, 30);
-        if (result != BZ_OK)
-            throw NetException("Failed to compress data", EL_ERR_RECORDING);
-
-        fs.close();
-        std::filesystem::create_directory("demos");
-        std::ofstream demoFile("demos/demo_" + std::to_string(std::time(nullptr)), std::ios::out | std::ios::binary);
-        if (!demoFile.is_open())
-            throw NetException("Failed to open compressed file for writing", EL_ERR_RECORDING);
-
-        demoFile.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
-        demoFile.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
-        demoFile.write(compressedBuffer.data(), compressedSize);
-        demoFile.close();
-
-        std::cout << "Done compressing the demo file !" << std::endl;
-
-        if (std::remove(m_recordFilePath.c_str()) != 0)
-            std::cerr << "Error deleting temporary record file: " << m_recordFilePath << std::endl;
-
-        m_recordingCompressed = false;
-    });
+    if (!isDestructing)
+        m_compressionThread = std::thread([this]() { compressFile(); });
+    else
+        compressFile();
 
     return true;
+}
+
+void NetRecord::compressFile(void) {
+    std::cout << "Compressing the demo file..." << std::endl;
+
+    std::ifstream fs(m_recordFilePath, std::ios::in | std::ios::binary);
+    if (!fs.is_open())
+        throw NetException("Failed to open record file for compression", EL_ERR_RECORDING);
+
+    /* Compress the file content after the magic number and the hash */
+    fs.seekg(sizeof(MAGIC_NUMBER) + sizeof(std::size_t), std::ios::beg);
+    std::vector<char> buffer((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
+
+    uint32_t compressedSize = buffer.size() * 1.01 + 600;
+    std::vector<char> compressedBuffer(compressedSize);
+
+    int result =
+        BZ2_bzBuffToBuffCompress(compressedBuffer.data(), &compressedSize, buffer.data(), buffer.size(), 9, 0, 30);
+    if (result != BZ_OK)
+        throw NetException("Failed to compress data", EL_ERR_RECORDING);
+
+    fs.close();
+    std::filesystem::create_directory("demos");
+    std::ofstream demoFile("demos/demo_" + std::to_string(std::time(nullptr)), std::ios::out | std::ios::binary);
+    if (!demoFile.is_open())
+        throw NetException("Failed to open compressed file for writing", EL_ERR_RECORDING);
+
+    demoFile.write(reinterpret_cast<const char *>(&MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
+    demoFile.write(reinterpret_cast<const char *>(&m_execHash), sizeof(m_execHash));
+    demoFile.write(compressedBuffer.data(), compressedSize);
+    demoFile.close();
+
+    std::cout << "Done compressing the demo file !" << std::endl;
+
+    if (std::remove(m_recordFilePath.c_str()) != 0)
+        std::cerr << "Error deleting temporary record file: " << m_recordFilePath << std::endl;
+
+    m_recordingCompressed = false;
 }
 
 void NetRecord::openFile(const std::string &filename, bool checkHash) {
@@ -333,7 +338,7 @@ bool NetRecord::endWatch(bool wanted) {
 
 NetRecord::~NetRecord() {
     if (isRecording())
-        endRecord();
+        endRecord(true);
     else if (isWatching())
         endWatch(true);
 

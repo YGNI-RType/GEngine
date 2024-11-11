@@ -50,7 +50,7 @@ public:
 
     /* force the server to send fullsnapshot */
     bool startRecord(void);
-    bool endRecord(void);
+    bool endRecord(bool isDestructing = false);
 
     bool startWatch(const std::string &filePath);
     bool endWatch(bool wanted);
@@ -76,6 +76,8 @@ private:
     bool read(SerializedMessage &msg, uint8_t &type, uint32_t &sleepDuration);
 
     void openFile(const std::string &filename, bool checkHash = false);
+
+    void compressFile(void);
 
 private:
     std::fstream m_fs;
