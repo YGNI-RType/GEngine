@@ -16,9 +16,6 @@
 #include <stdexcept>
 #include <string>
 
-// temp
-#include <iostream>
-
 #ifdef _WIN32
 
 #else

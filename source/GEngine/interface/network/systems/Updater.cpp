@@ -32,7 +32,7 @@ void Updater::onGameLoop(gengine::system::event::GameLoop &e) {
         Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::SV_SNAPSHOT);
         size_t readCount;
         if (!cl.popIncommingData(msg, readCount, true))
-            continue;
+            break;
         handleSnapshotMsg(msg, readCount);
     }
 

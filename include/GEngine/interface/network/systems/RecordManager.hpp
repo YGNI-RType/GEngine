@@ -13,8 +13,6 @@
 #include "GEngine/libdev/systems/events/GameLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
 
-#include "GEngine/libdev/systems/driver/input/KeyboardCatcher.hpp"
-
 #include "GEngine/interface/network/events/Record.hpp"
 
 namespace gengine::interface::network::system {
@@ -24,10 +22,11 @@ public:
     void init(void) override;
     void onGameLoop(gengine::system::event::GameLoop &);
 
-    void toggleCapture(gengine::interface::network::event::ToogleRecord &);
+    void toggleCapture(gengine::interface::network::event::ToggleRecord &);
+    void watchReplay(gengine::interface::network::event::WatchReplay &);
 
 private:
-    bool m_started = false;
+    static bool mg_started;
 };
 
 } // namespace gengine::interface::network::system

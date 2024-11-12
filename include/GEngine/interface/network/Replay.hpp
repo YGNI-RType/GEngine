@@ -6,7 +6,7 @@
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 
-#include "GEngine/interface/network/systems/ClientServer.hpp"
+#include "GEngine/interface/network/systems/RecordManager.hpp"
 #include "GEngine/interface/network/systems/Updater.hpp"
 
 #include "GEngine/net/events/disconnection.hpp"
@@ -41,20 +41,13 @@ public:
         Network::NET::init();
         Network::NET::initClient();
 
-        Network::Event::Manager &em = Network::NET::getEventManager();
         m_local.registerSystem<gengine::interface::network::system::Updater>(m_local.getWorld());
-        m_local.registerSystem<gengine::interface::network::system::ClientServer>();
         Network::NET::start();
 
-        auto recordInfo = Network::Event::RecordInfo(Network::Event::RecordInfo::WATCH);
-        recordInfo.demoFile = demoPath;
-        size_t ticket = em.addEvent(Network::Event::RECORD, recordInfo);
-        auto result = em.getLastResult(ticket, true);
-        if (result != Network::Event::Result::OK)
-            throw std::runtime_error("Failed to start replay");
+        m_remote.registerSystem<gengine::system::AutoMainLoop>(60, 40);
+        m_local.registerSystem<gengine::system::AutoMainLoop>(60, 40);
 
-        m_remote.registerSystem<gengine::system::AutoMainLoop>();
-        m_local.registerSystem<gengine::system::AutoMainLoop>();
+        m_local.registerSystem<gengine::interface::network::system::RecordManager>();
     }
 
     ~Replay() {
@@ -63,6 +56,10 @@ public:
 
     void run() override {
         m_local.start();
+
+        auto e = gengine::interface::network::event::WatchReplay(m_demoPath);
+        m_local.publishEvent(e);
+
         m_local.compute();
     }
 

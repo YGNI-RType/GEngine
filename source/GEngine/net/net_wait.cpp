@@ -67,10 +67,10 @@ void NetWaitSet::reset(void) {
 
 #ifdef NET_USE_HANDLE
 bool NetWaitSet::applyCallback(void) const {
-    auto callbackRes = m_callbacks[m_resIndex]();
     BOOL res = WSAResetEvent(m_events[m_resIndex - WSA_WAIT_EVENT_0]);
     if (!res)
         wprintf(L"WSAResetEvent failed with error = %d\n", WSAGetLastError());
+    auto callbackRes = m_callbacks[m_resIndex]();
     return callbackRes;
 }
 #endif

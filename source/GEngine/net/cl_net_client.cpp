@@ -90,6 +90,8 @@ bool CLNetClient::handleUDPEvents(SocketUDP &socket, UDPMessage &msg, const Addr
         return false;
 
     switch (msg.getType()) {
+    case CL_BROADCAST_PING:
+        return true;
     case SV_BROADCAST_PING:
         getPingResponse(msg, addr);
         return true;
