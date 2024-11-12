@@ -227,12 +227,18 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     m_pingedServers.push_back({data, std::move(addrPtr)});
 }
 
-static void pingSocket(SocketUDP &socket, AddressType addrType) {
+static void pingSocket(uint16_t ogPort, SocketUDP &socket, AddressType addrType) {
+    UDPCL_PingRequest data = {ogPort};
     for (uint16_t port = DEFAULT_PORT; port < DEFAULT_PORT + MAX_TRY_PORTS; port++) {
         auto message = UDPMessage(0, CL_BROADCAST_PING);
+        message.appendData(data);
 
         if (addrType == AT_IPV4)
+#ifdef NET_USE_BROADCAST
             socket.send(message, AddressV4(AT_BROADCAST, port));
+#else
+            socket.send(message, AddressV4(AT_MULTICAST, port));
+#endif
         else if (addrType == AT_IPV6)
             socket.send(message, AddressV6(AT_MULTICAST, port));
     }
@@ -244,7 +250,18 @@ void CLNetClient::pingLanServers(void) {
     m_pingedServers.clear();
     m_pingSendTime = Time::Clock::milliseconds();
 
-    pingSocket(m_socketUdp, m_addrType);
+    auto &ips = NET::getLocalAddresses();
+    for (auto &ip : ips) {
+        if (ip.type != m_addrType)
+            continue;
+
+        auto sock = NET::createUDPSocket(ip);
+        sock.setInterface(ip);
+        pingSocket(m_socketUdp.getPort(), sock, m_addrType);
+        NET::destroyUDPSocket(sock);
+    }
+
+    // pingSocket(m_socketUdp, m_addrType);
 }
 
 bool CLNetClient::sendDatagram(UDPMessage &msg) {

@@ -101,9 +101,8 @@ SocketUDP NET::createUDPSocket(const IP &ip) {
 
 bool NET::destroyUDPSocket(SocketUDP &socket) {
     int status = socket.socketClose();
-    if (status < 0)
-        std::cerr << strerror(errno) << std::endl;
     mg_currentUnusedPortUDP--;
+    return status == 0;
 }
 
 bool NET::initServer(void) {
@@ -111,6 +110,9 @@ bool NET::initServer(void) {
     if (!NET::mg_aEnable)
         return false;
 
+    mg_socketUdp.setPingResponse();
+    if (CVar::net_ipv6.getIntValue())
+        mg_socketUdpV6.setPingResponse();
     mg_currentUnusedPortTCP = NET::mg_server.start(mg_currentUnusedPortTCP);
     return true;
 }

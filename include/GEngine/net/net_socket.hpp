@@ -184,6 +184,9 @@ public:
         return socketCloseAdv(false);
     }
 
+    int setInterface(const IP &ip);
+    void setPingResponse(void);
+
 private:
     /**
      * @brief Receives a UDP message.

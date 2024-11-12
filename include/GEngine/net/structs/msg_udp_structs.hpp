@@ -24,7 +24,11 @@ enum MsgType {
     SV_VOIP
 };
 
-struct UDPSV_PingResponse {
+PACK(struct UDPCL_PingRequest {
+    uint16_t port;
+});
+
+PACK(struct UDPSV_PingResponse {
     uint16_t tcpv4Port;
     uint16_t tcpv6Port;
 
@@ -33,7 +37,7 @@ struct UDPSV_PingResponse {
 
     uint8_t os;
     uint64_t ping;
-};
+});
 
 struct UDPG_NetChannelHeader {
     uint64_t sequence;

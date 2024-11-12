@@ -428,9 +428,6 @@ void SocketUDP::init(bool block, uint16_t port) {
     m_port = port;
     setBlocking(block);
 
-    unsigned int opt = 1;
-    if (setsockopt(m_sock, SOL_SOCKET, SO_BROADCAST, (char *)&opt, sizeof(opt)))
-        throw NetException("(UDP) Failed to set socket options (SO_BROADCAST)", EL_ERR_SOCKET);
 #ifdef NET_DONT_FRAG
 #if defined(__FreeBSD__) || defined(__APPLE__)
     if (setsockopt(m_sock, IPPROTO_IP, IP_DONTFRAG, &opt, sizeof(opt)))
@@ -555,6 +552,38 @@ bool SocketUDP::receiveV6(UDPMessage &msg, AddressV6 &ip) const {
 
     ip = AddressV6(AT_IPV6, ntohs(addr.sin6_port), addr.sin6_addr, addr.sin6_scope_id);
     return true;
+}
+
+int SocketUDP::setInterface(const IP &ip) {
+    struct sockaddr_storage address;
+    std::memcpy(&address, &ip.addr, sizeof(address));
+
+    if (ip.type == AT_IPV6) {
+        struct in6_addr addr = reinterpret_cast<struct sockaddr_in6 *>(&address)->sin6_addr;
+        if (setsockopt(m_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &addr, sizeof(addr)) < 0)
+            throw NetException("(UDP) Failed to set socket options (IPV6_MULTICAST_IF)", EL_ERR_SOCKET);
+    } else {
+        struct in_addr addr = reinterpret_cast<struct sockaddr_in *>(&address)->sin_addr;
+        if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_IF, &addr, sizeof(addr)) < 0)
+            throw NetException("(UDP) Failed to set socket options (IP_MULTICAST_IF)", EL_ERR_SOCKET);
+    }
+    return 0;
+}
+
+void SocketUDP::setPingResponse(void) {
+#ifdef NET_USE_BROADCAST
+    unsigned int opt = 1;
+    if (setsockopt(m_sock, SOL_SOCKET, SO_BROADCAST, (char *)&opt, sizeof(opt)))
+        throw NetException("(UDP) Failed to set socket options (SO_BROADCAST)", EL_ERR_SOCKET);
+#else
+    struct ip_mreq mreq;
+
+    mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IPV4);
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
+    if (setsockopt(m_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0)
+        throw NetException("(UDP) Failed to set socket options (IP_ADD_MEMBERSHIP)", EL_ERR_SOCKET);
+#endif
 }
 
 /*****************************************************/
