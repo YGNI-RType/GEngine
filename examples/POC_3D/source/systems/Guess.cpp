@@ -15,6 +15,7 @@
 
 #include "Constants.hpp"
 
+#include "events/ChangePlayerModelEvent.hpp"
 #include "events/Jump.hpp"
 
 namespace poc3d::system {
@@ -56,8 +57,11 @@ void Guess::guessWho(event::GuessEvent &e) {
             fullPath += std::to_string(frameIndex + 1) + ".obj";
         }
         collision = gengine::GetRayCollisionModel(ray, modelMan.get(fullPath), transform);
-        if (collision.hit)
+        if (collision.hit) {
             publishEvent(event::Jump(0.4, remote.getUUIDBytes()));
+            publishEvent(event::ChangePlayerModelEvent("player/", "player.json/idle", 0.04f, {0.8, 0.8, 0.8},
+                                                       remote.getUUIDBytes()));
+        }
 
         // publishEvent(event::PlayerHit(entity, remote.getUUIDBytes())); //TODO Implement hit event
     }

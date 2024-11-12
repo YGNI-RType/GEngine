@@ -21,16 +21,17 @@ void InputsToGameEvents::init(void) {
     subscribeToEvent<geg::event::io::KeyDEvent>(&InputsToGameEvents::moveRight);
     subscribeToEvent<geg::event::io::KeySpaceEvent>(&InputsToGameEvents::jump);
     subscribeToEvent<geg::event::io::KeyLeftControlEvent>(&InputsToGameEvents::sprint);
+    subscribeToEvent<geg::event::io::KeyCEvent>(&InputsToGameEvents::crouch);
 
     subscribeToEvent<geg::event::io::MouseLeft>(&InputsToGameEvents::guess);
     subscribeToEvent<geg::event::io::KeyEEvent>(&InputsToGameEvents::morph);
     subscribeToEvent<geg::event::io::KeyLeftShiftEvent>(&InputsToGameEvents::lockPlayer);
 
     subscribeToEvent<geg::event::io::KeyOneEvent>(&InputsToGameEvents::setPlayerModelCoraline);
-    subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelHunter);
-    subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
-    subscribeToEvent<geg::event::io::KeyFourEvent>(&InputsToGameEvents::setPlayerModelLamp);
-    subscribeToEvent<geg::event::io::KeyFiveEvent>(&InputsToGameEvents::setPlayerModelStick);
+    subscribeToEvent<geg::event::io::KeyTwoEvent>(&InputsToGameEvents::setPlayerModelBeer);
+    // subscribeToEvent<geg::event::io::KeyThreeEvent>(&InputsToGameEvents::setPlayerModelChair);
+    // subscribeToEvent<geg::event::io::KeyFourEvent>(&InputsToGameEvents::setPlayerModelLamp);
+    // subscribeToEvent<geg::event::io::KeyFiveEvent>(&InputsToGameEvents::setPlayerModelStick);
 }
 
 void InputsToGameEvents::sendEvents(gengine::system::event::GameLoop &e) {
@@ -149,7 +150,7 @@ event::Movement::State InputsToGameEvents::getMovementState(void) {
 
 void InputsToGameEvents::jump(geg::event::io::KeySpaceEvent &e) {
     if (e.state == geg::event::io::InputState::PRESSED || e.state == geg::event::io::InputState::DOWN)
-        publishEvent(event::Jump(0.12));
+        publishEvent(event::Jump(0.11));
 }
 
 void InputsToGameEvents::sprint(geg::event::io::KeyLeftControlEvent &e) {
@@ -157,6 +158,13 @@ void InputsToGameEvents::sprint(geg::event::io::KeyLeftControlEvent &e) {
         publishEvent(event::Sprint(true));
     else
         publishEvent(event::Sprint(false));
+}
+
+void InputsToGameEvents::crouch(geg::event::io::KeyCEvent &e) {
+    if (e.state == geg::event::io::InputState::PRESSED)
+        publishEvent(event::Crouch(true));
+    if (e.state == geg::event::io::InputState::RELEASE)
+        publishEvent(event::Crouch(false));
 }
 
 void InputsToGameEvents::guess(geg::event::io::MouseLeft &e) {
@@ -179,13 +187,15 @@ void InputsToGameEvents::lockPlayer(geg::event::io::KeyLeftShiftEvent &e) {
 }
 
 void InputsToGameEvents::setPlayerModelCoraline(geg::event::io::KeyOneEvent &e) {
+    float scale = 0.5;
     if (e.state == geg::event::io::InputState::PRESSED)
-        publishEvent(event::ChangePlayerModelEvent("player/", "player.json/idle", 0.04f));
+        publishEvent(event::ChangePlayerModelEvent("player/", "player.json/idle", 0.04f, {scale, scale, scale}));
 }
 
-void InputsToGameEvents::setPlayerModelHunter(geg::event::io::KeyTwoEvent &e) {
+void InputsToGameEvents::setPlayerModelBeer(geg::event::io::KeyTwoEvent &e) {
+    float scale = 0.007;
     if (e.state == geg::event::io::InputState::PRESSED)
-        publishEvent(event::ChangePlayerModelEvent("props/incendie.glb"));
+        publishEvent(event::ChangePlayerModelEvent("props/beer_bottle.glb", {scale, scale, scale}));
 }
 
 void InputsToGameEvents::setPlayerModelChair(geg::event::io::KeyThreeEvent &e) {

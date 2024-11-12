@@ -22,6 +22,7 @@
 #include "GEngine/interface/events/SharedEvent.hpp"
 
 #include "events/ChangeCameraMode.hpp"
+#include "events/Crouch.hpp"
 #include "events/Jump.hpp"
 #include "events/LockPlayerEvent.hpp"
 #include "events/Movement.hpp"
@@ -44,6 +45,7 @@ public:
     void jumpPlayer(gengine::interface::event::SharedEvent<event::Jump> &e);
     void changeCameraModePlayer(gengine::interface::event::SharedEvent<event::ChangeCameraMode> &e);
     void sprintPlayer(gengine::interface::event::SharedEvent<event::Sprint> &e);
+    void crouchPlayer(gengine::interface::event::SharedEvent<event::Crouch> &e);
     void lockPlayer(gengine::interface::event::SharedEvent<event::LockPlayerEvent> &e);
 };
 } // namespace poc3d::system

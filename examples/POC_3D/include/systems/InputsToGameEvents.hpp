@@ -13,6 +13,7 @@
 
 #include "events/ChangeCameraMode.hpp"
 #include "events/ChangePlayerModelEvent.hpp"
+#include "events/Crouch.hpp"
 #include "events/GuessEvent.hpp"
 #include "events/Jump.hpp"
 #include "events/LockPlayerEvent.hpp"
@@ -38,13 +39,14 @@ public:
     void moveRight(geg::event::io::KeyDEvent &e);
     void jump(geg::event::io::KeySpaceEvent &e);
     void sprint(geg::event::io::KeyLeftControlEvent &e);
+    void crouch(geg::event::io::KeyCEvent &e);
 
     void guess(geg::event::io::MouseLeft &e);
     void morph(geg::event::io::KeyEEvent &e);
     void lockPlayer(geg::event::io::KeyLeftShiftEvent &e);
 
     void setPlayerModelCoraline(geg::event::io::KeyOneEvent &e);
-    void setPlayerModelHunter(geg::event::io::KeyTwoEvent &e);
+    void setPlayerModelBeer(geg::event::io::KeyTwoEvent &e);
     void setPlayerModelChair(geg::event::io::KeyThreeEvent &e);
     void setPlayerModelLamp(geg::event::io::KeyFourEvent &e);
     void setPlayerModelStick(geg::event::io::KeyFiveEvent &e);

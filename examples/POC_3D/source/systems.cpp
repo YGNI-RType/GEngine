@@ -35,6 +35,8 @@
 #include "GEngine/interface/events/RemoteLocal.hpp"
 #include "GEngine/interface/systems/RemoteLocal.hpp"
 
+#include "GEngine/libdev/systems/driver/output/AudioManager.hpp"
+
 // VOIP
 
 #include "GEngine/libdev/systems/CLI.hpp"
@@ -104,17 +106,21 @@ void GEngineDeclareSystems(Registry *r) {
     r->registerSystem<gengine::interface::network::system::ClientEventPublisher<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
         poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
-        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Sprint, poc3d::event::Crouch, gengine::interface::event::GetRemoteLocalWhoIAm>>();
     r->registerSystem<gengine::interface::network::system::ServerEventReceiver<
         poc3d::event::Movement, poc3d::event::Rotation, poc3d::event::Jump, poc3d::event::ChangeCameraMode,
         poc3d::event::ChangePlayerModelEvent, poc3d::event::ResetPlayerRotationEvent, poc3d::event::LockPlayerEvent,
-        poc3d::event::Sprint, gengine::interface::event::GetRemoteLocalWhoIAm>>();
+        poc3d::event::Sprint, poc3d::event::Crouch, gengine::interface::event::GetRemoteLocalWhoIAm>>();
 
     r->registerSystem<gengine::interface::network::system::ConnectAtStart>("127.0.0.1", 4242);
 
     r->registerSystem<V>();
 
     r->registerSystem<gengine::system::CLI>();
+
+    // Audio
+    r->registerSystem<gengine::system::driver::output::AudioManagerLocal>("../assets/sounds", "../assets/musics");
+    r->registerSystem<gengine::system::driver::output::AudioManagerRemote>("../assets/sounds", "../assets/musics");
 
     // VOIP
     r->registerSystem<gengine::interface::network::system::VoIPManager>(7.f);

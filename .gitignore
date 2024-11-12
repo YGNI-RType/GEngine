@@ -144,3 +144,5 @@ Temporary Items
 TODO
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,macos,c++,conan,visualstudiocode
+
+.DS_Store
