@@ -558,6 +558,17 @@ int SocketUDP::setInterface(const IP &ip) {
     struct sockaddr_storage address;
     std::memcpy(&address, &ip.addr, sizeof(address));
 
+#ifdef _WIN32
+    if (ip.type == AT_IPV6) {
+        unsigned int index = ip.addr.ipv6.sin6_scope_id;
+        if (setsockopt(m_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, (char *)&index, sizeof(index)) < 0)
+            throw NetException("(UDP) Failed to set socket options (IPV6_MULTICAST_IF)", EL_ERR_SOCKET);
+    } else {
+        struct in_addr addr = reinterpret_cast<struct sockaddr_in *>(&address)->sin_addr;
+        if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_IF, (char *)&addr, sizeof(addr)) < 0)
+            throw NetException("(UDP) Failed to set socket options (IP_MULTICAST_IF)", EL_ERR_SOCKET);
+    }
+#else
     if (ip.type == AT_IPV6) {
         struct in6_addr addr = reinterpret_cast<struct sockaddr_in6 *>(&address)->sin6_addr;
         if (setsockopt(m_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &addr, sizeof(addr)) < 0)
@@ -567,6 +578,7 @@ int SocketUDP::setInterface(const IP &ip) {
         if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_IF, &addr, sizeof(addr)) < 0)
             throw NetException("(UDP) Failed to set socket options (IP_MULTICAST_IF)", EL_ERR_SOCKET);
     }
+#endif
     return 0;
 }
 
