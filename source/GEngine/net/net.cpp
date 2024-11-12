@@ -68,6 +68,7 @@ CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_so
                            CVar::net_ipv6.getIntValue() ? AT_IPV6 : AT_IPV4, mg_eventManager.getSocketEvent());
 
 std::vector<IP> NET::g_localIPs;
+bool NET::mg_hasListLocalAddress = false;
 
 std::thread NET::mg_networkThread;
 
@@ -91,6 +92,18 @@ bool NET::init(void) {
     if (CVar::net_ipv6.getIntValue()) // check if ipv6 is supported
         mg_socketUdpV6 = openSocketUdp(mg_currentUnusedPortUDP, true);
     return true;
+}
+
+SocketUDP NET::createUDPSocket(const IP &ip) {
+    auto sock = openSocketUdp(ip, mg_currentUnusedPortUDP);
+    return std::move(sock);
+}
+
+bool NET::destroyUDPSocket(SocketUDP &socket) {
+    int status = socket.socketClose();
+    if (status < 0)
+        std::cerr << strerror(errno) << std::endl;
+    mg_currentUnusedPortUDP--;
 }
 
 bool NET::initServer(void) {
@@ -150,7 +163,9 @@ void NET::stop(void) {
     g_localIPs.clear();
 }
 
-void NET::getLocalAddress(void) {
+void NET::fetchLocalAddresses(void) {
+    mg_hasListLocalAddress = true;
+
 #if defined(__linux__) || defined(__APPLE__) || defined(__BSD__)
     struct ifaddrs *ifap;
 
@@ -196,6 +211,13 @@ void NET::getLocalAddress(void) {
     if (res)
         freeaddrinfo(res);
 #endif
+}
+
+const std::vector<IP> &NET::getLocalAddresses(void)
+{
+    if (!mg_hasListLocalAddress)
+        fetchLocalAddresses();
+    return g_localIPs;
 }
 
 void NET::addLocalAddress(char *ifname, struct sockaddr *sockaddr, struct sockaddr *netmask, bool isLoopback) {
@@ -275,7 +297,6 @@ bool NET::sleep(uint32_t ms) {
 }
 
 void NET::createSets(NetWaitSet &set) {
-    // FD_ZERO(&readSet);
     set.reset();
 
     mg_eventManager.createSets(set);

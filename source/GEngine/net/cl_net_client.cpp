@@ -7,6 +7,7 @@
 
 #include "GEngine/net/cl_net_client.hpp"
 #include "GEngine/net/net.hpp"
+#include "GEngine/net/net_socket_error.hpp"
 #include "GEngine/time/time.hpp"
 
 #include "GEngine/net/events/ping_result.hpp"
@@ -226,18 +227,24 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     m_pingedServers.push_back({data, std::move(addrPtr)});
 }
 
-void CLNetClient::pingLanServers(void) {
-    m_pingedServers.clear();
-    m_pingSendTime = Time::Clock::milliseconds();
-
+static void pingSocket(SocketUDP &socket, AddressType addrType) {
     for (uint16_t port = DEFAULT_PORT; port < DEFAULT_PORT + MAX_TRY_PORTS; port++) {
         auto message = UDPMessage(0, CL_BROADCAST_PING);
 
-        if (m_addrType == AT_IPV4)
-            m_socketUdp.send(message, AddressV4(AT_BROADCAST, port));
-        else if (m_addrType == AT_IPV6)
-            m_socketUdp.send(message, AddressV6(AT_MULTICAST, port));
+        if (addrType == AT_IPV4)
+            socket.send(message, AddressV4(AT_BROADCAST, port));
+        else if (addrType == AT_IPV6)
+            socket.send(message, AddressV6(AT_MULTICAST, port));
     }
+}
+
+void CLNetClient::pingLanServers(void) {
+    auto &localIPs = NET::getLocalAddresses();
+
+    m_pingedServers.clear();
+    m_pingSendTime = Time::Clock::milliseconds();
+
+    pingSocket(m_socketUdp, m_addrType);
 }
 
 bool CLNetClient::sendDatagram(UDPMessage &msg) {

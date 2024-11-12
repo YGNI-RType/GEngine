@@ -47,6 +47,10 @@ public:
     void signal();
     void wait();
 
+    int socketClose(void) override final {
+        return socketCloseAdv(false);
+    }
+
 #ifdef HAS_NOT_EVENTFD
 private:
 #ifdef NET_USE_HANDLE

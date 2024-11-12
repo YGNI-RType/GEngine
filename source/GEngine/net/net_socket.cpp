@@ -33,10 +33,6 @@ namespace Network {
 WSADATA ASocket::winsockdata;
 #endif
 
-ASocket::~ASocket() {
-    socketClose();
-}
-
 ASocket::ASocket(ASocket &&other) {
     m_sock = other.m_sock;
     other.m_sock = -1;
@@ -71,18 +67,20 @@ void ASocket::initLibs(void) {
     initialized = true;
 }
 
-int ASocket::socketClose(void) {
+int ASocket::socketCloseAdv(bool shouldShutdown) {
     int status = 0;
 
     if (m_sock == -1)
         return 0;
 
 #ifdef _WIN32
-    status = shutdown(m_sock, SD_BOTH);
+    if (shouldShutdown)
+        status = shutdown(m_sock, SD_BOTH);
     if (status == 0)
         status = closesocket(m_sock);
 #else
-    status = shutdown(m_sock, SHUT_RDWR);
+    if (shouldShutdown)
+        status = shutdown(m_sock, SHUT_RDWR);
     if (status == 0)
         status = close(m_sock);
 #endif
@@ -207,9 +205,14 @@ SocketTCPMaster::SocketTCPMaster(uint16_t port, bool ipv6) {
     NetWait::addSocketPool(*this);
 }
 
+SocketTCPMaster::~SocketTCPMaster() {
+    socketClose();
+}
+
 SocketTCPMaster::SocketTCPMaster(SocketTCPMaster &&other)
     : ANetSocket(std::move(other)) {
 }
+
 SocketTCPMaster &SocketTCPMaster::operator=(SocketTCPMaster &&other) {
     if (this != &other)
         ANetSocket::operator=(std::move(other));
@@ -290,9 +293,14 @@ SocketTCP::SocketTCP(const AddressV6 &addr, uint16_t tcpPort, bool block) {
     NetWait::addSocketPool(*this);
 }
 
+SocketTCP::~SocketTCP() {
+    socketClose();
+}
+
 SocketTCP::SocketTCP(SocketTCP &&other)
     : ANetSocket(std::move(other)) {
 }
+
 SocketTCP &SocketTCP::operator=(SocketTCP &&other) {
     if (this != &other)
         ANetSocket::operator=(std::move(other));
@@ -407,6 +415,10 @@ size_t SocketTCP::sendReliant(const TCPSerializedMessage *msg, size_t msgDataSiz
 }
 
 /***********************************************/
+
+SocketUDP::~SocketUDP() {
+    socketClose();
+}
 
 void SocketUDP::init(bool block, uint16_t port) {
     m_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -547,10 +559,10 @@ bool SocketUDP::receiveV6(UDPMessage &msg, AddressV6 &ip) const {
 
 /*****************************************************/
 
-SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort) {
+SocketTCPMaster openSocketTcp(const IP &ip, uint16_t &wantedPort) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketTCPMaster(ip, wantedPort + i));
+            return std::move(SocketTCPMaster(ip, wantedPort++));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;
@@ -560,10 +572,10 @@ SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort) {
     throw NetException("Failed to open TCP socket", EL_ERR_SOCKET);
 }
 
-SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort) {
+SocketUDP openSocketUdp(const IP &ip, uint16_t &wantedPort) {
     for (uint16_t i = 0; i < MAX_TRY_PORTS; i++) {
         try {
-            return std::move(SocketUDP(ip, wantedPort + i));
+            return std::move(SocketUDP(ip, wantedPort++));
         } catch (SocketException &e) {
             if (!e.shouldRetry() || i == MAX_TRY_PORTS - 1)
                 throw e;
