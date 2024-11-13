@@ -1,0 +1,6 @@
+[submodule "examples/R-Type"]
+	path = examples/R-Type
+	url = git@github.com:YGNI-RType/R-Type.git
+[submodule "examples/HideAndSeek"]
+	path = examples/HideAndSeek
+	url = git@github.com:YGNI-RType/HideAndSeek.git
