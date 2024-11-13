@@ -560,7 +560,7 @@ int SocketUDP::setInterface(const IP &ip) {
 
 #ifdef _WIN32
     if (ip.type == AT_IPV6) {
-        unsigned int index = ip.addr.ipv6.sin6_scope_id;
+        unsigned int index = reinterpret_cast<struct sockaddr_in6 *>(&address)->sin6_scope_id;
         if (setsockopt(m_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, (char *)&index, sizeof(index)) < 0)
             throw NetException("(UDP) Failed to set socket options (IPV6_MULTICAST_IF)", EL_ERR_SOCKET);
     } else {
