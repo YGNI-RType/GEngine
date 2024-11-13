@@ -71,6 +71,7 @@ public:
     static const std::vector<IP> &getLocalAddresses(void);
     static SocketUDP createUDPSocket(const IP &ip);
     static bool destroyUDPSocket(SocketUDP &socket);
+
 private:
     static void fetchLocalAddresses(void);
     static void addLocalAddress(char *ifname, struct sockaddr *sockaddr, struct sockaddr *netmask, bool isLoopback);

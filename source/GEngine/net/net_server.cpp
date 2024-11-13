@@ -72,8 +72,7 @@ void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, 
     if (addr.getType() == AT_IPV4) {
         auto ogAddr = static_cast<const AddressV4 &>(addr);
         udpsocket.send(pingReponseMsg, AddressV4(AT_IPV4, clReponsePort, ogAddr.getAddress()));
-    }
-    else if (addr.getType() == AT_IPV6) {
+    } else if (addr.getType() == AT_IPV6) {
         auto ogAddr = static_cast<const AddressV6 &>(addr);
         udpsocket.send(pingReponseMsg, AddressV6(AT_IPV6, clReponsePort, ogAddr.getAddress(), ogAddr.getScopeId()));
     }

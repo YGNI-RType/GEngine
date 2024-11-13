@@ -24,9 +24,7 @@ enum MsgType {
     SV_VOIP
 };
 
-PACK(struct UDPCL_PingRequest {
-    uint16_t port;
-});
+PACK(struct UDPCL_PingRequest { uint16_t port; });
 
 PACK(struct UDPSV_PingResponse {
     uint16_t tcpv4Port;
