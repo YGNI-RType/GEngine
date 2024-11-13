@@ -250,18 +250,7 @@ void CLNetClient::pingLanServers(void) {
     m_pingedServers.clear();
     m_pingSendTime = Time::Clock::milliseconds();
 
-    auto &ips = NET::getLocalAddresses();
-    for (auto &ip : ips) {
-        if (ip.type != m_addrType)
-            continue;
-
-        auto sock = NET::createUDPSocket(ip);
-        sock.setInterface(ip);
-        pingSocket(m_socketUdp.getPort(), sock, m_addrType);
-        NET::destroyUDPSocket(sock);
-    }
-
-    // pingSocket(m_socketUdp, m_addrType);
+    pingSocket(m_socketUdp.getPort(), m_socketUdp, m_addrType);
 }
 
 bool CLNetClient::sendDatagram(UDPMessage &msg) {
