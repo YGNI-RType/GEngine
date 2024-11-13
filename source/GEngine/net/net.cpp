@@ -215,8 +215,7 @@ void NET::fetchLocalAddresses(void) {
 #endif
 }
 
-const std::vector<IP> &NET::getLocalAddresses(void)
-{
+const std::vector<IP> &NET::getLocalAddresses(void) {
     if (!mg_hasListLocalAddress)
         fetchLocalAddresses();
     return g_localIPs;
