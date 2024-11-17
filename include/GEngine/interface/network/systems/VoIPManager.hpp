@@ -28,10 +28,12 @@ class VoIPManager : public System<VoIPManager, interface::component::RemoteLocal
                     public RemoteSystem {
 
 public:
-    VoIPManager(float distance = 0);
+    VoIPManager(float distance = UNDEFINED_DISTANCE);
     void init(void) override;
 
 private:
+    static constexpr float UNDEFINED_DISTANCE = 0;
+
     float m_distance;
     float calculateDistance(uuids::uuid c1, uuids::uuid c2);
     void onMainLoop(gengine::system::event::MainLoop &);

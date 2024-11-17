@@ -68,7 +68,6 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
                 StopMusicStream(getMusicById(m_currentMusicId));
             m_currentMusicId = music.musicId;
             PlayMusicStream(getMusicById(m_currentMusicId));
-            SetMusicVolume(getMusicById(m_currentMusicId), 0.06);
         }
     }
 
@@ -83,6 +82,7 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
             playSoundById(sound.soundId);
         }
         publishEvent(gengine::system::event::driver::output::SoundPlayed(sound.soundId));
+        killEntity(e);
     }
     for (auto it = m_soundsPlayed.begin(); it != m_soundsPlayed.end();)
         if (!sounds.contains(*it))

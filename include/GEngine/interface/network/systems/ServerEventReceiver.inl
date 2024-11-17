@@ -26,28 +26,32 @@ void gengine::interface::network::system::ServerEventReceiver<Events...>::onGame
         if (client.shouldDelete())
             continue;
 
-        Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_EVENT);
-        if (!client.getNet()->popIncommingData(msg, readCount))
-            continue;
+        size_t size = client.getNet()->getSizeIncommingData(Network::CL_EVENT);
+        for (size_t i = 0; i < size; i++) {
+            Network::UDPMessage msg(Network::UDPMessage::HEADER, Network::CL_EVENT);
 
-        std::uint64_t nb;
-        msg.readContinuousData(nb, readCount);
+            if (!client.getNet()->popIncommingData(msg, readCount))
+                continue;
 
-        client.setLastAck(msg.getAckNumber());
-        // std::cout << "Last ACK: " << client.getLastAck() << std::endl;
-        for (size_t i = 0; i < nb; i++) {
-            std::uint64_t type;
-            msg.readContinuousData(type, readCount);
-            auto it = m_eventsCallbacks.find(type);
-            if (it == m_eventsCallbacks.end())
-                throw std::runtime_error("Event type not found");
+            std::uint64_t nb;
+            msg.readContinuousData(nb, readCount);
 
-            auto &[callback, size] = it->second;
-            std::vector<Network::byte_t> data(size);
+            client.setLastAck(msg.getAckNumber());
+            // std::cout << "Last ACK: " << client.getLastAck() << std::endl;
+            for (size_t i = 0; i < nb; i++) {
+                std::uint64_t type;
+                msg.readContinuousData(type, readCount);
+                auto it = m_eventsCallbacks.find(type);
+                if (it == m_eventsCallbacks.end())
+                    throw std::runtime_error("Event type not found");
 
-            msg.readData(data.data(), readCount, size);
-            uuids::uuid id = uuid;
-            callback(data.data(), id);
+                auto &[callback, size] = it->second;
+                std::vector<Network::byte_t> data(size);
+
+                msg.readData(data.data(), readCount, size);
+                uuids::uuid id = uuid;
+                callback(data.data(), id);
+            }
         }
     }
 }

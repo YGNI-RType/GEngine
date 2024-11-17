@@ -220,6 +220,7 @@ void CLCommandManager::onGameLoop(gengine::system::event::GameLoop &e) {
         return;
 
     Network::TCPSV_CVar cvar;
+    std::memset(&cvar, 0, sizeof(cvar));
     recvMsg.readData((void *)(&cvar), readCount, recvMsg.getSize());
 
     if (cvar.result == NOT_FOUND)

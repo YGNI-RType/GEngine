@@ -77,6 +77,10 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer, unsigne
 
 void VoIPAudio::init(void) {
     subscribeToEvent<gengine::system::event::MainLoop>(&VoIPAudio::onMainLoop);
+    subscribeToEvent<gengine::system::event::StartEngine>(&VoIPAudio::onStartEngine);
+}
+
+void VoIPAudio::onStartEngine(gengine::system::event::StartEngine &) {
 
     /** Port Audio + Opus **/
 

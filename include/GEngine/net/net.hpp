@@ -68,11 +68,17 @@ public:
     static bool initServer(void);
     static bool initClient(void);
 
+    static const std::vector<IP> &getLocalAddresses(void);
+    static SocketUDP createUDPSocket(const IP &ip);
+    static bool destroyUDPSocket(SocketUDP &socket);
+
 private:
-    static void getLocalAddress(void);
+    static void fetchLocalAddresses(void);
     static void addLocalAddress(char *ifname, struct sockaddr *sockaddr, struct sockaddr *netmask, bool isLoopback);
     static void sortLocalAddresses(void);
     static bool isLanAddress(const Address &addr);
+
+    static bool mg_hasListLocalAddress;
     /*********************/
 
     /* Usage of "select" */

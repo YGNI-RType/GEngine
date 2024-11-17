@@ -66,14 +66,16 @@ void VoIPManager::onMainLoop(gengine::system::event::MainLoop &) {
                 continue;
 
             // Calculer la distance entre le client source et le client destination
-            float distance = calculateDistance(remote, remoteDest);
+            float distance;
+            if (m_distance != UNDEFINED_DISTANCE)
+                distance = calculateDistance(remote, remoteDest);
             // float volume = 1.0f / (1.0f + distance); // Exemple de calcul du volume
             // Préparer le segment VoIP avec le volume
             Network::UDPG_VoIPSegment segment = {
                 .size = static_cast<uint16_t>(buffer.size()),
-                .volume =
-                    static_cast<float>(m_distance ? std::clamp(m_distance - distance, 0.f, m_distance) / m_distance
-                                                  : 1) // Ajouter le volume au segment
+                .volume = static_cast<float>(m_distance != UNDEFINED_DISTANCE
+                                                 ? std::clamp(m_distance - distance, 0.f, m_distance) / m_distance
+                                                 : 1) // Ajouter le volume au segment
             };
             std::memcpy(&segment.playerIndex1, remote.as_bytes().data(), 8);
             std::memcpy(&segment.playerIndex2, remote.as_bytes().data() + 8, 8);

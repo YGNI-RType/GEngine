@@ -8,22 +8,6 @@ else()
     set(VCPKG_FALLBACK_ROOT ${CMAKE_CURRENT_BINARY_DIR}/.vcpkg CACHE STRING  "vcpkg configuration directory to use if vcpkg was not installed on the system before")
 endif()
 
-# On Windows, Vcpkg defaults to x86, even on x64 systems. If we're
-# doing a 64-bit build, we need to fix that.
-if (WIN32)
-    # Since the compiler checks haven't run yet, we need to figure
-    # out the value of CMAKE_SIZEOF_VOID_P ourselfs
-
-    include(CheckTypeSize)
-    enable_language(C)
-    check_type_size("void*" SIZEOF_VOID_P BUILTIN_TYPES_ONLY)
-
-    if (SIZEOF_VOID_P EQUAL 8)
-        message(STATUS "Using Vcpkg triplet 'x64-windows'")
-        set(VCPKG_TRIPLET x64-windows)
-    endif()
-endif()
-
 if(NOT DEFINED VCPKG_ROOT)
     if(NOT DEFINED ENV{VCPKG_ROOT})
 	    set(VCPKG_ROOT ${VCPKG_FALLBACK_ROOT})

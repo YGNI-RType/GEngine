@@ -52,7 +52,10 @@ void VoIPAudioCatcher::init(void) {
     subscribeToEvent<gengine::system::event::driver::input::StartVoIP>(&VoIPAudioCatcher::onStartVoIP);
     subscribeToEvent<gengine::system::event::driver::input::EndVoIP>(&VoIPAudioCatcher::onEndVoIP);
     subscribeToEvent<gengine::system::event::MainLoop>(&VoIPAudioCatcher::onMainLoop);
+    subscribeToEvent<gengine::system::event::StartEngine>(&VoIPAudioCatcher::onStartEngine);
+}
 
+void VoIPAudioCatcher::onStartEngine(gengine::system::event::StartEngine &) {
     /** Port Audio + Opus **/
     int iErr;
     PaError paErr;

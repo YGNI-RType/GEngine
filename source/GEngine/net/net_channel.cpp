@@ -161,7 +161,7 @@ bool NetChannel::readDatagram(SocketUDP &socket, UDPMessage &msg, size_t &readOf
         m_udpACKClientLastACK = header.ack;
         m_droppedPackets = header.sequence - udpInSequence + 1;
 
-        if (msg.isFullAck())
+        if (m_reloadingAck && msg.isFullAck())
             m_reloadingAck = false;
 
         /* todo : if > m_udpACKOutSequence, disconnect client since manipulating packets */
@@ -247,10 +247,8 @@ bool NetChannel::readStream(TCPMessage &msg) {
         m_tcpSocket.receive(msg, m_tcpBuffer, m_sizeBuffer);
     } catch (const SocketException &e) {
         if (dynamic_cast<const SocketDisconnected *>(&e) == nullptr) {
-            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN) {
-                std::cout << "blocking" << std::endl;
+            if (e.getCode() == WSAEWOULDBLOCK || e.getCode() == WSATRY_AGAIN)
                 return false;
-            }
             std::cerr << "Socket exception: " << e.what() << std::endl;
         }
         m_disconnect = true;

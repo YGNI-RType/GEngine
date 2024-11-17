@@ -13,8 +13,15 @@
 #include "GEngine/libdev/System.hpp"
 
 namespace gengine::interface::network::event {
-struct ToogleRecord : gengine::Event {
-    ToogleRecord() {
+struct ToggleRecord : gengine::Event {
+    ToggleRecord() {
     }
+};
+
+struct WatchReplay : gengine::Event {
+    WatchReplay(const std::string &demoPath)
+        : demoPath(demoPath) {
+    }
+    std::string demoPath;
 };
 } // namespace gengine::interface::network::event
