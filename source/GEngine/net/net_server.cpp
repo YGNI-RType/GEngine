@@ -54,6 +54,11 @@ void NetServer::createSets(NetWaitSet &set) {
 }
 
 void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, const Address &addr) {
+    UDPCL_PingRequest clData;
+    size_t readOffset = 0;
+    msg.readContinuousData(clData, readOffset);
+
+    uint16_t clReponsePort = clData.port;
     auto pingReponseMsg = UDPMessage(0, SV_BROADCAST_PING);
     UDPSV_PingResponse data = {.tcpv4Port = m_socketv4.getPort(),
                                .tcpv6Port = CVar::net_ipv6.getIntValue() ? m_socketv6.getPort() : (uint16_t)(-1),
@@ -63,7 +68,14 @@ void NetServer::respondPingServers(const UDPMessage &msg, SocketUDP &udpsocket, 
                                .ping = Time::Clock::milliseconds()};
 
     pingReponseMsg.writeData<UDPSV_PingResponse>(data);
-    udpsocket.send(pingReponseMsg, addr);
+
+    if (addr.getType() == AT_IPV4) {
+        auto ogAddr = static_cast<const AddressV4 &>(addr);
+        udpsocket.send(pingReponseMsg, AddressV4(AT_IPV4, clReponsePort, ogAddr.getAddress()));
+    } else if (addr.getType() == AT_IPV6) {
+        auto ogAddr = static_cast<const AddressV6 &>(addr);
+        udpsocket.send(pingReponseMsg, AddressV6(AT_IPV6, clReponsePort, ogAddr.getAddress(), ogAddr.getScopeId()));
+    }
 }
 
 void NetServer::handleNewClient(SocketTCPMaster &socket) {

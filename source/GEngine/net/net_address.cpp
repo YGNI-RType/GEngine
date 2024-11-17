@@ -85,6 +85,9 @@ void AddressV4::toSockAddr(sockaddr *addr) const {
     case AT_BROADCAST:
         s->sin_addr.s_addr = htonl(INADDR_BROADCAST);
         break;
+    case AT_MULTICAST:
+        s->sin_addr.s_addr = inet_addr(MULTICAST_IPV4);
+        break;
     case AT_LOOPBACK:
         s->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
         break;

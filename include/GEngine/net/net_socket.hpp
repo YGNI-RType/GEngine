@@ -78,10 +78,13 @@ public:
 
 protected:
     ASocket() = default;
-    virtual ~ASocket();
+    virtual ~ASocket() = default;
 
 public:
-    int socketClose(void);
+    virtual int socketClose(void) = 0;
+
+protected:
+    int socketCloseAdv(bool shouldShutdown);
 
 protected:
     SOCKET m_sock = -1;
@@ -160,7 +163,7 @@ public:
     SocketUDP(SocketUDP &&other);
     SocketUDP &operator=(SocketUDP &&other);
 
-    ~SocketUDP() = default;
+    ~SocketUDP();
 
     /**
      * @brief Initializes the network socket. Used by both constructors
@@ -176,6 +179,13 @@ public:
     /* this seems redundant, but to avoid any heap calls, this is necessary */
     bool receiveV4(UDPMessage &msg, AddressV4 &ip) const;
     bool receiveV6(UDPMessage &msg, AddressV6 &ip) const;
+
+    int socketClose(void) override final {
+        return socketCloseAdv(false);
+    }
+
+    int setInterface(const IP &ip);
+    void setPingResponse(void);
 
 private:
     /**
@@ -218,9 +228,13 @@ public:
     SocketTCPMaster(SocketTCPMaster &&other);
     SocketTCPMaster &operator=(SocketTCPMaster &&other);
 
-    ~SocketTCPMaster() = default;
+    ~SocketTCPMaster();
 
     SocketTCP accept(UnknownAddress &unkwAddr) const;
+
+    int socketClose(void) override final {
+        return socketCloseAdv(true);
+    }
 };
 
 /**
@@ -251,7 +265,7 @@ public:
     SocketTCP &operator=(const SocketTCP &) = delete;
     SocketTCP(SocketTCP &&other);
     SocketTCP &operator=(SocketTCP &&other);
-    ~SocketTCP() = default;
+    ~SocketTCP();
 
     /**
      * @brief Sends a TCP message.
@@ -303,6 +317,10 @@ public:
         return m_notReady;
     }
 
+    int socketClose(void) override final {
+        return socketCloseAdv(true);
+    }
+
 private:
     /**
      * @brief Receives a reliable TCP message into the provided buffer.
@@ -345,7 +363,7 @@ private:
  * @param wantedPort The port number to bind the socket to.
  * @return SocketTCPMaster The created and opened TCP socket.
  */
-SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort);
+SocketTCPMaster openSocketTcp(const IP &ip, uint16_t &wantedPort);
 /**
  * @brief Opens a UDP socket with the specified IP address and port.
  *
@@ -353,7 +371,7 @@ SocketTCPMaster openSocketTcp(const IP &ip, uint16_t wantedPort);
  * @param wantedPort The port number to bind the socket to.
  * @return SocketUDP The opened UDP socket.
  */
-SocketUDP openSocketUdp(const IP &ip, uint16_t wantedPort);
+SocketUDP openSocketUdp(const IP &ip, uint16_t &wantedPort);
 /**
  * @brief Opens a TCP socket on the specified port.
  *

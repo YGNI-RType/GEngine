@@ -24,6 +24,9 @@ typedef uint32_t in_addr_t;
 #endif
 
 namespace Network {
+
+static constexpr const char *MULTICAST_IPV4 = "239.255.255.250";
+
 /**
  * @class Address
  * @brief Abstract base class representing a network address.
