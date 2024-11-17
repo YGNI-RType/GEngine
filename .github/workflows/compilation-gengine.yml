@@ -96,17 +96,15 @@ jobs:
       - name: Clean the cmake build directory Windows
         if: matrix.os == 'windows-latest' && steps.cache-build.outputs.cache-hit != 'true'
         run: |
-          cmake --build ${{ steps.strings.outputs.build-output-dir }} --target clean
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean
           Get-ChildItem -Path build/vcpkg/* -Exclude 'downloads', 'installed', 'scripts', 'triplets' | Remove-Item -Recurse -Force
-          Remove-Item -Recurse -Force build/*.exe
-          Remove-Item -Recurse -Force build/_CPack_Packages
+          Remove-Item -Recurse -Force build/Release/*.dll
 
       - name: Clean the cmake build directory UNIX like
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' && steps.cache-build.outputs.cache-hit != 'true'
         run: |
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --target clean
           find build/.vcpkg -mindepth 1 -maxdepth 1 ! -name 'downloads' ! -name 'installed' ! -name 'scripts' ! -name 'triplets' -exec rm -rf {} +
-          rm -rf build/*.tar.gz build/*.dmg build/_CPack_Packages
 
   cleanup:
     runs-on: ubuntu-latest
