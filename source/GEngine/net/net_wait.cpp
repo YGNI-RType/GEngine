@@ -77,12 +77,6 @@ bool NetWaitSet::applyCallback(void) const {
 
 /************************************************************/
 
-#ifdef NET_USE_HANDLE
-#else
-SOCKET NetWait::m_highFd = -1;
-fd_set NetWait::m_fdSet;
-#endif
-
 NetWait::NetWait() {
 #ifdef NET_USE_HANDLE
 #else

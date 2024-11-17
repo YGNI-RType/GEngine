@@ -15,6 +15,9 @@
 #include "GEngine/libdev/systems/events/CLI.hpp"
 #include "GEngine/libdev/systems/events/MainLoop.hpp"
 #include "GEngine/libdev/systems/events/Native.hpp"
+#include "GEngine/net/events/socket_event.hpp"
+#include "GEngine/net/net_socket_system.hpp"
+#include "GEngine/net/net_wait.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -36,9 +39,15 @@ public:
 private:
     void getInputs(void);
     std::vector<std::string> splitInput(const std::string &input);
+    void processOutput(void);
+
+    Network::NetWait m_wait;
+    Network::Event::SocketEvent m_socketEventStop;
+    Network::SocketSTD m_socketSTD;
 
     std::thread m_inputThread;
     std::atomic_bool m_stopReading;
+    std::atomic_bool m_stopProgram; /* due to EOF */
     std::vector<std::string> m_userInputHistory;
     mutable std::mutex m_historyMutex;
 };

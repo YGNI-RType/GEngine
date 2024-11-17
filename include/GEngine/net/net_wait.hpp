@@ -90,24 +90,27 @@ public:
     NetWait();
     virtual ~NetWait() = default;
 
+    /**
+     * @brief Waits for a specified amount of time or until an event occurs in the NetWaitSet.
+     *
+     * @param ms The maximum number of milliseconds to wait.
+     * @param set The NetWaitSet to monitor for events.
+     * @return true if an event occurred within the specified time, false if the timeout was reached.
+     */
     bool wait(uint32_t ms, NetWaitSet &set);
 
 public:
-    static void addSocketPool(ASocket &socket);
-    static void removeSocketPool(const ASocket &socket);
+    void addSocketPool(ASocket &socket);
+    void removeSocketPool(const ASocket &socket);
 
-#ifdef NET_USE_HANDLE
-
-#else
 public:
-    static SOCKET getHighestSocket(void) {
+    SOCKET getHighestSocket(void) {
         return m_highFd;
     }
 
 private:
-    static fd_set m_fdSet;
-    static SOCKET m_highFd;
-#endif
+    fd_set m_fdSet;
+    SOCKET m_highFd = -1;
 };
 
 } // namespace Network
