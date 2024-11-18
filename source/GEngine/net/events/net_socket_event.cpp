@@ -7,7 +7,6 @@
 
 #include "GEngine/net/events/socket_event.hpp"
 #include "GEngine/net/net_exception.hpp"
-#include "GEngine/net/net_wait.hpp"
 
 #include <stdexcept>
 
@@ -44,7 +43,7 @@ SocketEvent::SocketEvent() {
     if (m_sock == -1)
         throw NetException("Failed to create eventfd", EL_ERR_SOCKET);
 #endif
-    NetWait::addSocketPool(*this);
+
 #else
     m_handle = CreateEvent(NULL, TRUE, FALSE, NULL);
 #endif

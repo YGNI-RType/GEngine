@@ -211,17 +211,17 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     msg.readData<UDPSV_PingResponse>(data);
 
     std::unique_ptr<Address> addrPtr;
-    if (addr.getType() == AT_IPV4)
+    uint16_t port = -1;
+    if (addr.getType() == AT_IPV4) {
         addrPtr = std::make_unique<AddressV4>(static_cast<const AddressV4 &>(addr));
-    else if (addr.getType() == AT_IPV6)
+        port = data.tcpv4Port;
+    } else if (addr.getType() == AT_IPV6) {
         addrPtr = std::make_unique<AddressV6>(static_cast<const AddressV6 &>(addr));
+        port = data.tcpv6Port;
+    }
 
-    Event::PingInfo pinginfo = {addrPtr->toString(),
-                                addrPtr->getPort(),
-                                data.currentPlayers,
-                                data.maxPlayers,
-                                data.os,
-                                Time::Clock::milliseconds() - m_pingSendTime};
+    Event::PingInfo pinginfo = {addrPtr->toString(), port,    data.currentPlayers,
+                                data.maxPlayers,     data.os, Time::Clock::milliseconds() - m_pingSendTime};
     NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
 
     m_pingedServers.push_back({data, std::move(addrPtr)});

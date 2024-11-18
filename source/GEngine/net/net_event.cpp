@@ -11,6 +11,12 @@
 #include "GEngine/net/net.hpp"
 
 namespace Network::Event {
+Manager::Manager() {
+#ifndef NET_USE_HANDLE
+    NET::getWaitHandler().addSocketPool(m_socketEvent);
+#endif
+}
+
 void Manager::createSets(NetWaitSet &set) {
     set.setAlert(m_socketEvent, [this]() { return handleEvent(); });
 }

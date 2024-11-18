@@ -56,12 +56,13 @@ namespace Network {
 
 /* Global vars */
 
+NetWait NET::mg_wait;
+
 SocketUDP NET::mg_socketUdp;
 SocketTCPMaster NET::mg_socketListenTcp;
 SocketUDP NET::mg_socketUdpV6;
 SocketTCPMaster NET::mg_socketListenTcpV6;
 
-NetWait NET::mg_wait;
 Event::Manager NET::mg_eventManager;
 NetServer NET::mg_server(mg_socketUdp, mg_socketUdpV6);
 CLNetClient NET::mg_client(CVar::net_ipv6.getIntValue() ? mg_socketUdpV6 : mg_socketUdp,
@@ -156,7 +157,9 @@ void NET::stop(void) {
 
     auto &eventManager = NET::getEventManager();
     eventManager.getSocketEvent().signal();
-    mg_networkThread.join();
+    if (mg_networkThread.joinable())
+        mg_networkThread.join();
+
     /* end of network thread */
 
     NET::mg_server.stop();
