@@ -14,13 +14,13 @@
 namespace Network {
 
 #ifdef _WIN32
-    #define STD_IN STD_INPUT_HANDLE
-    #define STD_OUT STD_OUTPUT_HANDLE
-    #define STD_ERR STD_ERROR_HANDLE
+#define STD_IN STD_INPUT_HANDLE
+#define STD_OUT STD_OUTPUT_HANDLE
+#define STD_ERR STD_ERROR_HANDLE
 #else
-    #define STD_IN STDIN_FILENO
-    #define STD_OUT STDOUT_FILENO
-    #define STD_ERR STDERR_FILENO
+#define STD_IN STDIN_FILENO
+#define STD_OUT STDOUT_FILENO
+#define STD_ERR STDERR_FILENO
 #endif
 
 class SocketSTD : public ASocket {

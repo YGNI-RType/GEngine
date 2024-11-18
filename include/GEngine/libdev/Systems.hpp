@@ -15,7 +15,7 @@
 
 /* TODO: Thomas: these includes should never exists, it should be the developer to get them individually */
 namespace gengine::system {
-    class CLI;
+class CLI;
 }
 
 namespace geg::system {

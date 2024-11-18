@@ -220,8 +220,8 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
         port = data.tcpv6Port;
     }
 
-    Event::PingInfo pinginfo = {addrPtr->toString(), port, data.currentPlayers,
-                                data.maxPlayers,     data.os,        Time::Clock::milliseconds() - m_pingSendTime};
+    Event::PingInfo pinginfo = {addrPtr->toString(), port,    data.currentPlayers,
+                                data.maxPlayers,     data.os, Time::Clock::milliseconds() - m_pingSendTime};
     NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
 
     m_pingedServers.push_back({data, std::move(addrPtr)});
