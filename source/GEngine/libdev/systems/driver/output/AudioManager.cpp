@@ -68,7 +68,6 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
                 StopMusicStream(getMusicById(m_currentMusicId));
             m_currentMusicId = music.musicId;
             PlayMusicStream(getMusicById(m_currentMusicId));
-            SetMusicVolume(getMusicById(m_currentMusicId), 0.06);
         }
     }
 
