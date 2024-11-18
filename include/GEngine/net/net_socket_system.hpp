@@ -25,6 +25,7 @@ namespace Network {
 
 class SocketSTD : public ASocket {
 public:
+    SocketSTD() = default;
     SocketSTD(int stdNumber);
     SocketSTD(const SocketSTD &other) = delete;
     SocketSTD &operator=(const SocketSTD &) = delete;
@@ -38,5 +39,7 @@ public:
     int socketClose(void) override final {
         return socketCloseAdv(false);
     }
+
+    void setStd(int stdNumber);
 };
 } // namespace Network

@@ -12,7 +12,9 @@
 
 namespace Network::Event {
 Manager::Manager() {
+#ifndef NET_USE_HANDLE
     NET::getWaitHandler().addSocketPool(m_socketEvent);
+#endif
 }
 
 void Manager::createSets(NetWaitSet &set) {

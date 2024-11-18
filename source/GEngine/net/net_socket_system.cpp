@@ -15,4 +15,12 @@ SocketSTD::SocketSTD(int stdNumber) {
     m_sock = stdNumber;
 #endif
 }
+
+void SocketSTD::setStd(int stdNumber) {
+#ifdef NET_USE_HANDLE
+    m_handle = GetStdHandle(stdNumber);
+#else
+    m_sock = stdNumber;
+#endif
+}
 } // namespace Network

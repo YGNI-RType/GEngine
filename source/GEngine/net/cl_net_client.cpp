@@ -211,7 +211,7 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
     msg.readData<UDPSV_PingResponse>(data);
 
     std::unique_ptr<Address> addrPtr;
-    uint16_t port;
+    uint16_t port = -1;
     if (addr.getType() == AT_IPV4) {
         addrPtr = std::make_unique<AddressV4>(static_cast<const AddressV4 &>(addr));
         port = data.tcpv4Port;
@@ -220,8 +220,7 @@ void CLNetClient::getPingResponse(const UDPMessage &msg, const Address &addr) {
         port = data.tcpv6Port;
     }
 
-    std::cout << addrPtr->toString() << " " << data.tcpv4Port << std::endl;
-    Event::PingInfo pinginfo = {addrPtr->toString(), data.tcpv4Port, data.currentPlayers,
+    Event::PingInfo pinginfo = {addrPtr->toString(), port, data.currentPlayers,
                                 data.maxPlayers,     data.os,        Time::Clock::milliseconds() - m_pingSendTime};
     NET::getEventManager().invokeCallbacks(Event::CT_OnPingResult, pinginfo);
 

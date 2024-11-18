@@ -53,7 +53,7 @@ public:
         m_resIndex = res;
     }
 
-    bool applyCallback(void) const;
+    bool applyCallback(bool shouldReset = true) const;
 
 private:
     static constexpr size_t MAX_SOCKETS = MAXIMUM_WAIT_OBJECTS;

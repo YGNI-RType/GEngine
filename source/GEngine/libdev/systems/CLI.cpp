@@ -7,12 +7,14 @@
 
 #include "GEngine/libdev/systems/CLI.hpp"
 
+#include "GEngine/net/events/socket_event.hpp"
+#include "GEngine/net/net_socket_system.hpp"
+#include "GEngine/net/net_wait.hpp"
+
 namespace gengine::system {
+
 CLI::CLI()
-    : m_stopReading(false)
-    , m_socketSTD(STD_IN) {
-    m_wait.addSocketPool(m_socketSTD);
-    m_wait.addSocketPool(m_socketEventStop);
+    : m_stopReading(false) {
 }
 
 void CLI::init(void) {
@@ -22,6 +24,11 @@ void CLI::init(void) {
 }
 
 void CLI::onStartEngine(gengine::system::event::StartEngine &e [[maybe_unused]]) {
+    m_socketSTD.setStd(STD_IN);
+#ifndef NET_USE_HANDLE
+    m_wait.addSocketPool(m_socketSTD);
+    m_wait.addSocketPool(m_socketEventStop);
+#endif
     m_inputThread = std::thread(&CLI::getInputs, this);
 }
 
@@ -29,6 +36,10 @@ void CLI::onStopEngine(gengine::system::event::StopEngine &e [[maybe_unused]]) {
     m_stopReading = true;
 
     m_socketEventStop.signal();
+
+#ifdef NET_USE_HANDLE
+    SetConsoleMode(m_socketSTD.getHandle(), m_dwMod);
+#endif
 
     if (m_inputThread.joinable())
         m_inputThread.join();
@@ -66,6 +77,15 @@ void CLI::processOutput(void) {
 }
 
 void CLI::getInputs(void) {
+#ifdef NET_USE_HANDLE
+    GetConsoleMode(m_socketSTD.getHandle(), &m_dwMod);
+
+    DWORD fdwMode = m_dwMod & ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
+    SetConsoleMode(m_socketSTD.getHandle(), fdwMode);
+
+    /* flush to remove existing events */
+    FlushConsoleInputBuffer(m_socketSTD.getHandle());
+#endif
     while (!m_stopReading) {
         Network::NetWaitSet set;
 
@@ -84,10 +104,14 @@ void CLI::getInputs(void) {
         if (!hasActivity)
             continue;
 
+#ifdef NET_USE_HANDLE
+        set.applyCallback(false);
+#else
         if (set.isSignaled(m_socketEventStop)) /**/
             break;
         if (set.isSignaled(m_socketSTD))
             processOutput();
+#endif
     }
 }
 

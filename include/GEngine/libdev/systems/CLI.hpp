@@ -50,5 +50,9 @@ private:
     std::atomic_bool m_stopProgram; /* due to EOF */
     std::vector<std::string> m_userInputHistory;
     mutable std::mutex m_historyMutex;
+
+#ifdef NET_USE_HANDLE
+    DWORD m_dwMod;
+#endif
 };
 } // namespace gengine::system
