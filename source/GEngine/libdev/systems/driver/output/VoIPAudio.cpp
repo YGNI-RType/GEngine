@@ -221,7 +221,8 @@ void VoIPAudio::processSoundInput(void) {
 
 VoIPAudio::~VoIPAudio() {
     m_running = false;
-    m_soundThread.join();
+    if (m_soundThread.joinable())
+        m_soundThread.join();
 
     auto err = Pa_StopStream(playbackStream);
     err = Pa_CloseStream(playbackStream);

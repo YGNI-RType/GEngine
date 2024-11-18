@@ -53,7 +53,7 @@ struct Info : public InfoHeader {
  */
 class Manager {
 public:
-    Manager() = default;
+    Manager();
     ~Manager() = default;
 
     template <typename T>

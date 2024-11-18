@@ -8,11 +8,15 @@
 #pragma once
 
 #include "GEngine/libdev/systems/AutoKiller.hpp"
-#include "GEngine/libdev/systems/CLI.hpp"
 #include "GEngine/libdev/systems/Collisions.hpp"
 #include "GEngine/libdev/systems/Logger.hpp"
 #include "GEngine/libdev/systems/MainLoop.hpp"
 #include "GEngine/libdev/systems/Motions.hpp"
+
+/* TODO: Thomas: these includes should never exists, it should be the developer to get them individually */
+namespace gengine::system {
+class CLI;
+}
 
 namespace geg::system {
 using AutoKiller = gengine::system::AutoKiller;

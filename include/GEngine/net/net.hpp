@@ -113,6 +113,10 @@ public:
         return mg_client.getRecord();
     }
 
+    static NetWait &getWaitHandler(void) {
+        return mg_wait;
+    }
+
 public:
     /* todo : temp*/
     static SocketUDP &getSocketUdp(void) {
