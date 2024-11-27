@@ -144,8 +144,6 @@ void DrawModel::onStartEngine(gengine::system::event::StartEngine &e) {
 
     lights[0] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
     lights[1] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
-    // lights[1] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
-    // lights[2] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
 }
 
 void DrawModel::onStopEngine(gengine::system::event::StopEngine &e) {
