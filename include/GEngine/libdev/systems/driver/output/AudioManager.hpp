@@ -56,13 +56,12 @@ public:
     void onMusic(gengine::system::event::driver::output::Music &e) {
         auto &musics = getComponents<gengine::component::driver::output::Music>();
         auto &netSends = getComponents<geg::component::network::NetSend>();
-
-        if (!musics.size())
-            spawnEntity(gengine::component::driver::output::Music(getMusicIdByPath(e.path)),
+        if (!musics.size()) {
+            spawnEntity(gengine::component::driver::output::Music(getMusicIdByPath(e.path), e.volume * UINT16_MAX),
                         geg::component::network::NetSend());
-        else {
+        } else {
             getMusicComponent().musicId = getMusicIdByPath(e.path);
-            getMusicComponent().volume = e.volume;
+            getMusicComponent().volume = e.volume * UINT16_MAX;
             for (auto [e, _unused, netSend] : gengine::Zip(musics, netSends)) {
                 netSend.update();
                 break;

@@ -25,9 +25,9 @@ struct Sound : public gengine::Component<Sound> {
 struct Music : public gengine::Component<Music> {
     bool pause = false;
     std::uint64_t musicId;
-    float volume;
+    uint16_t volume;
 
-    Music(std::uint64_t musicId, float volume = 1)
+    Music(std::uint64_t musicId, uint16_t volume = UINT16_MAX)
         : musicId(musicId)
         , volume(volume) {
     }
