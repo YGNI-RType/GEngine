@@ -62,6 +62,7 @@ public:
                         geg::component::network::NetSend());
         else {
             getMusicComponent().musicId = getMusicIdByPath(e.path);
+            getMusicComponent().volume = e.volume;
             for (auto [e, _unused, netSend] : gengine::Zip(musics, netSends)) {
                 netSend.update();
                 break;
