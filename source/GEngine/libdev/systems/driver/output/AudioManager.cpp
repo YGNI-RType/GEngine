@@ -68,12 +68,13 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
                 StopMusicStream(getMusicById(m_currentMusicId));
             m_currentMusicId = music.musicId;
             PlayMusicStream(getMusicById(m_currentMusicId));
-            SetMusicVolume(getMusicById(m_currentMusicId), music.volume);
+            SetMusicVolume(getMusicById(m_currentMusicId), float(music.volume) / UINT16_MAX);
         }
     }
 
-    if (m_currentMusicId)
+    if (m_currentMusicId) {
         UpdateMusicStream(getMusicById(m_currentMusicId));
+    }
 
     static std::set<gengine::Entity> m_soundsPlayed;
 
@@ -95,10 +96,10 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
 gengine::component::driver::output::Music &AudioManager::getMusicComponent(void) {
     auto &musics = getComponents<gengine::component::driver::output::Music>();
 
-    if (!musics.size())
-        THROW_WARNING("Music component not initilazed");
     for (auto &[_, m] : musics)
         return m;
+
+    THROW_WARNING("Music component not initilazed");
 }
 
 void AudioManager::onSoundPlayed(
