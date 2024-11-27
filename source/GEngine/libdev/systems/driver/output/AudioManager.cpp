@@ -72,9 +72,8 @@ void AudioManager::onMainLoop(geg::event::RenderLoop &e) {
         }
     }
 
-    if (m_currentMusicId) {
+    if (m_currentMusicId)
         UpdateMusicStream(getMusicById(m_currentMusicId));
-    }
 
     static std::set<gengine::Entity> m_soundsPlayed;
 
