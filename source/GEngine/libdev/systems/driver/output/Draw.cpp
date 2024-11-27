@@ -139,12 +139,11 @@ void DrawModel::onStartEngine(gengine::system::event::StartEngine &e) {
 
     shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
     int ambientLoc = GetShaderLocation(shader, "ambient");
-    float ambiantValue[4] = {0.2f, 0.2f, 0.2f, 1.0f};
+    float ambiantValue[4] = {0.1f, 0.1f, 0.1f, 1.0f};
     SetShaderValue(shader, ambientLoc, ambiantValue, SHADER_UNIFORM_VEC4);
 
     lights[0] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
-    lights[1] = CreateLight(LIGHT_POINT, {1.16, 1.40, 4.76}, {0, 0, 0}, RED, shader);
-    lights[2] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
+    lights[1] = CreateLight(LIGHT_POINT, {6.8, 1.4, 4.5}, {0, 0, 0}, BLUE, shader);
 }
 
 void DrawModel::onStopEngine(gengine::system::event::StopEngine &e) {
