@@ -40,10 +40,12 @@ struct SoundPlayed : public Event {
 };
 
 struct Music : public Event {
-    Music(const std::string &path)
-        : path(path) {
+    Music(const std::string &path, float volume = 1.f)
+        : path(path)
+        , volume(volume) {
     }
 
     const std::string path;
+    const float volume;
 };
 } // namespace gengine::system::event::driver::output
